@@ -2,8 +2,8 @@ dependencies:
   '@types/node': 14.14.6
   graphql: 15.4.0
   nodemon: 2.0.6
-  tsup: 3.7.1_typescript@4.0.5
-  typescript: 4.0.5
+  tsup: 3.7.1_typescript@4.1.0-beta
+  typescript: 4.1.0-beta
 lockfileVersion: 5.2
 packages:
   /@babel/code-frame/7.10.4:
@@ -932,10 +932,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==
-  /rollup-plugin-dts/1.4.13_rollup@2.32.1+typescript@4.0.5:
+  /rollup-plugin-dts/1.4.13_352ece97e40695bdf9744068734b4355:
     dependencies:
       rollup: 2.32.1
-      typescript: 4.0.5
+      typescript: 4.1.0-beta
     dev: false
     optionalDependencies:
       '@babel/code-frame': 7.10.4
@@ -1102,7 +1102,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
-  /tsup/3.7.1_typescript@4.0.5:
+  /tsup/3.7.1_typescript@4.1.0-beta:
     dependencies:
       cac: 6.6.1
       chalk: 4.1.0
@@ -1112,7 +1112,7 @@ packages:
       joycon: 2.2.5
       resolve-from: 5.0.0
       rollup: 2.32.1
-      rollup-plugin-dts: 1.4.13_rollup@2.32.1+typescript@4.0.5
+      rollup-plugin-dts: 1.4.13_352ece97e40695bdf9744068734b4355
       sucrase: 3.16.0
     dev: false
     hasBin: true
@@ -1132,13 +1132,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
-  /typescript/4.0.5:
+  /typescript/4.1.0-beta:
     dev: false
     engines:
       node: '>=4.2.0'
     hasBin: true
     resolution:
-      integrity: sha512-ywmr/VrTVCmNTJ6iV2LwIrfG1P+lv6luD8sUJs+2eI9NLGigaN+nUQc13iHqisq7bra9lnmUSYqbJvegraBOPQ==
+      integrity: sha512-b/LAttdVl3G6FEmnMkDsK0xvfvaftXpSKrjXn+OVCRqrwz5WD/6QJOiN+dTorqDY+hkaH+r2gP5wI1jBDmdQ7A==
   /undefsafe/2.0.3:
     dependencies:
       debug: 2.6.9
@@ -1213,4 +1213,4 @@ specifiers:
   graphql: ^15.4.0
   nodemon: ^2.0.6
   tsup: ^3.7.1
-  typescript: ^4.0.5
+  typescript: ^4.1.0-beta
