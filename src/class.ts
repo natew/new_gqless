@@ -1,4 +1,4 @@
-class ArrayType<T extends Type<unknown, unknown>, Args = undefined> {
+export class ArrayType<T extends Type<unknown, unknown>, Args = undefined> {
   public type: T;
   public hasArgs = false;
   declare argsType: Args;

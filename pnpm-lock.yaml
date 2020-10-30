@@ -1,6 +1,8 @@
 dependencies:
+  '@types/lodash': 4.14.164
   '@types/node': 14.14.6
   graphql: 15.4.0
+  lodash: 4.17.20
   nodemon: 2.0.6
   tsup: 3.7.1_typescript@4.1.0-beta
   typescript: 4.1.0-beta
@@ -65,6 +67,10 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==
+  /@types/lodash/4.14.164:
+    dev: false
+    resolution:
+      integrity: sha512-fXCEmONnrtbYUc5014avwBeMdhHHO8YJCkOBflUL9EoJBSKZ1dei+VO74fA7JkTHZ1GvZack2TyIw5U+1lT8jg==
   /@types/node/14.14.6:
     dev: false
     resolution:
@@ -688,6 +694,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=
+  /lodash/4.17.20:
+    dev: false
+    resolution:
+      integrity: sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
   /lowercase-keys/1.0.1:
     dev: false
     engines:
@@ -1209,8 +1219,10 @@ packages:
     resolution:
       integrity: sha512-PSNhEJDejZYV7h50BohL09Er9VaIefr2LMAf3OEmpCkjOi34eYyQYAXUTjEQtZJTKcF0E2UKTh+osDLsgNim9Q==
 specifiers:
+  '@types/lodash': ^4.14.164
   '@types/node': ^14.14.6
   graphql: ^15.4.0
+  lodash: ^4.17.20
   nodemon: ^2.0.6
   tsup: ^3.7.1
   typescript: ^4.1.0-beta

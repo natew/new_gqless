@@ -1,4 +1,4 @@
-const schemaJSON = {
+export const schemaJSON = {
   Query: {
     simpleString: {
       __type: "String!",
@@ -11,6 +11,9 @@ const schemaJSON = {
     },
     object: {
       __type: "Human!",
+    },
+    objectArray: {
+      __type: "[Human!]!",
     },
     objectWithArgs: {
       __args: {
@@ -62,6 +65,7 @@ interface GeneratedSchema {
     simpleString: Scalars["String"];
     stringWithArgs: (args: { hello: Scalars["String"] }) => Scalars["String"];
     object: Human;
+    objectArray: Array<Human>;
     objectWithArgs: (args: { who: Scalars["String"] }) => Human;
     arrayString: Array<Scalars["String"]>;
     arrayObjectArgs: (args: { limit: Scalars["Int"] }) => Array<Human>;
@@ -75,48 +79,94 @@ const scalars: Record<string, true | undefined> = {
   Int: true,
 };
 
-const createTypeProxy = (schemaType: SchemaJSONType[string], schema: SchemaJSONType) => {
+const globalSelectionKeys: string[][] = [];
+
+const createTypeProxy = (
+  schemaType: SchemaJSONType[string],
+  schema: SchemaJSONType,
+  selectionKeysArg: string[]
+) => {
   return new Proxy(
     Object.fromEntries(
       Object.keys(schemaType).map((key) => {
-        return [key, undefined];
+        return [key, {}];
       })
     ) as Record<string, unknown>,
     {
-      get(_target, key: string, _receiver) {
-        const value = schemaType[key];
+      get(target, key: string, receiver) {
+        if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
 
+        const value = schemaType[key];
         if (value) {
+          let selectionKeys = [...selectionKeysArg];
+
+          selectionKeys.push(key);
+
           const { __type, __args } = value;
-          const pureType = (() => {
+          const { pureType, isArray } = (() => {
+            let isNullable = true;
+            let nullableItems = true;
+            let isArray = false;
+            let pureType = __type;
             if (__type.endsWith("!")) {
-              return __type.slice(0, __type.length - 1);
+              isNullable = false;
+              pureType = __type.slice(0, __type.length - 1);
             }
-            return __type;
+            if (pureType.startsWith("[")) {
+              pureType = pureType.slice(1, pureType.length - 1);
+              isArray = true;
+              if (pureType.endsWith("!")) {
+                nullableItems = false;
+                pureType = pureType.slice(0, pureType.length - 1);
+              }
+            }
+
+            return {
+              pureType,
+              isNullable,
+              nullableItems,
+              isArray,
+            };
           })();
+
           const resolve = (): any => {
             if (scalars[pureType]) {
+              globalSelectionKeys.push(selectionKeys);
+
               // TODO Cache
+
+              if (isArray) {
+                return [`Scalar item with key ${key}`];
+              }
               return `Scalar with key ${key}`;
             }
+
             const typeValue = schema[pureType];
             if (typeValue) {
               console.log(`recursive type ${key}`);
-              return createTypeProxy(typeValue, schema);
+              if (isArray) {
+                return [createTypeProxy(typeValue, schema, selectionKeys)];
+              }
+              return createTypeProxy(typeValue, schema, selectionKeys);
             }
 
             throw Error("97 Not found!");
           };
+
           if (__args) {
             return (args: typeof __args) => {
-              console.log(89, args);
+              console.log(`args fn ${key}: "${JSON.stringify(args)}"`);
               return resolve();
             };
           }
 
           return resolve();
+        } else {
+          Reflect.get(target, key, receiver);
         }
-        throw Error("83. Not found");
+        console.error("Not found", key);
+
+        throw Error(`83. Not found`);
       },
     }
   );
@@ -126,7 +176,7 @@ const createSchemaProxy = (schema: SchemaJSONType) => {
   return new Proxy(
     Object.fromEntries(
       Object.keys(schema).map((key) => {
-        return [key, undefined];
+        return [key, {}];
       })
     ) as Record<string, unknown>,
     {
@@ -134,7 +184,9 @@ const createSchemaProxy = (schema: SchemaJSONType) => {
         const value = schema[key];
 
         if (value) {
-          return createTypeProxy(value, schema);
+          const selectionKeys: string[] = [];
+          selectionKeys.push(key);
+          return createTypeProxy(value, schema, selectionKeys);
         }
         throw Error("104. Not found");
       },
@@ -150,7 +202,18 @@ const createJSONClient = <T extends SchemaJSONType>(schema: T): GeneratedSchema 
 
 const generatedClient = createJSONClient(schemaJSON);
 
+const printAndCleanSelectionKeys = () => {
+  console.log("\n-----------------");
+  console.log(`selections: \n-> ${globalSelectionKeys.join("\n-> ")}`);
+  console.log("-----------------\n");
+  globalSelectionKeys.splice(0, globalSelectionKeys.length);
+};
+
+printAndCleanSelectionKeys();
+
 console.log(`generatedClient.Query.simpleString: "${generatedClient.Query.simpleString}"`);
+
+printAndCleanSelectionKeys();
 
 console.log(
   `generatedClient.Query.objectWithArgs({who: "xd",}).name: "${
@@ -160,6 +223,50 @@ console.log(
   }"`
 );
 
+printAndCleanSelectionKeys();
+
 console.log(`generatedClient.Query.object.name: "${generatedClient.Query.object.name}"`);
 
+printAndCleanSelectionKeys();
+
 console.log(`recursive human: "${generatedClient.Query.object.father.father.father.name}"`);
+
+printAndCleanSelectionKeys();
+
+console.log(`array strings: ${generatedClient.Query.arrayString.join("|")}`);
+
+printAndCleanSelectionKeys();
+
+console.log(
+  `array object ${JSON.stringify(
+    generatedClient.Query.objectArray.map((v) => {
+      return {
+        father: v.father.name,
+        name: v.name,
+      };
+    })
+  )}`
+);
+
+printAndCleanSelectionKeys();
+
+console.log(
+  `array objects fn: ${generatedClient.Query.arrayObjectArgs({
+    limit: 10,
+  }).map((v) => {
+    return {
+      a: v.father.name,
+      b: v.name,
+    };
+  })}`
+);
+
+printAndCleanSelectionKeys();
+
+const middleObject = generatedClient.Query.object;
+
+middleObject.father.father.father.father.father.father.name;
+
+middleObject.father.name;
+
+printAndCleanSelectionKeys();
