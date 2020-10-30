@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon",
-    "dev:nodemon": "tsup src -d dist && node dist/index.js"
+    "dev:nodemon": "tsup src -d dist && node dist/json.js"
   },
   "author": "PabloSz",
   "license": "ISC",
