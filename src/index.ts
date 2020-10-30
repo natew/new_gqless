@@ -1,9 +1,9 @@
-class ArrayType<TType extends Type<unknown, unknown> = Type<unknown, unknown>, Args = undefined> {
-  type: TType;
-  argsType: Args = undefined as any;
+class ArrayType<T extends Type<unknown, unknown>, Args = undefined> {
+  public type: T;
   public hasArgs = false;
+  declare argsType: Args;
 
-  constructor(type: TType, hasArgs: boolean = false) {
+  constructor(type: T, hasArgs: boolean = false) {
     this.type = type;
     this.hasArgs = hasArgs;
   }
@@ -11,35 +11,45 @@ class ArrayType<TType extends Type<unknown, unknown> = Type<unknown, unknown>, A
 
 class Type<Value, Args = undefined> {
   typeString: string;
-  valueType: Value = undefined as any;
-  argsType: Args = undefined as any;
-  hasArgs = false;
-  includedTypes: Record<string, true> | undefined;
+  declare valueType: Value;
+  declare argsType: Args;
 
-  constructor(typeString: string, hasArgs: boolean = false, ...includedTypes: string[]) {
+  hasArgs = false;
+  includedTypes: Record<string, Type<unknown, unknown>> | undefined;
+
+  constructor(
+    typeString: string,
+    hasArgs: boolean = false,
+    types?: Record<string, Type<unknown, unknown>>
+  ) {
     this.typeString = typeString;
     this.hasArgs = hasArgs;
 
-    if (includedTypes.length) {
+    const typesEntries = types ? Object.entries(types) : [];
+
+    if (typesEntries.length) {
       this.includedTypes = {};
-      for (const key of includedTypes) {
-        this.includedTypes[key] = true;
+      for (const [name, type] of typesEntries) {
+        this.includedTypes[name] = type;
       }
     }
   }
 }
 
+const StringType = new Type<string>("String");
+
 const A = new Type<{
   a: string;
   b: number;
-}>("A", false, "a", "b");
-
-const StringType = new Type<string>("String");
+}>("A", false, { a: StringType });
 
 const Hello = new Type<{
   d: string;
   aType: typeof A;
-}>("Hello", false, "d");
+}>("Hello", false, {
+  d: StringType,
+  aType: A,
+});
 
 const schema = {
   Query: {
@@ -51,15 +61,18 @@ const schema = {
       {
         a: string;
       }
-    >(StringType),
-    HelloWithArgs: new Type<typeof Hello["valueType"], { d: number }>("HelloWithArgs"),
+    >(StringType, true),
+    HelloWithArgs: new Type<typeof Hello["valueType"], { d: number }>("HelloWithArgs", true, {
+      d: StringType,
+      aType: A,
+    }),
     ArrayHello: new ArrayType(Hello),
     ArrayHelloWithArgs: new ArrayType<
       typeof Hello,
       {
         d: number;
       }
-    >(Hello),
+    >(Hello, true),
   },
   A,
   Hello,
@@ -67,7 +80,7 @@ const schema = {
 
 type ConvertSchema<T> = {
   [P in keyof T]: T[P] extends Type<unknown, object>
-    ? (args?: T[P]["argsType"]) => T[P]["valueType"]
+    ? (args?: T[P]["argsType"]) => ConvertSchema<T[P]["valueType"]>
     : T[P] extends Type<unknown, undefined>
     ? ConvertSchema<T[P]["valueType"]>
     : T[P] extends ArrayType<Type<unknown, unknown>, object>
@@ -80,50 +93,50 @@ type ConvertSchema<T> = {
 const keys: unknown[] = [];
 
 const createProxy = <T extends object>(v: T): T => {
+  if (typeof v !== "object") return v;
   return new Proxy(v, {
     get(target: any, key: string | number, receiver) {
-      let type: Type<unknown, unknown> | undefined;
-
       keys.push(key);
 
-      console.log("88 keys", keys);
+      const value =
+        target[key] ??
+        (() => {
+          if (target instanceof Type) {
+            const type = target.includedTypes?.[key];
+            if (type) {
+              return type;
+            }
+            return undefined;
+          } else if (target instanceof ArrayType) {
+            const type = target.type.includedTypes?.[key];
+            if (type) {
+              return type;
+            }
+          }
+          return undefined;
+        })();
 
-      if (target instanceof ArrayType || target instanceof Type) {
-        if (target instanceof ArrayType) {
-          console.log(92, "array type!");
-          type = target.type;
-        } else {
-          type = target;
-        }
-        if (target.hasArgs) {
-          return (args: any) => {
-            console.log("args", args);
-            return createProxy(value);
-          };
-        }
-      }
-
-      console.log(104, type);
-
-      const value = target[key];
-
-      if (type && type.includedTypes?.[key]) {
-        // TODO Value from cache here
-
-        console.log("VALUE FROM CACHE");
-
-        return null;
+      if ((value instanceof Type || value instanceof ArrayType) && value.hasArgs) {
+        return (args: any) => {
+          console.log("args", args);
+          return createProxy(value);
+        };
       }
 
       if (target instanceof ArrayType) {
-        console.log(116);
-        return createProxy([value]);
+        console.log(127, {
+          target,
+          value,
+          key,
+        });
+        return [createProxy(value)][key as any];
       }
-      console.log(119);
 
-      return createProxy(value);
+      if (typeof value === "object") {
+        return createProxy(value);
+      }
 
-      return Reflect.get(target, key, receiver);
+      return value;
     },
   });
 };
@@ -162,7 +175,7 @@ console.log(
   60,
   client.Query.HelloWithArgs({
     d: 456,
-  }).d
+  }).aType.a
 );
 
 console.log("keys", keys);
@@ -179,5 +192,5 @@ client.Query.ArrayWithArgs({
 client.Query.ArrayHelloWithArgs({
   d: 123,
 }).map((v) => {
-  console.log(v.d);
+  console.log(196, v.d);
 });
