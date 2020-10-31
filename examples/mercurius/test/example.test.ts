@@ -46,8 +46,6 @@ tap.test("works", async (t) => {
 });
 
 tap.test("generatedClient", async (t) => {
-  t.plan(7);
-
   const anon = generatedClient.query.objectWithArgs({
     who: "anon",
   });
@@ -69,8 +67,23 @@ tap.test("generatedClient", async (t) => {
   t.equal(anon.name, null, "69");
   t.equal(anon.father.father.name, null, "70");
 
-  await resolveAllSelections().then(console.log);
+  await resolveAllSelections();
 
   t.type(anon.name, "string", "74");
   t.type(anon.father.father.name, "string", "75");
+
+  t.equal(globalSelections.size, 0);
+
+  const arrayData = generatedClient.query.objectArray.map((v) => v.name);
+
+  t.equivalent(arrayData, [null]);
+
+  await resolveAllSelections();
+
+  const arrayDataAfterResolved = generatedClient.query.objectArray.map((v) => v.name);
+
+  // TODO Fix false positive
+  t.equivalent(arrayDataAfterResolved, [null]);
+
+  t.done();
 });

@@ -1,4 +1,4 @@
-import { createCache } from "../Cache";
+import { CacheNotFound, createCache } from "../Cache";
 import { buildQuery } from "../QueryBuilder";
 import { Selection } from "../Selection/selection";
 import { QueryFetcher, ScalarsHash, Schema } from "../types";
@@ -44,11 +44,6 @@ export function createClient<GeneratedSchema = never>(
           if (value) {
             const { __type, __args } = value;
 
-            const selection = new Selection({
-              key,
-              prevSelection: selectionsArg,
-            });
-
             const { pureType, isArray } = (() => {
               let isNullable = true;
               let nullableItems = true;
@@ -75,21 +70,30 @@ export function createClient<GeneratedSchema = never>(
               };
             })();
 
+            const selection = new Selection({
+              key,
+              prevSelection: selectionsArg,
+              isArray,
+            });
+
             const resolve = (): unknown => {
               if (scalars[pureType]) {
-                globalSelections.add(selection);
+                const cacheValue = getCacheFromSelection(selection);
 
-                return getCacheFromSelection(selection);
+                // TODO: Refetch behavior
+                if (cacheValue === CacheNotFound) {
+                  globalSelections.add(selection);
 
-                if (isArray) {
-                  return [`Scalar item with key ${key}`];
+                  return null;
                 }
-                return `Scalar with key ${key}`;
+
+                return cacheValue;
               }
 
               const typeValue = schema[pureType];
               if (typeValue) {
                 if (isArray) {
+                  // TODO: Check cache for existing data + proxy for more values
                   return [createTypeProxy(typeValue, selection)];
                 }
                 return createTypeProxy(typeValue, selection);

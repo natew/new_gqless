@@ -3,20 +3,24 @@ export class Selection {
   argTypes?: Record<string, string>;
   key: string;
   selections = new Set<Selection>();
+  isArray: boolean;
 
   constructor({
     key,
     prevSelection,
     args,
+    isArray = false,
   }: {
     key: string;
     prevSelection?: Selection;
     args?: Selection["args"];
     argTypes?: Selection["argTypes"];
+    isArray?: boolean;
   }) {
     this.key = key;
     this.args = args;
     this.argTypes = this.argTypes;
+    this.isArray = isArray;
 
     if (prevSelection) {
       for (const selection of prevSelection.selections) {
