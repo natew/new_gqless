@@ -1,6 +1,6 @@
-import { Scalars, createClient, ScalarsHash } from "../index";
+import { Scalars, createClient, ScalarsHash } from "../Client/index";
 
-declare module "../index" {
+declare module "../types" {
   interface Scalars {
     ID: string;
   }

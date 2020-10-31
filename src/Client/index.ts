@@ -1,17 +1,5 @@
-export interface Type {
-  __args?: Record<string, string>;
-  __type: string;
-}
-
-export interface Schema extends Record<string, Record<string, Type>> {
-  Query: Record<string, Type>;
-}
-export interface Scalars extends Record<string, unknown> {
-  String: string;
-  Int: number;
-}
-
-export type ScalarsHash = { readonly [P in keyof Scalars]: true };
+import { Selection } from "../Selection/selection";
+import { ScalarsHash, Schema } from "../types";
 
 export const createClient = <GeneratedSchema = never>({
   schema,
@@ -20,9 +8,9 @@ export const createClient = <GeneratedSchema = never>({
   schema: Schema;
   scalars: ScalarsHash;
 }) => {
-  const globalSelectionKeys: string[][] = [];
+  const globalSelectionKeys: Selection[] = [];
 
-  const createTypeProxy = (schemaType: Schema[string], selectionKeysArg: string[]) => {
+  const createTypeProxy = (schemaType: Schema[string], selectionsArg: Selection) => {
     return new Proxy(
       Object.fromEntries(
         Object.keys(schemaType).map((key) => {
@@ -37,9 +25,10 @@ export const createClient = <GeneratedSchema = never>({
           if (value) {
             const { __type, __args } = value;
 
-            let selectionKeys = [...selectionKeysArg];
-
-            selectionKeys.push(key);
+            let selection = new Selection({
+              key,
+              prevSelection: selectionsArg,
+            });
 
             const { pureType, isArray } = (() => {
               let isNullable = true;
@@ -69,7 +58,7 @@ export const createClient = <GeneratedSchema = never>({
 
             const resolve = (): unknown => {
               if (scalars[pureType]) {
-                globalSelectionKeys.push(selectionKeys);
+                globalSelectionKeys.push(selection);
 
                 // TODO Cache
 
@@ -83,9 +72,9 @@ export const createClient = <GeneratedSchema = never>({
               if (typeValue) {
                 console.log(`recursive type ${key}`);
                 if (isArray) {
-                  return [createTypeProxy(typeValue, selectionKeys)];
+                  return [createTypeProxy(typeValue, selection)];
                 }
-                return createTypeProxy(typeValue, selectionKeys);
+                return createTypeProxy(typeValue, selection);
               }
 
               throw Error("97 Not found!");
@@ -93,6 +82,7 @@ export const createClient = <GeneratedSchema = never>({
 
             if (__args) {
               return (args: typeof __args) => {
+                selection.args = args;
                 console.log(`args fn ${key}: "${JSON.stringify(args)}"`);
                 return resolve();
               };
@@ -120,9 +110,11 @@ export const createClient = <GeneratedSchema = never>({
           const value = schema[key];
 
           if (value) {
-            const selectionKeys: string[] = [];
-            selectionKeys.push(key);
-            return createTypeProxy(value, selectionKeys);
+            const selection = new Selection({
+              key,
+            });
+
+            return createTypeProxy(value, selection);
           }
           throw Error("104. Not found");
         },
@@ -135,3 +127,5 @@ export const createClient = <GeneratedSchema = never>({
     globalSelectionKeys,
   };
 };
+
+export * from "../types";

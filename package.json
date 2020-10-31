@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "dev": "nodemon",
-    "dev:nodemon": "rimraf dist && tsup src -d dist && node dist/generatedExample/usage.js",
+    "dev:nodemon": "rimraf dist && tsup src -d dist && node dist/QueryBuilder/buildQuery.js",
     "prepare": "rimraf dist && tsc",
     "test": "tap"
   },
