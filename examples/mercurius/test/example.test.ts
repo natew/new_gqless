@@ -41,7 +41,7 @@ tap.test("works", async (t) => {
 });
 
 tap.test("generatedClient", async (t) => {
-  // t.plan(2);
+  t.plan(3);
 
   const anon = generatedClient.query.objectWithArgs({
     who: "anon",
@@ -52,19 +52,12 @@ tap.test("generatedClient", async (t) => {
 
   const { query, variables } = buildQuery(globalSelectionKeys, true);
 
-  console.log(55, {
-    query,
-    variables,
-  });
-
   const { data, errors } = await testClient.query(query, {
     variables,
   });
 
-  // console.error(errors);
+  t.equal(errors, undefined);
 
-  // t.equal(errors, undefined);
-  // t.equal(data, {});
-
-  t.done();
+  t.type(data?.objectWithArgs.father.father.name, "string");
+  t.type(data?.objectWithArgs.name, "string");
 });

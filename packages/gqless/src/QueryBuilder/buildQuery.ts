@@ -29,29 +29,39 @@ export const buildQuery = (selections: Selection[], strip?: boolean) => {
 
   const selectionTree: SelectionTree = {};
   const variablesMap = new Map<unknown, string>();
+  const variableTypes: Record<string, string> = {};
+
   for (const selection of selections) {
     set(
       selectionTree,
-      Array.from(selection.selections).map((v) => {
-        const argsLength = v.args ? Object.keys(v.args).length : 0;
-        if (v.args && argsLength) {
-          return `${v.key}(${Object.entries(v.args).reduce((acum, [key, value], index) => {
-            const variableMapValue = variablesMap.get(value);
-            if (variableMapValue) {
-              acum += `${key}:$${variableMapValue}`;
-            } else {
-              const newVariableValue = `${key}${variableId++}`;
-              variablesMap.set(value, newVariableValue);
-              acum += `${key}:$${newVariableValue}`;
-            }
-            if (index < argsLength - 1) {
-              acum += ",";
-            }
+      Array.from(selection.selections).map((selectionValue) => {
+        const argsLength = selectionValue.args ? Object.keys(selectionValue.args).length : 0;
+        if (selectionValue.args && argsLength) {
+          return `${selectionValue.key}(${Object.entries(selectionValue.args).reduce(
+            (acum, [key, value], index) => {
+              const variableMapValue = variablesMap.get(value);
+              if (variableMapValue) {
+                acum += `${key}:$${variableMapValue}`;
+              } else {
+                const newVariableValue = `${key}${variableId++}`;
+                const newVariableType = selectionValue.argTypes?.[key];
+                if (newVariableType) {
+                  variableTypes[newVariableValue] = newVariableType;
+                }
 
-            return acum;
-          }, "")})`;
+                variablesMap.set(value, newVariableValue);
+                acum += `${key}:$${newVariableValue}`;
+              }
+              if (index < argsLength - 1) {
+                acum += ",";
+              }
+
+              return acum;
+            },
+            ""
+          )})`;
         }
-        return v.key;
+        return selectionValue.key;
       }),
       true
     );
@@ -68,52 +78,29 @@ export const buildQuery = (selections: Selection[], strip?: boolean) => {
     });
   }
 
-  const query = stringSelectionTree(selectionTree);
+  let query = stringSelectionTree(selectionTree);
 
-  // query.replace("query", `query(${Object.keys(variables)})`)
+  const variableTypesEntries = Object.entries(variableTypes);
+
+  if (variableTypesEntries.length) {
+    query = query.replace(
+      "query",
+      `query(${variableTypesEntries.reduce((acum, [variableName, type], index) => {
+        acum += `$${variableName}:${type}`;
+        if (index !== variableTypesEntries.length - 1) {
+          acum += ",";
+        }
+        return acum;
+      }, "")})`
+    );
+  }
+
+  if (strip) {
+    query = stripIgnoredCharacters(query);
+  }
 
   return {
-    query: strip ? stripIgnoredCharacters(query) : query,
+    query,
     variables,
   };
 };
-
-const a = new Selection({
-  key: "query",
-});
-
-const b = new Selection({
-  key: "Hello",
-  prevSelection: a,
-  args: {
-    deepObject: {
-      a: {
-        b: {
-          c: 2,
-        },
-      },
-    },
-  },
-});
-
-const c = new Selection({
-  key: "name",
-  prevSelection: b,
-  args: {
-    foo: "bar",
-    otherArg: "hello",
-  },
-});
-
-const d = new Selection({
-  key: "other",
-  prevSelection: c,
-});
-
-const e = new Selection({
-  key: "zxc",
-  prevSelection: c,
-});
-
-// const query = buildQuery([d, e]);
-// console.log(query.query, "\nvariables:", JSON.stringify(query.variables, null, 2));

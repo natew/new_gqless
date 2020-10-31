@@ -70,7 +70,6 @@ export const createClient = <GeneratedSchema = never>({
 
               const typeValue = schema[pureType];
               if (typeValue) {
-                console.log(`recursive type ${key}`);
                 if (isArray) {
                   return [createTypeProxy(typeValue, selection)];
                 }
@@ -83,7 +82,8 @@ export const createClient = <GeneratedSchema = never>({
             if (__args) {
               return (args: typeof __args) => {
                 selection.args = args;
-                console.log(`args fn ${key}: "${JSON.stringify(args)}"`);
+                selection.argTypes = __args;
+
                 return resolve();
               };
             }
