@@ -1,8 +1,9 @@
+import { buildQuery } from "gqless";
 import { createMercuriusTestClient } from "mercurius-integration-testing";
 import tap from "tap";
+
 import { app } from "../src";
 import { client as generatedClient, globalSelectionKeys } from "../src/generated";
-import { buildQuery } from "gqless";
 
 const testClient = createMercuriusTestClient(app);
 

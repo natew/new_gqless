@@ -1,4 +1,4 @@
-import { Scalars, createClient, ScalarsHash } from "gqless";
+import { createClient, Scalars, ScalarsHash } from "gqless";
 
 declare module "gqless" {
   interface Scalars {

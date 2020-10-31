@@ -11,7 +11,7 @@
     "dev": "nodemon",
     "dev:nodemon": "tsup src -d dist && node dist/QueryBuilder/buildQuery.js",
     "prepare": "tsc",
-    "test": "exit 0"
+    "test": "tap"
   },
   "dependencies": {
     "graphql": "^15.4.0",
