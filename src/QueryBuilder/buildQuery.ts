@@ -1,3 +1,4 @@
+import { stripIgnoredCharacters } from "graphql/utilities/stripIgnoredCharacters";
 import { set } from "lodash";
 
 import { Selection } from "../Selection/selection";
@@ -17,13 +18,13 @@ const stringSelectionTree = (v: SelectionTree, depth = 0) => {
 
       acum += `${spaceDepth}\n${spaceDepth}}${spaceDepth}`;
     } else {
-      acum += `${index < treeEntries.length - 1 ? "" : "\n"}${spaceDepth}${key}`;
+      acum += `${index === treeEntries.length - 1 ? "\n" : ""}${spaceDepth}${key}`;
     }
     return acum;
   }, "");
 };
 
-export const buildQuery = (selections: Selection[]) => {
+export const buildQuery = (selections: Selection[], strip?: boolean) => {
   let variableId = 1;
 
   const selectionTree: SelectionTree = {};
@@ -67,8 +68,10 @@ export const buildQuery = (selections: Selection[]) => {
     });
   }
 
+  const query = stringSelectionTree(selectionTree);
+
   return {
-    query: stringSelectionTree(selectionTree),
+    query: strip ? stripIgnoredCharacters(query) : query,
     variables,
   };
 };
@@ -96,7 +99,7 @@ const c = new Selection({
   prevSelection: b,
   args: {
     foo: "bar",
-    other: "hello",
+    otherArg: "hello",
   },
 });
 
