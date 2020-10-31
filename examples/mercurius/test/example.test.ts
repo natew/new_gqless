@@ -3,7 +3,11 @@ import { createMercuriusTestClient } from "mercurius-integration-testing";
 import tap from "tap";
 
 import { app } from "../src";
-import { client as generatedClient, globalSelectionKeys } from "../src/generated";
+import {
+  client as generatedClient,
+  globalSelections,
+  resolveAllSelections,
+} from "../src/generated";
 
 const testClient = createMercuriusTestClient(app);
 
@@ -42,7 +46,7 @@ tap.test("works", async (t) => {
 });
 
 tap.test("generatedClient", async (t) => {
-  t.plan(3);
+  t.plan(7);
 
   const anon = generatedClient.query.objectWithArgs({
     who: "anon",
@@ -51,7 +55,7 @@ tap.test("generatedClient", async (t) => {
   anon.name;
   anon.father.father.name;
 
-  const { query, variables } = buildQuery(globalSelectionKeys, true);
+  const { query, variables } = buildQuery(globalSelections, true);
 
   const { data, errors } = await testClient.query(query, {
     variables,
@@ -61,4 +65,12 @@ tap.test("generatedClient", async (t) => {
 
   t.type(data?.objectWithArgs.father.father.name, "string");
   t.type(data?.objectWithArgs.name, "string");
+
+  t.equal(anon.name, null, "69");
+  t.equal(anon.father.father.name, null, "70");
+
+  await resolveAllSelections().then(console.log);
+
+  t.type(anon.name, "string", "74");
+  t.type(anon.father.father.name, "string", "75");
 });

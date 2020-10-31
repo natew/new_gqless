@@ -24,7 +24,7 @@ const stringSelectionTree = (v: SelectionTree, depth = 0) => {
   }, "");
 };
 
-export const buildQuery = (selections: Selection[], strip?: boolean) => {
+export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boolean) => {
   let variableId = 1;
 
   const selectionTree: SelectionTree = {};

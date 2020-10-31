@@ -1,16 +1,35 @@
+import { createCache } from "../Cache";
+import { buildQuery } from "../QueryBuilder";
 import { Selection } from "../Selection/selection";
-import { ScalarsHash, Schema } from "../types";
+import { QueryFetcher, ScalarsHash, Schema } from "../types";
 
-export const createClient = <GeneratedSchema = never>({
-  schema,
-  scalars,
-}: {
-  schema: Schema;
-  scalars: ScalarsHash;
-}) => {
-  const globalSelectionKeys: Selection[] = [];
+export function createClient<GeneratedSchema = never>(
+  schema: Readonly<Schema>,
+  scalars: ScalarsHash,
+  queryFetcher: QueryFetcher
+) {
+  const globalSelections = new Set<Selection>();
+  const client: GeneratedSchema = createSchemaProxy();
+  const { getCacheFromSelection, setCacheFromSelection } = createCache();
 
-  const createTypeProxy = (schemaType: Schema[string], selectionsArg: Selection) => {
+  async function resolveAllSelections(): Promise<number> {
+    const selections = [...globalSelections];
+    const { query, variables } = buildQuery(selections);
+    const length = selections.length;
+    const { data } = await queryFetcher(query, variables);
+
+    if (data) {
+      for (const selection of selections) {
+        setCacheFromSelection(selection, data);
+
+        globalSelections.delete(selection);
+      }
+    }
+
+    return length;
+  }
+
+  function createTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
     return new Proxy(
       Object.fromEntries(
         Object.keys(schemaType).map((key) => {
@@ -25,7 +44,7 @@ export const createClient = <GeneratedSchema = never>({
           if (value) {
             const { __type, __args } = value;
 
-            let selection = new Selection({
+            const selection = new Selection({
               key,
               prevSelection: selectionsArg,
             });
@@ -58,9 +77,9 @@ export const createClient = <GeneratedSchema = never>({
 
             const resolve = (): unknown => {
               if (scalars[pureType]) {
-                globalSelectionKeys.push(selection);
+                globalSelections.add(selection);
 
-                // TODO Cache
+                return getCacheFromSelection(selection);
 
                 if (isArray) {
                   return [`Scalar item with key ${key}`];
@@ -96,9 +115,9 @@ export const createClient = <GeneratedSchema = never>({
         },
       }
     );
-  };
+  }
 
-  const createSchemaProxy = () => {
+  function createSchemaProxy() {
     return new Proxy(
       Object.fromEntries(
         Object.keys(schema).map((key) => {
@@ -119,13 +138,12 @@ export const createClient = <GeneratedSchema = never>({
           throw Error("104. Not found");
         },
       }
-    );
-  };
+    ) as GeneratedSchema;
+  }
 
   return {
-    client: createSchemaProxy() as GeneratedSchema,
-    globalSelectionKeys,
+    client,
+    globalSelections,
+    resolveAllSelections,
   };
-};
-
-export * from "../types";
+}

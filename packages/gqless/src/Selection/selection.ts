@@ -27,4 +27,14 @@ export class Selection {
       this.selections.add(this);
     }
   }
+
+  public get path() {
+    const path: string[] = [];
+
+    for (const selection of this.selections) {
+      path.push(selection.key);
+    }
+
+    return path;
+  }
 }
