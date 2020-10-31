@@ -1,18 +1,22 @@
-import { get } from "lodash";
+import { get, set } from "lodash";
 
 import { Selection } from "../Selection";
 
 export const CacheNotFound = Symbol("Not Found");
 
+export const ArrayField = Symbol("Array Field");
+
 export function createCache() {
   const cache: Record<string, unknown> = {};
 
   function getCacheFromSelection(selection: Selection) {
+    // let path = "";
+    // for (const selectionValue of selection.selections) {
+
+    // }
     const path = selection.path.slice(1).join(".");
-    const value = cache[path];
-    if (value === undefined) {
-      return CacheNotFound;
-    }
+    const value = get(cache, path, CacheNotFound);
+
     return value;
   }
 
@@ -23,8 +27,9 @@ export function createCache() {
     if (value === CacheNotFound) {
       delete cache[path];
     } else {
-      cache[path] = value;
+      set(cache, path, value);
     }
+    console.log(cache);
   }
 
   return { cache, getCacheFromSelection, setCacheFromSelection };
