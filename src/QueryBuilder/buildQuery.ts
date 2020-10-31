@@ -1,27 +1,52 @@
 import { set } from "lodash";
+
 import { Selection } from "../Selection/selection";
 
-interface SelectionTree extends Map<Selection, SelectionTree | true> {}
+interface SelectionTree {
+  [P: string]: SelectionTree | true;
+}
+
+const stringSelectionTree = (v: SelectionTree, depth = 0) => {
+  const spaceDepth = "  ".repeat(depth);
+  const treeEntries = Object.entries(v);
+  return treeEntries.reduce((acum, [key, value], index) => {
+    if (typeof value === "object") {
+      acum += `${spaceDepth}${key} {\n`;
+
+      acum += stringSelectionTree(value, depth + 1);
+
+      acum += `${spaceDepth}\n${spaceDepth}}${spaceDepth}`;
+    } else {
+      acum += `${index < treeEntries.length - 1 ? "" : "\n"}${spaceDepth}${key}`;
+    }
+    return acum;
+  }, "");
+};
 
 export const buildQuery = (selections: Selection[]) => {
   let variableId = 1;
 
-  const selectionTree: SelectionTree = new Map();
-  const variables: Record<string, unknown> = {};
+  const selectionTree: SelectionTree = {};
+  const variablesMap = new Map<unknown, string>();
   for (const selection of selections) {
-    for (const selection2 of selection.selections) {
-      if (selectionTree.has(selection2)) {
-        selectionTree;
-      }
-    }
     set(
       selectionTree,
       Array.from(selection.selections).map((v) => {
-        if (v.args && Object.keys(v.args).length) {
-          return `${v.key}(${Object.entries(v.args).reduce((acum, [key, value]) => {
-            const variableName = `${key}${variableId++}`;
-            variables[variableName] = value;
-            acum += `${key}:$${variableName}`;
+        const argsLength = v.args ? Object.keys(v.args).length : 0;
+        if (v.args && argsLength) {
+          return `${v.key}(${Object.entries(v.args).reduce((acum, [key, value], index) => {
+            const variableMapValue = variablesMap.get(value);
+            if (variableMapValue) {
+              acum += `${key}:$${variableMapValue}`;
+            } else {
+              const newVariableValue = `${key}${variableId++}`;
+              variablesMap.set(value, newVariableValue);
+              acum += `${key}:$${newVariableValue}`;
+            }
+            if (index < argsLength - 1) {
+              acum += ",";
+            }
+
             return acum;
           }, "")})`;
         }
@@ -31,10 +56,19 @@ export const buildQuery = (selections: Selection[]) => {
     );
   }
 
-  const selectionTreeString = JSON.stringify(selectionTree, null, 2);
+  let variables: Record<string, unknown> | undefined;
+
+  if (variablesMap.size) {
+    const variablesObj: Record<string, unknown> = {};
+    variables = variablesObj;
+
+    variablesMap.forEach((value, key) => {
+      variablesObj[value] = key;
+    });
+  }
 
   return {
-    query: selectionTreeString,
+    query: stringSelectionTree(selectionTree),
     variables,
   };
 };
@@ -46,6 +80,15 @@ const a = new Selection({
 const b = new Selection({
   key: "Hello",
   prevSelection: a,
+  args: {
+    deepObject: {
+      a: {
+        b: {
+          c: 2,
+        },
+      },
+    },
+  },
 });
 
 const c = new Selection({
@@ -53,6 +96,7 @@ const c = new Selection({
   prevSelection: b,
   args: {
     foo: "bar",
+    other: "hello",
   },
 });
 
@@ -66,4 +110,5 @@ const e = new Selection({
   prevSelection: c,
 });
 
-console.log(buildQuery([d, e]).query);
+const query = buildQuery([d, e]);
+console.log(query.query, "\nvariables:", JSON.stringify(query.variables, null, 2));
