@@ -6,7 +6,7 @@ export interface Type {
 }
 
 export interface Schema extends Record<string, Record<string, Type>> {
-  Query: Record<string, Type>;
+  query: Record<string, Type>;
 }
 export interface Scalars extends Record<string, unknown> {
   String: string;

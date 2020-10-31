@@ -1,6 +1,6 @@
-import { Scalars, createClient, ScalarsHash } from "../Client/index";
+import { Scalars, createClient, ScalarsHash } from "gqless";
 
-declare module "../types" {
+declare module "gqless" {
   interface Scalars {
     ID: string;
   }
@@ -13,7 +13,7 @@ export const scalars: ScalarsHash = {
 };
 
 export const schema = {
-  Query: {
+  query: {
     simpleString: {
       __type: "String!",
     },
@@ -61,7 +61,7 @@ export interface Human {
 }
 
 export interface GeneratedSchema {
-  Query: {
+  query: {
     simpleString: Scalars["String"];
     stringWithArgs: (args: { hello: Scalars["String"] }) => Scalars["String"];
     object: Human;

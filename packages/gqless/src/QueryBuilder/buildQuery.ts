@@ -70,6 +70,8 @@ export const buildQuery = (selections: Selection[], strip?: boolean) => {
 
   const query = stringSelectionTree(selectionTree);
 
+  // query.replace("query", `query(${Object.keys(variables)})`)
+
   return {
     query: strip ? stripIgnoredCharacters(query) : query,
     variables,
@@ -113,5 +115,5 @@ const e = new Selection({
   prevSelection: c,
 });
 
-const query = buildQuery([d, e]);
-console.log(query.query, "\nvariables:", JSON.stringify(query.variables, null, 2));
+// const query = buildQuery([d, e]);
+// console.log(query.query, "\nvariables:", JSON.stringify(query.variables, null, 2));
