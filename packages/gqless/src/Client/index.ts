@@ -10,6 +10,7 @@ export function createClient<GeneratedSchema = never>(
   scalars: ScalarsHash,
   queryFetcher: QueryFetcher
 ) {
+  const ProxyCache = new WeakMap<Selection, unknown>();
   const globalSelections = new Set<Selection>();
   const client: GeneratedSchema = createSchemaProxy();
   const { getCacheFromSelection, mergeCache } = createCache();
@@ -46,25 +47,35 @@ export function createClient<GeneratedSchema = never>(
     const arrayCacheValue = getCacheFromSelection(selectionsArg);
     if (arrayCacheValue === null) return null;
 
-    return new Proxy(arrayCacheValue === CacheNotFound ? [ProxySymbol] : arrayCacheValue, {
-      get(target, key: string, receiver) {
-        const index = parseInt(key);
+    return (
+      ProxyCache.get(selectionsArg) ||
+      (() => {
+        const createdProxy: ProxyConstructor = new Proxy(
+          arrayCacheValue === CacheNotFound ? [ProxySymbol] : arrayCacheValue,
+          {
+            get(target, key: string, receiver) {
+              const index = parseInt(key);
 
-        if (Number.isInteger(index)) {
-          if (arrayCacheValue !== CacheNotFound && arrayCacheValue[index] == null) {
-            // if arrayCacheValue[index] is 'null' or 'undefined'
-            return arrayCacheValue[index];
+              if (Number.isInteger(index)) {
+                if (arrayCacheValue !== CacheNotFound && arrayCacheValue[index] == null) {
+                  // if arrayCacheValue[index] is 'null' or 'undefined'
+                  return arrayCacheValue[index];
+                }
+
+                const selection = new Selection({
+                  key: index,
+                  prevSelection: selectionsArg,
+                });
+                return createTypeProxy(schemaType, selection);
+              }
+              return Reflect.get(target, key, receiver);
+            },
           }
-
-          const selection = new Selection({
-            key: index,
-            prevSelection: selectionsArg,
-          });
-          return createTypeProxy(schemaType, selection);
-        }
-        return Reflect.get(target, key, receiver);
-      },
-    });
+        );
+        ProxyCache.set(selectionsArg, createdProxy);
+        return createdProxy;
+      })()
+    );
   }
 
   // TODO: Refetch behavior
@@ -72,92 +83,99 @@ export function createClient<GeneratedSchema = never>(
     const cacheValue = getCacheFromSelection(selectionsArg);
     if (cacheValue === null) return null;
 
-    return new Proxy(
-      Object.fromEntries(
-        Object.keys(schemaType).map((key) => {
-          return [key, ProxySymbol];
-        })
-      ) as Record<string, unknown>,
-      {
-        get(target, key: string, receiver) {
-          if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
+    return (
+      ProxyCache.get(selectionsArg) ||
+      (() => {
+        const createdProxy = new Proxy(
+          Object.fromEntries(
+            Object.keys(schemaType).map((key) => {
+              return [key, ProxySymbol];
+            })
+          ) as Record<string, unknown>,
+          {
+            get(target, key: string, receiver) {
+              if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
 
-          const value = schemaType[key];
-          if (value) {
-            const { __type, __args } = value;
+              const value = schemaType[key];
+              if (value) {
+                const { __type, __args } = value;
 
-            const { pureType, isArray } = (() => {
-              let isNullable = true;
-              let nullableItems = true;
-              let isArray = false;
-              let pureType = __type;
-              if (__type.endsWith("!")) {
-                isNullable = false;
-                pureType = __type.slice(0, __type.length - 1);
-              }
-              if (pureType.startsWith("[")) {
-                pureType = pureType.slice(1, pureType.length - 1);
-                isArray = true;
-                if (pureType.endsWith("!")) {
-                  nullableItems = false;
-                  pureType = pureType.slice(0, pureType.length - 1);
+                const { pureType, isArray } = (() => {
+                  let isNullable = true;
+                  let nullableItems = true;
+                  let isArray = false;
+                  let pureType = __type;
+                  if (__type.endsWith("!")) {
+                    isNullable = false;
+                    pureType = __type.slice(0, __type.length - 1);
+                  }
+                  if (pureType.startsWith("[")) {
+                    pureType = pureType.slice(1, pureType.length - 1);
+                    isArray = true;
+                    if (pureType.endsWith("!")) {
+                      nullableItems = false;
+                      pureType = pureType.slice(0, pureType.length - 1);
+                    }
+                  }
+
+                  return {
+                    pureType,
+                    isNullable,
+                    nullableItems,
+                    isArray,
+                  };
+                })();
+
+                const selection = new Selection({
+                  key,
+                  prevSelection: selectionsArg,
+                  isArray,
+                });
+
+                const resolve = (): unknown => {
+                  if (scalars[pureType]) {
+                    const cacheValue = getCacheFromSelection(selection);
+
+                    if (cacheValue === CacheNotFound) {
+                      globalSelections.add(selection);
+
+                      return null;
+                    }
+
+                    return cacheValue;
+                  }
+
+                  const typeValue = schema[pureType];
+                  if (typeValue) {
+                    if (isArray) {
+                      return createArrayTypeProxy(typeValue, selection);
+                    }
+                    return createTypeProxy(typeValue, selection);
+                  }
+
+                  throw Error("97 Not found!");
+                };
+
+                if (__args) {
+                  return (args: typeof __args) => {
+                    selection.args = args;
+                    selection.argTypes = __args;
+
+                    return resolve();
+                  };
                 }
-              }
-
-              return {
-                pureType,
-                isNullable,
-                nullableItems,
-                isArray,
-              };
-            })();
-
-            const selection = new Selection({
-              key,
-              prevSelection: selectionsArg,
-              isArray,
-            });
-
-            const resolve = (): unknown => {
-              if (scalars[pureType]) {
-                const cacheValue = getCacheFromSelection(selection);
-
-                if (cacheValue === CacheNotFound) {
-                  globalSelections.add(selection);
-
-                  return null;
-                }
-
-                return cacheValue;
-              }
-
-              const typeValue = schema[pureType];
-              if (typeValue) {
-                if (isArray) {
-                  return createArrayTypeProxy(typeValue, selection);
-                }
-                return createTypeProxy(typeValue, selection);
-              }
-
-              throw Error("97 Not found!");
-            };
-
-            if (__args) {
-              return (args: typeof __args) => {
-                selection.args = args;
-                selection.argTypes = __args;
 
                 return resolve();
-              };
-            }
+              }
+              console.error("Not found", key);
 
-            return resolve();
+              throw Error(`83. Not found`);
+            },
           }
-          console.error("Not found", key);
-
-          throw Error(`83. Not found`);
-        },
-      }
+        );
+        ProxyCache.set(selectionsArg, createdProxy);
+        return createdProxy;
+      })()
     );
   }
 
