@@ -2,7 +2,7 @@
   "name": "gqless_refactor",
   "scripts": {
     "dev": "nodemon",
-    "dev:nodemon": "pnpm prepare -r && pnpm test -r --no-bail --no-sort --stream"
+    "dev:nodemon": "pnpm prepare -r && pnpm test --filter mercurius -r --no-bail --no-sort --stream"
   },
   "dependencies": {
     "nodemon": "^2.0.6"

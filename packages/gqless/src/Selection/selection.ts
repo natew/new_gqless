@@ -1,5 +1,3 @@
-import { ArrayField } from "../Cache";
-
 export class Selection {
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
@@ -39,20 +37,6 @@ export class Selection {
 
     for (const selection of this.selections) {
       path.push(selection.key);
-    }
-
-    return path;
-  }
-
-  public get pathArray() {
-    const path: Array<typeof ArrayField | string> = [];
-
-    for (const selection of this.selections) {
-      if (selection.isArray) {
-        path.push(ArrayField);
-      } else {
-        path.push(selection.key);
-      }
     }
 
     return path;

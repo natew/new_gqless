@@ -29,6 +29,19 @@ export function createClient<GeneratedSchema = never>(
     return length;
   }
 
+  function createArrayTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
+    return new Proxy([{}], {
+      get(target, key: string, receiver) {
+        const index = parseInt(key);
+
+        if (Number.isInteger(index)) {
+          return createTypeProxy(schemaType, selectionsArg);
+        }
+        return Reflect.get(target, key, receiver);
+      },
+    });
+  }
+
   function createTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
     return new Proxy(
       Object.fromEntries(
@@ -94,7 +107,7 @@ export function createClient<GeneratedSchema = never>(
               if (typeValue) {
                 if (isArray) {
                   // TODO: Check cache for existing data + proxy for more values
-                  return [createTypeProxy(typeValue, selection)];
+                  return createArrayTypeProxy(typeValue, selection);
                 }
                 return createTypeProxy(typeValue, selection);
               }
