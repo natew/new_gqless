@@ -34,7 +34,7 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
   for (const selection of selections) {
     set(
       selectionTree,
-      Array.from(selection.selections).map((selectionValue) => {
+      Array.from(selection.selectionsWithoutArrayIndex).map((selectionValue) => {
         const argsLength = selectionValue.args ? Object.keys(selectionValue.args).length : 0;
         if (selectionValue.args && argsLength) {
           return `${selectionValue.key}(${Object.entries(selectionValue.args).reduce(

@@ -1,11 +1,11 @@
-import Fastify from "fastify";
+import Fastify, { LogLevel } from "fastify";
 import { random, range } from "lodash";
 import Mercurius from "mercurius";
 import { generate } from "randomstring";
 
 export const app = Fastify({
   logger: {
-    level: "info",
+    level: "warn" as LogLevel,
   },
 });
 

@@ -1,7 +1,7 @@
 export class Selection {
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
-  key: string;
+  key: string | number;
   selections = new Set<Selection>();
   isArray: boolean;
 
@@ -11,7 +11,7 @@ export class Selection {
     args,
     isArray = false,
   }: {
-    key: string;
+    key: string | number;
     prevSelection?: Selection;
     args?: Selection["args"];
     argTypes?: Selection["argTypes"];
@@ -32,8 +32,12 @@ export class Selection {
     }
   }
 
+  public get selectionsWithoutArrayIndex() {
+    return [...this.selections].filter((v) => typeof v.key === "string");
+  }
+
   public get path() {
-    const path: string[] = [];
+    const path: (string | number)[] = [];
 
     for (const selection of this.selections) {
       path.push(selection.key);

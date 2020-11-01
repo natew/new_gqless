@@ -10,15 +10,13 @@ export function createCache() {
   const cache: Record<string, unknown> = {};
 
   function getCacheFromSelection(selection: Selection) {
-    const path = selection.path.slice(1).join(".");
-    const value = get(cache, path, CacheNotFound);
-
-    return value;
+    const path = selection.path.slice(1);
+    return get(cache, path, CacheNotFound);
   }
 
-  function setCacheFromSelection(selection: Selection, data: unknown) {
+  function mergeCache(data: unknown) {
     merge(cache, data);
   }
 
-  return { cache, getCacheFromSelection, setCacheFromSelection };
+  return { cache, getCacheFromSelection, mergeCache };
 }

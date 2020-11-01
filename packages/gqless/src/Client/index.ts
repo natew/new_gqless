@@ -10,32 +10,44 @@ export function createClient<GeneratedSchema = never>(
 ) {
   const globalSelections = new Set<Selection>();
   const client: GeneratedSchema = createSchemaProxy();
-  const { getCacheFromSelection, setCacheFromSelection } = createCache();
+  const { getCacheFromSelection, mergeCache } = createCache();
 
   async function resolveAllSelections(): Promise<number> {
     const selections = [...globalSelections];
     const { query, variables } = buildQuery(selections);
     const length = selections.length;
-    const { data } = await queryFetcher(query, variables);
+    const { data, errors } = await queryFetcher(query, variables);
 
     if (data) {
-      for (const selection of selections) {
-        setCacheFromSelection(selection, data);
+      mergeCache(data);
 
+      for (const selection of selections) {
         globalSelections.delete(selection);
       }
     }
 
+    if (errors) {
+      console.error(errors);
+      const err = Error("Errors in resolve");
+
+      Error.captureStackTrace(err, resolveAllSelections);
+      throw err;
+    }
     return length;
   }
 
   function createArrayTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
-    return new Proxy([{}], {
+    const value = getCacheFromSelection(selectionsArg);
+    return new Proxy(value === CacheNotFound ? [{}] : value, {
       get(target, key: string, receiver) {
         const index = parseInt(key);
 
         if (Number.isInteger(index)) {
-          return createTypeProxy(schemaType, selectionsArg);
+          const selection = new Selection({
+            key: index,
+            prevSelection: selectionsArg,
+          });
+          return createTypeProxy(schemaType, selection);
         }
         return Reflect.get(target, key, receiver);
       },
@@ -106,7 +118,6 @@ export function createClient<GeneratedSchema = never>(
               const typeValue = schema[pureType];
               if (typeValue) {
                 if (isArray) {
-                  // TODO: Check cache for existing data + proxy for more values
                   return createArrayTypeProxy(typeValue, selection);
                 }
                 return createTypeProxy(typeValue, selection);

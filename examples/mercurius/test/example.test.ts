@@ -12,7 +12,7 @@ import {
 const testClient = createMercuriusTestClient(app);
 
 tap.test("works", async (t) => {
-  t.plan(1);
+  t.plan(2);
 
   await testClient
     .query(
@@ -42,7 +42,9 @@ tap.test("works", async (t) => {
     }
   `
     )
-    .then((resp) => console.log(JSON.stringify(resp)));
+    .then((resp) => {
+      t.equals(resp.errors, undefined);
+    });
 });
 
 tap.test("generatedClient", async (t) => {
@@ -82,8 +84,11 @@ tap.test("generatedClient", async (t) => {
 
   const arrayDataAfterResolved = generatedClient.query.objectArray.map((v) => v.name);
 
-  // TODO Fix false positive
-  t.equivalent(arrayDataAfterResolved, [null]);
+  t.assert(arrayDataAfterResolved.length > 0);
+  t.equals(
+    arrayDataAfterResolved.every((v) => typeof v === "string" && v.length > 30),
+    true
+  );
 
   t.done();
 });
