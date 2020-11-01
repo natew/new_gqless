@@ -3,6 +3,8 @@ import { buildQuery } from "../QueryBuilder";
 import { Selection } from "../Selection/selection";
 import { QueryFetcher, ScalarsHash, Schema } from "../types";
 
+const ProxySymbol = Symbol("gqless-proxy");
+
 export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
   scalars: ScalarsHash,
@@ -30,19 +32,30 @@ export function createClient<GeneratedSchema = never>(
       console.error(errors);
       const err = Error("Errors in resolve");
 
-      Error.captureStackTrace(err, resolveAllSelections);
+      if (Error.captureStackTrace) {
+        Error.captureStackTrace(err, resolveAllSelections);
+      }
+
       throw err;
     }
     return length;
   }
 
+  // TODO: Refetch behavior
   function createArrayTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
-    const value = getCacheFromSelection(selectionsArg);
-    return new Proxy(value === CacheNotFound ? [{}] : value, {
+    const arrayCacheValue = getCacheFromSelection(selectionsArg);
+    if (arrayCacheValue === null) return null;
+
+    return new Proxy(arrayCacheValue === CacheNotFound ? [ProxySymbol] : arrayCacheValue, {
       get(target, key: string, receiver) {
         const index = parseInt(key);
 
         if (Number.isInteger(index)) {
+          if (arrayCacheValue !== CacheNotFound && arrayCacheValue[index] == null) {
+            // if arrayCacheValue[index] is 'null' or 'undefined'
+            return arrayCacheValue[index];
+          }
+
           const selection = new Selection({
             key: index,
             prevSelection: selectionsArg,
@@ -54,11 +67,15 @@ export function createClient<GeneratedSchema = never>(
     });
   }
 
+  // TODO: Refetch behavior
   function createTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
+    const cacheValue = getCacheFromSelection(selectionsArg);
+    if (cacheValue === null) return null;
+
     return new Proxy(
       Object.fromEntries(
         Object.keys(schemaType).map((key) => {
-          return [key, {}];
+          return [key, ProxySymbol];
         })
       ) as Record<string, unknown>,
       {
@@ -105,7 +122,6 @@ export function createClient<GeneratedSchema = never>(
               if (scalars[pureType]) {
                 const cacheValue = getCacheFromSelection(selection);
 
-                // TODO: Refetch behavior
                 if (cacheValue === CacheNotFound) {
                   globalSelections.add(selection);
 
@@ -149,7 +165,7 @@ export function createClient<GeneratedSchema = never>(
     return new Proxy(
       Object.fromEntries(
         Object.keys(schema).map((key) => {
-          return [key, {}];
+          return [key, ProxySymbol];
         })
       ) as Record<string, unknown>,
       {
