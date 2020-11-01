@@ -1,5 +1,5 @@
 import { stripIgnoredCharacters } from "graphql/utilities/stripIgnoredCharacters";
-import { set } from "lodash";
+import lodashSet from "lodash/set";
 
 import { Selection } from "../Selection/selection";
 
@@ -32,7 +32,7 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
   const variableTypes: Record<string, string> = {};
 
   for (const selection of selections) {
-    set(
+    lodashSet(
       selectionTree,
       Array.from(selection.selectionsWithoutArrayIndex).map((selectionValue) => {
         const argsLength = selectionValue.args ? Object.keys(selectionValue.args).length : 0;
