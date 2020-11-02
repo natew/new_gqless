@@ -8,6 +8,7 @@ export const CacheNotFound = Symbol("Not Found");
 export function createCache() {
   const cache: Record<string, unknown> = {};
 
+  // TODO: Identify variable differences
   function getCacheFromSelection(selection: Selection) {
     const path = selection.path.slice(1);
     return lodashGet(cache, path, CacheNotFound);

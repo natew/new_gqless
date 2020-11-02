@@ -10,7 +10,9 @@ export function createClient<GeneratedSchema = never>(
   scalars: ScalarsHash,
   queryFetcher: QueryFetcher
 ) {
-  const ProxyCache = new WeakMap<Selection, unknown>();
+  const ProxyCache = new WeakMap<Selection, object>();
+  const ProxyCacheReverse = new WeakMap<object, Selection>();
+
   const globalSelections = new Set<Selection>();
   const client: GeneratedSchema = createSchemaProxy();
   const { getCacheFromSelection, mergeCache } = createCache();
@@ -47,7 +49,7 @@ export function createClient<GeneratedSchema = never>(
     const arrayCacheValue = getCacheFromSelection(selectionsArg);
     if (arrayCacheValue === null) return null;
 
-    return (
+    const proxy =
       ProxyCache.get(selectionsArg) ||
       (() => {
         const createdProxy: ProxyConstructor = new Proxy(
@@ -73,9 +75,11 @@ export function createClient<GeneratedSchema = never>(
           }
         );
         ProxyCache.set(selectionsArg, createdProxy);
+        ProxyCacheReverse.set(createdProxy, selectionsArg);
         return createdProxy;
-      })()
-    );
+      })();
+
+    return proxy;
   }
 
   // TODO: Refetch behavior
@@ -83,7 +87,7 @@ export function createClient<GeneratedSchema = never>(
     const cacheValue = getCacheFromSelection(selectionsArg);
     if (cacheValue === null) return null;
 
-    return (
+    const proxy =
       ProxyCache.get(selectionsArg) ||
       (() => {
         const createdProxy = new Proxy(
@@ -174,9 +178,11 @@ export function createClient<GeneratedSchema = never>(
           }
         );
         ProxyCache.set(selectionsArg, createdProxy);
+        ProxyCacheReverse.set(createdProxy, selectionsArg);
         return createdProxy;
-      })()
-    );
+      })();
+
+    return proxy;
   }
 
   function createSchemaProxy() {
