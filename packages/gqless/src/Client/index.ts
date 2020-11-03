@@ -2,6 +2,7 @@ import { CacheNotFound, createCache } from "../Cache";
 import { buildQuery } from "../QueryBuilder";
 import { Selection } from "../Selection/selection";
 import { QueryFetcher, ScalarsHash, Schema } from "../types";
+import { deferredPromise } from "../Utils/promise";
 
 const ProxySymbol = Symbol("gqless-proxy");
 
@@ -13,35 +14,91 @@ export function createClient<GeneratedSchema = never>(
   const ProxyCache = new WeakMap<Selection, object>();
   const ProxyCacheReverse = new WeakMap<object, Selection>();
 
+  const ProxyResolvePromises = new WeakMap<object, Promise<void>>();
+
   const globalSelections = new Set<Selection>();
   const client: GeneratedSchema = createSchemaProxy();
   const { getCacheFromSelection, mergeCache } = createCache();
 
-  async function resolveAllSelections(): Promise<number> {
-    const selections = [...globalSelections];
-    const { query, variables } = buildQuery(selections);
-    const length = selections.length;
-    const { data, errors } = await queryFetcher(query, variables);
+  function resolve(proxy: object): Promise<void> {
+    return (
+      ProxyResolvePromises.get(proxy) ||
+      (() => {
+        const proxySelection = ProxyCacheReverse.get(proxy);
+        if (!proxySelection) throw Error("Couldn't find any selection with the proxy");
 
-    if (data) {
-      mergeCache(data);
+        const selections = [...globalSelections].filter((selection) => {
+          return selection.selections.has(selection);
+        });
 
-      for (const selection of selections) {
-        globalSelections.delete(selection);
+        if (selections.length === 0) {
+          console.warn("No selections made");
+          return Promise.resolve();
+        }
+
+        return resolveSelections(selections);
+      })()
+    );
+  }
+
+  async function resolveSelections(selections: Selection[] | Set<Selection>) {
+    const { reject, resolve, promise } = deferredPromise();
+    for (const selection of selections) {
+      const proxySelection = ProxyCache.get(selection);
+      if (proxySelection) {
+        ProxyResolvePromises.set(selection, promise);
       }
     }
 
-    if (errors) {
-      console.error(errors);
-      const err = Error("Errors in resolve");
+    try {
+      const { query, variables } = buildQuery(selections);
 
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(err, resolveAllSelections);
+      const { data, errors } = await queryFetcher(query, variables);
+
+      if (data) {
+        mergeCache(data);
+
+        for (const selection of selections) {
+          globalSelections.delete(selection);
+        }
       }
 
+      if (errors) {
+        console.error(errors);
+        const err = Error("Errors in resolve");
+
+        if (Error.captureStackTrace) {
+          Error.captureStackTrace(err, resolveAllSelections);
+        }
+
+        throw err;
+      }
+
+      resolve();
+    } catch (err) {
+      reject(err);
       throw err;
     }
-    return length;
+  }
+
+  async function resolveAllSelections() {
+    const selections = [...globalSelections];
+    const { reject, resolve, promise } = deferredPromise();
+    for (const selection of selections) {
+      const proxySelection = ProxyCache.get(selection);
+      if (proxySelection) {
+        ProxyResolvePromises.set(selection, promise);
+      }
+    }
+
+    try {
+      await resolveSelections(selections);
+
+      resolve();
+    } catch (err) {
+      reject(err);
+      throw err;
+    }
   }
 
   // TODO: Refetch behavior
@@ -213,5 +270,6 @@ export function createClient<GeneratedSchema = never>(
     client,
     globalSelections,
     resolveAllSelections,
+    resolve,
   };
 }

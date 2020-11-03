@@ -3,11 +3,7 @@ import { createMercuriusTestClient } from "mercurius-integration-testing";
 import tap from "tap";
 
 import { app } from "../src";
-import {
-  client as generatedClient,
-  globalSelections,
-  resolveAllSelections,
-} from "../src/generated";
+import { client as generatedClient, globalSelections, resolve } from "../src/generated";
 
 const testClient = createMercuriusTestClient(app);
 
@@ -69,7 +65,7 @@ tap.test("generatedClient", async (t) => {
   t.equal(anon.name, null, "69");
   t.equal(anon.father.father.name, null, "70");
 
-  await resolveAllSelections();
+  await resolve(anon);
 
   t.type(anon.name, "string", "74");
   t.type(anon.father.father.name, "string", "75");
@@ -80,7 +76,7 @@ tap.test("generatedClient", async (t) => {
 
   t.equivalent(arrayData, [null]);
 
-  await resolveAllSelections();
+  await resolve(generatedClient.query.objectArray);
 
   const arrayDataAfterResolved = generatedClient.query.objectArray.map((v) => v.name);
 
@@ -89,6 +85,8 @@ tap.test("generatedClient", async (t) => {
     arrayDataAfterResolved.every((v) => typeof v === "string" && v.length > 30),
     true
   );
+
+  await resolve(generatedClient.query.objectArray);
 
   t.done();
 });

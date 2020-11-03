@@ -101,8 +101,6 @@ const queryFetcher: QueryFetcher = function (query, variables) {
   // return json;
 };
 
-export const { client, globalSelections, resolveAllSelections } = createClient<GeneratedSchema>(
-  schema,
-  scalars,
-  queryFetcher
-);
+export const { client, globalSelections, resolveAllSelections, resolve } = createClient<
+  GeneratedSchema
+>(schema, scalars, queryFetcher);
