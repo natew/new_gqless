@@ -1,3 +1,5 @@
+import { AliasManager } from "./AliasManager";
+
 export class Selection {
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
@@ -5,22 +7,28 @@ export class Selection {
   selections = new Set<Selection>();
   isArray: boolean;
 
+  alias?: string;
+  aliasManager: AliasManager;
+
   constructor({
     key,
     prevSelection,
     args,
     isArray = false,
+    aliasManager,
   }: {
     key: string | number;
     prevSelection?: Selection;
     args?: Selection["args"];
     argTypes?: Selection["argTypes"];
     isArray?: boolean;
+    aliasManager: AliasManager;
   }) {
     this.key = key;
     this.args = args;
     this.argTypes = this.argTypes;
     this.isArray = isArray;
+    this.aliasManager = aliasManager;
 
     if (prevSelection) {
       for (const selection of prevSelection.selections) {
@@ -40,7 +48,14 @@ export class Selection {
     const path: (string | number)[] = [];
 
     for (const selection of this.selections) {
-      path.push(selection.key);
+      if (selection.args && selection.argTypes) {
+        if (!selection.alias) {
+          selection.alias = this.aliasManager.getVariableAlias(selection.args, selection.argTypes);
+        }
+        path.push(selection.alias);
+      } else {
+        path.push(selection.key);
+      }
     }
 
     return path;

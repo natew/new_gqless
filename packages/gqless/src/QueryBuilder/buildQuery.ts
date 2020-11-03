@@ -36,8 +36,13 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
       selectionTree,
       Array.from(selection.selectionsWithoutArrayIndex).map((selectionValue) => {
         const argsLength = selectionValue.args ? Object.keys(selectionValue.args).length : 0;
+
+        const selectionKey = selectionValue.alias
+          ? `${selectionValue.alias}: ${selectionValue.key}`
+          : selectionValue.key;
+
         if (selectionValue.args && argsLength) {
-          return `${selectionValue.key}(${Object.entries(selectionValue.args).reduce(
+          return `${selectionKey}(${Object.entries(selectionValue.args).reduce(
             (acum, [key, value], index) => {
               const variableMapValue = variablesMap.get(value);
               if (variableMapValue) {
@@ -61,7 +66,8 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
             ""
           )})`;
         }
-        return selectionValue.key;
+
+        return selectionKey;
       }),
       true
     );

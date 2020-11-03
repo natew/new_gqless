@@ -1,6 +1,7 @@
 import { CacheNotFound, createCache } from "../Cache";
 import { Interceptor } from "../Interceptor";
 import { buildQuery } from "../QueryBuilder";
+import { AliasManager } from "../Selection/AliasManager";
 import { Selection } from "../Selection/selection";
 import { QueryFetcher, ScalarsHash, Schema } from "../types";
 
@@ -11,6 +12,8 @@ export function createClient<GeneratedSchema = never>(
   scalars: ScalarsHash,
   queryFetcher: QueryFetcher
 ) {
+  const aliasManager = new AliasManager();
+
   const ProxyCache = new WeakMap<Selection, object>();
   const ProxyCacheReverse = new WeakMap<object, Selection>();
 
@@ -90,6 +93,7 @@ export function createClient<GeneratedSchema = never>(
                 const selection = new Selection({
                   key: index,
                   prevSelection: selectionsArg,
+                  aliasManager,
                 });
                 return createAccessor(schemaType, selection);
               }
@@ -156,6 +160,7 @@ export function createClient<GeneratedSchema = never>(
                   key,
                   prevSelection: selectionsArg,
                   isArray,
+                  aliasManager,
                 });
 
                 const resolve = (): unknown => {
@@ -223,6 +228,7 @@ export function createClient<GeneratedSchema = never>(
           if (value) {
             const selection = new Selection({
               key,
+              aliasManager,
             });
 
             return createAccessor(value, selection);
