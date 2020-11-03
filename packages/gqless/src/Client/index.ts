@@ -1,8 +1,8 @@
 import { CacheNotFound, createCache } from "../Cache";
+import { Interceptor } from "../Interceptor";
 import { buildQuery } from "../QueryBuilder";
 import { Selection } from "../Selection/selection";
 import { QueryFetcher, ScalarsHash, Schema } from "../types";
-import { deferredPromise } from "../Utils/promise";
 
 const ProxySymbol = Symbol("gqless-proxy");
 
@@ -14,95 +14,61 @@ export function createClient<GeneratedSchema = never>(
   const ProxyCache = new WeakMap<Selection, object>();
   const ProxyCacheReverse = new WeakMap<object, Selection>();
 
-  const ProxyResolvePromises = new WeakMap<object, Promise<void>>();
+  const interceptors = new Set<Interceptor>();
 
-  const globalSelections = new Set<Selection>();
-  const client: GeneratedSchema = createSchemaProxy();
+  const globalInterceptor = new Interceptor();
+  interceptors.add(globalInterceptor);
+
+  const client: GeneratedSchema = createSchemaAccesor();
   const { getCacheFromSelection, mergeCache } = createCache();
 
-  function resolve(proxy: object): Promise<void> {
-    return (
-      ProxyResolvePromises.get(proxy) ||
-      (() => {
-        const proxySelection = ProxyCacheReverse.get(proxy);
-        if (!proxySelection) throw Error("Couldn't find any selection with the proxy");
+  async function resolved<T = unknown>(dataFn: () => T): Promise<T> {
+    const interceptor = new Interceptor();
+    interceptors.add(interceptor);
 
-        const selections = [...globalSelections].filter((selection) => {
-          return selection.selections.has(selection);
-        });
+    const data = dataFn();
 
-        if (selections.length === 0) {
-          console.warn("No selections made");
-          return Promise.resolve();
-        }
+    if (interceptor.selections.size === 0) {
+      return data;
+    }
 
-        return resolveSelections(selections);
-      })()
-    );
+    await resolveSelections(interceptor.selections);
+
+    interceptors.delete(interceptor);
+
+    return dataFn();
   }
 
   async function resolveSelections(selections: Selection[] | Set<Selection>) {
-    const { reject, resolve, promise } = deferredPromise();
-    for (const selection of selections) {
-      const proxySelection = ProxyCache.get(selection);
-      if (proxySelection) {
-        ProxyResolvePromises.set(selection, promise);
+    const { query, variables } = buildQuery(selections);
+
+    const { data, errors } = await queryFetcher(query, variables);
+
+    if (data) {
+      mergeCache(data);
+
+      for (const interceptor of interceptors) {
+        interceptor.removeSelections(selections);
       }
     }
 
-    try {
-      const { query, variables } = buildQuery(selections);
+    if (errors) {
+      console.error(errors);
+      const err = Error("Errors in resolve");
 
-      const { data, errors } = await queryFetcher(query, variables);
-
-      if (data) {
-        mergeCache(data);
-
-        for (const selection of selections) {
-          globalSelections.delete(selection);
-        }
+      if (Error.captureStackTrace) {
+        Error.captureStackTrace(err, resolveAllSelections);
       }
 
-      if (errors) {
-        console.error(errors);
-        const err = Error("Errors in resolve");
-
-        if (Error.captureStackTrace) {
-          Error.captureStackTrace(err, resolveAllSelections);
-        }
-
-        throw err;
-      }
-
-      resolve();
-    } catch (err) {
-      reject(err);
       throw err;
     }
   }
 
-  async function resolveAllSelections() {
-    const selections = [...globalSelections];
-    const { reject, resolve, promise } = deferredPromise();
-    for (const selection of selections) {
-      const proxySelection = ProxyCache.get(selection);
-      if (proxySelection) {
-        ProxyResolvePromises.set(selection, promise);
-      }
-    }
-
-    try {
-      await resolveSelections(selections);
-
-      resolve();
-    } catch (err) {
-      reject(err);
-      throw err;
-    }
+  function resolveAllSelections() {
+    return resolveSelections(globalInterceptor.selections);
   }
 
-  // TODO: Refetch behavior
-  function createArrayTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
+  function createArrayAccessor(schemaType: Schema[string], selectionsArg: Selection) {
     const arrayCacheValue = getCacheFromSelection(selectionsArg);
     if (arrayCacheValue === null) return null;
 
@@ -125,7 +91,7 @@ export function createClient<GeneratedSchema = never>(
                   key: index,
                   prevSelection: selectionsArg,
                 });
-                return createTypeProxy(schemaType, selection);
+                return createAccessor(schemaType, selection);
               }
               return Reflect.get(target, key, receiver);
             },
@@ -139,8 +105,7 @@ export function createClient<GeneratedSchema = never>(
     return proxy;
   }
 
-  // TODO: Refetch behavior
-  function createTypeProxy(schemaType: Schema[string], selectionsArg: Selection) {
+  function createAccessor(schemaType: Schema[string], selectionsArg: Selection) {
     const cacheValue = getCacheFromSelection(selectionsArg);
     if (cacheValue === null) return null;
 
@@ -198,7 +163,9 @@ export function createClient<GeneratedSchema = never>(
                     const cacheValue = getCacheFromSelection(selection);
 
                     if (cacheValue === CacheNotFound) {
-                      globalSelections.add(selection);
+                      for (const interceptor of interceptors) {
+                        interceptor.addSelection(selection);
+                      }
 
                       return null;
                     }
@@ -209,9 +176,9 @@ export function createClient<GeneratedSchema = never>(
                   const typeValue = schema[pureType];
                   if (typeValue) {
                     if (isArray) {
-                      return createArrayTypeProxy(typeValue, selection);
+                      return createArrayAccessor(typeValue, selection);
                     }
-                    return createTypeProxy(typeValue, selection);
+                    return createAccessor(typeValue, selection);
                   }
 
                   throw Error("97 Not found!");
@@ -242,7 +209,7 @@ export function createClient<GeneratedSchema = never>(
     return proxy;
   }
 
-  function createSchemaProxy() {
+  function createSchemaAccesor() {
     return new Proxy(
       Object.fromEntries(
         Object.keys(schema).map((key) => {
@@ -258,7 +225,7 @@ export function createClient<GeneratedSchema = never>(
               key,
             });
 
-            return createTypeProxy(value, selection);
+            return createAccessor(value, selection);
           }
           throw Error("104. Not found");
         },
@@ -268,8 +235,7 @@ export function createClient<GeneratedSchema = never>(
 
   return {
     client,
-    globalSelections,
     resolveAllSelections,
-    resolve,
+    resolved,
   };
 }
