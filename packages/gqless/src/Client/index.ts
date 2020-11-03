@@ -116,6 +116,7 @@ export function createClient<GeneratedSchema = never>(
             });
             return createAccessor(schemaType, selection);
           }
+
           return Reflect.get(target, key, receiver);
         },
       }
@@ -136,72 +137,65 @@ export function createClient<GeneratedSchema = never>(
         get(target, key: string, receiver) {
           if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
 
-          const value = schemaType[key];
-          if (value) {
-            const { __type, __args } = value;
+          const { __type, __args } = schemaType[key];
+          const { pureType, isArray } = parseSchemaType(__type);
 
-            const { pureType, isArray } = parseSchemaType(__type);
+          const resolve = (args?: {
+            argValues: Record<string, unknown>;
+            argTypes: Record<string, string>;
+          }): unknown => {
+            const selection = new Selection({
+              key,
+              prevSelection: selectionsArg,
+              isArray,
+              aliasManager,
+              args: args != null ? args.argValues : undefined,
+              argTypes: args != null ? args.argTypes : undefined,
+            });
 
-            const resolve = (args?: {
-              argValues: Record<string, unknown>;
-              argTypes: Record<string, string>;
-            }): unknown => {
-              const selection = new Selection({
-                key,
-                prevSelection: selectionsArg,
-                isArray,
-                aliasManager,
-                args: args != null ? args.argValues : undefined,
-                argTypes: args != null ? args.argTypes : undefined,
-              });
+            if (scalars[pureType]) {
+              const cacheValue = getCacheFromSelection(selection);
 
-              if (scalars[pureType]) {
-                const cacheValue = getCacheFromSelection(selection);
-
-                if (cacheValue === CacheNotFound) {
-                  // If cache was not found, add the selections to the queue
-                  for (const interceptor of interceptors) {
-                    interceptor.addSelection(selection);
-                  }
-
-                  return null;
+              if (cacheValue === CacheNotFound) {
+                // If cache was not found, add the selections to the queue
+                for (const interceptor of interceptors) {
+                  interceptor.addSelection(selection);
                 }
 
-                if (!allowCache) {
-                  // Or if you are making the network fetch always
-                  for (const interceptor of interceptors) {
-                    interceptor.addSelection(selection);
-                  }
-                }
-
-                return cacheValue;
+                return null;
               }
 
-              const typeValue = schema[pureType];
-              if (typeValue) {
-                if (isArray) {
-                  return createArrayAccessor(typeValue, selection);
+              if (!allowCache) {
+                // Or if you are making the network fetch always
+                for (const interceptor of interceptors) {
+                  interceptor.addSelection(selection);
                 }
-                return createAccessor(typeValue, selection);
               }
 
-              throw Error("97 Not found!");
-            };
-
-            if (__args) {
-              return (argValues: Record<string, unknown> = {}) => {
-                return resolve({
-                  argValues,
-                  argTypes: __args,
-                });
-              };
+              return cacheValue;
             }
 
-            return resolve();
-          }
-          console.error("Not found", key);
+            const typeValue = schema[pureType];
+            if (typeValue) {
+              if (isArray) {
+                return createArrayAccessor(typeValue, selection);
+              }
+              return createAccessor(typeValue, selection);
+            }
 
-          throw Error(`83. Not found`);
+            throw Error("Not found!");
+          };
+
+          if (__args) {
+            return (argValues: Record<string, unknown> = {}) => {
+              return resolve({
+                argValues,
+                argTypes: __args,
+              });
+            };
+          }
+
+          return resolve();
         },
       }
     );
@@ -215,7 +209,7 @@ export function createClient<GeneratedSchema = never>(
         })
       ) as Record<string, unknown>,
       {
-        get(_target, key: string, _receiver) {
+        get(target, key: string, receiver) {
           const value = schema[key];
 
           if (value) {
@@ -226,7 +220,8 @@ export function createClient<GeneratedSchema = never>(
 
             return createAccessor(value, selection);
           }
-          throw Error("104. Not found");
+
+          return Reflect.get(target, key, receiver);
         },
       }
     ) as GeneratedSchema;
