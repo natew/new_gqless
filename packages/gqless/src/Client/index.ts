@@ -25,21 +25,40 @@ export function createClient<GeneratedSchema = never>(
   const client: GeneratedSchema = createSchemaAccesor();
   const { getCacheFromSelection, mergeCache } = createCache();
 
-  async function resolved<T = unknown>(dataFn: () => T): Promise<T> {
+  let allowCache = true;
+
+  async function resolved<T = unknown>(
+    dataFn: () => T,
+    {
+      refetch,
+    }: {
+      refetch?: boolean;
+    } = {}
+  ): Promise<T> {
     const interceptor = new Interceptor();
     interceptors.add(interceptor);
-
-    const data = dataFn();
-
-    if (interceptor.selections.size === 0) {
-      return data;
+    const prevIgnoreCache = allowCache;
+    if (refetch) {
+      allowCache = false;
     }
+    try {
+      const data = dataFn();
 
-    await resolveSelections(interceptor.selections);
+      if (interceptor.selections.size === 0) {
+        return data;
+      }
 
-    interceptors.delete(interceptor);
+      allowCache = prevIgnoreCache;
 
-    return dataFn();
+      await resolveSelections(interceptor.selections);
+
+      allowCache = true;
+
+      return dataFn();
+    } finally {
+      interceptors.delete(interceptor);
+      allowCache = prevIgnoreCache;
+    }
   }
 
   async function resolveSelections(selections: Selection[] | Set<Selection>) {
@@ -73,7 +92,7 @@ export function createClient<GeneratedSchema = never>(
 
   function createArrayAccessor(schemaType: Schema[string], selectionsArg: Selection) {
     const arrayCacheValue = getCacheFromSelection(selectionsArg);
-    if (arrayCacheValue === null) return null;
+    if (allowCache && arrayCacheValue === null) return null;
 
     const proxy =
       ProxyCache.get(selectionsArg) ||
@@ -85,8 +104,14 @@ export function createClient<GeneratedSchema = never>(
               const index = parseInt(key);
 
               if (Number.isInteger(index)) {
-                if (arrayCacheValue !== CacheNotFound && arrayCacheValue[index] == null) {
-                  // if arrayCacheValue[index] is 'null' or 'undefined'
+                if (
+                  allowCache &&
+                  arrayCacheValue !== CacheNotFound &&
+                  arrayCacheValue[index] == null
+                ) {
+                  /**
+                   * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
+                   */
                   return arrayCacheValue[index];
                 }
 
@@ -111,7 +136,7 @@ export function createClient<GeneratedSchema = never>(
 
   function createAccessor(schemaType: Schema[string], selectionsArg: Selection) {
     const cacheValue = getCacheFromSelection(selectionsArg);
-    if (cacheValue === null) return null;
+    if (allowCache && cacheValue === null) return null;
 
     const proxy =
       ProxyCache.get(selectionsArg) ||
@@ -168,11 +193,19 @@ export function createClient<GeneratedSchema = never>(
                     const cacheValue = getCacheFromSelection(selection);
 
                     if (cacheValue === CacheNotFound) {
+                      // If cache was not found, add the selections to the queue
                       for (const interceptor of interceptors) {
                         interceptor.addSelection(selection);
                       }
 
                       return null;
+                    }
+
+                    if (!allowCache) {
+                      // Or if you are making the network fetch always
+                      for (const interceptor of interceptors) {
+                        interceptor.addSelection(selection);
+                      }
                     }
 
                     return cacheValue;

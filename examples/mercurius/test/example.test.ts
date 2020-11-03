@@ -115,3 +115,31 @@ tap
       t.done();
     });
   });
+
+tap.test("refetch works", async (t) => {
+  const firstHumanName = await resolved(
+    () => {
+      return generatedClient.query.object.name;
+    },
+    {
+      refetch: true,
+    }
+  );
+
+  t.assert(firstHumanName.length > 20);
+
+  const secondHumanName = await resolved(
+    () => {
+      return generatedClient.query.object.name;
+    },
+    {
+      refetch: true,
+    }
+  );
+
+  t.assert(secondHumanName.length > 20);
+
+  t.assert(firstHumanName !== secondHumanName, "Both names are different");
+
+  t.done();
+});
