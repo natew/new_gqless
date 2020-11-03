@@ -103,12 +103,11 @@ tap
   })
   .then(() => {
     tap.test("args", async (t) => {
-      const name = await resolved(
-        () =>
-          generatedClient.query.objectWithArgs({
-            who: "asd",
-          }).name
-      );
+      const name = await resolved(() => {
+        return generatedClient.query.objectWithArgs({
+          who: "asd",
+        }).name;
+      });
 
       t.equal(name, "asd");
 
@@ -117,14 +116,9 @@ tap
   });
 
 tap.test("refetch works", async (t) => {
-  const firstHumanName = await resolved(
-    () => {
-      return generatedClient.query.object.name;
-    },
-    {
-      refetch: true,
-    }
-  );
+  const firstHumanName = await resolved(() => {
+    return generatedClient.query.object.name;
+  });
 
   t.assert(firstHumanName.length > 20);
 
