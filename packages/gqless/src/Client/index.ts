@@ -3,7 +3,7 @@ import { Interceptor } from "../Interceptor";
 import { buildQuery } from "../QueryBuilder";
 import { AliasManager } from "../Selection/AliasManager";
 import { Selection } from "../Selection/selection";
-import { QueryFetcher, ScalarsHash, Schema } from "../types";
+import { parseSchemaType, QueryFetcher, ScalarsHash, Schema } from "../Schema/types";
 
 const ProxySymbol = Symbol("gqless-proxy");
 
@@ -13,8 +13,6 @@ export function createClient<GeneratedSchema = never>(
   queryFetcher: QueryFetcher
 ) {
   const aliasManager = new AliasManager();
-
-  const ProxyCache = new WeakMap<Selection, object>();
 
   const interceptors = new Set<Interceptor>();
 
@@ -97,153 +95,116 @@ export function createClient<GeneratedSchema = never>(
     const arrayCacheValue = getCacheFromSelection(selectionsArg);
     if (allowCache && arrayCacheValue === null) return null;
 
-    let proxy = ProxyCache.get(selectionsArg);
+    return new Proxy(
+      arrayCacheValue === CacheNotFound ? [ProxySymbol] : (arrayCacheValue as unknown[]),
+      {
+        get(target, key: string, receiver) {
+          const index = parseInt(key);
 
-    if (!proxy) {
-      proxy = new Proxy(
-        arrayCacheValue === CacheNotFound ? [ProxySymbol] : (arrayCacheValue as unknown[]),
-        {
-          get(target, key: string, receiver) {
-            const index = parseInt(key);
-
-            if (Number.isInteger(index)) {
-              if (
-                allowCache &&
-                arrayCacheValue !== CacheNotFound &&
-                arrayCacheValue[index] == null
-              ) {
-                /**
-                 * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
-                 */
-                return arrayCacheValue[index];
-              }
-
-              const selection = new Selection({
-                key: index,
-                prevSelection: selectionsArg,
-                aliasManager,
-              });
-              return createAccessor(schemaType, selection);
+          if (Number.isInteger(index)) {
+            if (allowCache && arrayCacheValue !== CacheNotFound && arrayCacheValue[index] == null) {
+              /**
+               * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
+               */
+              return arrayCacheValue[index];
             }
-            return Reflect.get(target, key, receiver);
-          },
-        }
-      );
 
-      ProxyCache.set(selectionsArg, proxy);
-    }
-    return proxy;
+            const selection = new Selection({
+              key: index,
+              prevSelection: selectionsArg,
+              aliasManager,
+            });
+            return createAccessor(schemaType, selection);
+          }
+          return Reflect.get(target, key, receiver);
+        },
+      }
+    );
   }
 
   function createAccessor(schemaType: Schema[string], selectionsArg: Selection) {
     const cacheValue = getCacheFromSelection(selectionsArg);
     if (allowCache && cacheValue === null) return null;
 
-    let proxy = ProxyCache.get(selectionsArg);
+    return new Proxy(
+      Object.fromEntries(
+        Object.keys(schemaType).map((key) => {
+          return [key, ProxySymbol];
+        })
+      ) as Record<string, unknown>,
+      {
+        get(target, key: string, receiver) {
+          if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
 
-    if (!proxy) {
-      proxy = new Proxy(
-        Object.fromEntries(
-          Object.keys(schemaType).map((key) => {
-            return [key, ProxySymbol];
-          })
-        ) as Record<string, unknown>,
-        {
-          get(target, key: string, receiver) {
-            if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
+          const value = schemaType[key];
+          if (value) {
+            const { __type, __args } = value;
 
-            const value = schemaType[key];
-            if (value) {
-              const { __type, __args } = value;
+            const { pureType, isArray } = parseSchemaType(__type);
 
-              const { pureType, isArray } = (() => {
-                let isNullable = true;
-                let nullableItems = true;
-                let isArray = false;
-                let pureType = __type;
-                if (__type.endsWith("!")) {
-                  isNullable = false;
-                  pureType = __type.slice(0, __type.length - 1);
-                }
-                if (pureType.startsWith("[")) {
-                  pureType = pureType.slice(1, pureType.length - 1);
-                  isArray = true;
-                  if (pureType.endsWith("!")) {
-                    nullableItems = false;
-                    pureType = pureType.slice(0, pureType.length - 1);
-                  }
-                }
-
-                return {
-                  pureType,
-                  isNullable,
-                  nullableItems,
-                  isArray,
-                };
-              })();
-
+            const resolve = (args?: {
+              argValues: Record<string, unknown>;
+              argTypes: Record<string, string>;
+            }): unknown => {
               const selection = new Selection({
                 key,
                 prevSelection: selectionsArg,
                 isArray,
                 aliasManager,
+                args: args != null ? args.argValues : undefined,
+                argTypes: args != null ? args.argTypes : undefined,
               });
 
-              const resolve = (): unknown => {
-                if (scalars[pureType]) {
-                  const cacheValue = getCacheFromSelection(selection);
+              if (scalars[pureType]) {
+                const cacheValue = getCacheFromSelection(selection);
 
-                  if (cacheValue === CacheNotFound) {
-                    // If cache was not found, add the selections to the queue
-                    for (const interceptor of interceptors) {
-                      interceptor.addSelection(selection);
-                    }
-
-                    return null;
+                if (cacheValue === CacheNotFound) {
+                  // If cache was not found, add the selections to the queue
+                  for (const interceptor of interceptors) {
+                    interceptor.addSelection(selection);
                   }
 
-                  if (!allowCache) {
-                    // Or if you are making the network fetch always
-                    for (const interceptor of interceptors) {
-                      interceptor.addSelection(selection);
-                    }
-                  }
-
-                  return cacheValue;
+                  return null;
                 }
 
-                const typeValue = schema[pureType];
-                if (typeValue) {
-                  if (isArray) {
-                    return createArrayAccessor(typeValue, selection);
+                if (!allowCache) {
+                  // Or if you are making the network fetch always
+                  for (const interceptor of interceptors) {
+                    interceptor.addSelection(selection);
                   }
-                  return createAccessor(typeValue, selection);
                 }
 
-                throw Error("97 Not found!");
-              };
-
-              if (__args) {
-                return (args: typeof __args) => {
-                  selection.args = args;
-                  selection.argTypes = __args;
-
-                  return resolve();
-                };
+                return cacheValue;
               }
 
-              return resolve();
+              const typeValue = schema[pureType];
+              if (typeValue) {
+                if (isArray) {
+                  return createArrayAccessor(typeValue, selection);
+                }
+                return createAccessor(typeValue, selection);
+              }
+
+              throw Error("97 Not found!");
+            };
+
+            if (__args) {
+              return (argValues: Record<string, unknown> = {}) => {
+                return resolve({
+                  argValues,
+                  argTypes: __args,
+                });
+              };
             }
-            console.error("Not found", key);
 
-            throw Error(`83. Not found`);
-          },
-        }
-      );
-      ProxyCache.set(selectionsArg, proxy);
-    }
+            return resolve();
+          }
+          console.error("Not found", key);
 
-    return proxy;
+          throw Error(`83. Not found`);
+        },
+      }
+    );
   }
 
   function createSchemaAccesor() {

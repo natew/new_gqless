@@ -14,6 +14,7 @@ export class Selection {
     key,
     prevSelection,
     args,
+    argTypes,
     isArray = false,
     aliasManager,
   }: {
@@ -26,7 +27,7 @@ export class Selection {
   }) {
     this.key = key;
     this.args = args;
-    this.argTypes = this.argTypes;
+    this.argTypes = argTypes;
     this.isArray = isArray;
     this.aliasManager = aliasManager;
 
