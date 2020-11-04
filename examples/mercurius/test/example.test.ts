@@ -137,3 +137,46 @@ tap.test("refetch works", async (t) => {
 
   t.done();
 });
+
+tap.test("scheduler", async (t) => {
+  const hello = "zxczxc";
+  const shoudBeNull = generatedClient.query.stringWithArgs({
+    hello,
+  });
+
+  t.equal(shoudBeNull, null);
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const shouldBeString = generatedClient.query.stringWithArgs({
+    hello,
+  });
+
+  t.equal(shouldBeString, hello);
+
+  t.done();
+});
+
+tap.test("resolved no cache", async (t) => {
+  const hello = "asdasd";
+  const helloQueryString = await resolved(
+    () => {
+      return generatedClient.query.stringWithArgs({
+        hello,
+      });
+    },
+    {
+      noCache: true,
+    }
+  );
+
+  t.equal(helloQueryString, hello);
+
+  const shouldBeNull = generatedClient.query.stringWithArgs({
+    hello,
+  });
+
+  t.equal(shouldBeNull, null);
+
+  t.done();
+});

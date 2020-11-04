@@ -1,9 +1,10 @@
 import { CacheNotFound, createCache } from "../Cache";
-import { Interceptor } from "../Interceptor";
+import { InterceptorManager } from "../Interceptor";
 import { buildQuery } from "../QueryBuilder";
+import { Scheduler } from "../Scheduler";
+import { parseSchemaType, QueryFetcher, ScalarsHash, Schema } from "../Schema/types";
 import { AliasManager } from "../Selection/AliasManager";
 import { Selection } from "../Selection/selection";
-import { parseSchemaType, QueryFetcher, ScalarsHash, Schema } from "../Schema/types";
 
 const ProxySymbol = Symbol("gqless-proxy");
 
@@ -14,74 +15,14 @@ export function createClient<GeneratedSchema = never>(
 ) {
   const aliasManager = new AliasManager();
 
-  const interceptors = new Set<Interceptor>();
+  const interceptorManager = new InterceptorManager();
 
-  const globalInterceptor = new Interceptor();
-  interceptors.add(globalInterceptor);
+  const globalInterceptor = interceptorManager.globalInterceptor;
 
   const client: GeneratedSchema = createSchemaAccesor();
-  const { getCacheFromSelection, mergeCache } = createCache();
+  let clientCache = createCache();
 
   let allowCache = true;
-
-  async function resolved<T = unknown>(
-    dataFn: () => T,
-    {
-      refetch,
-    }: {
-      refetch?: boolean;
-    } = {}
-  ): Promise<T> {
-    const interceptor = new Interceptor();
-    interceptors.add(interceptor);
-    const prevIgnoreCache = allowCache;
-    if (refetch) {
-      allowCache = false;
-    }
-    try {
-      const data = dataFn();
-
-      if (interceptor.selections.size === 0) {
-        return data;
-      }
-
-      allowCache = prevIgnoreCache;
-
-      await resolveSelections(interceptor.selections);
-
-      allowCache = true;
-
-      return dataFn();
-    } finally {
-      interceptors.delete(interceptor);
-      allowCache = prevIgnoreCache;
-    }
-  }
-
-  async function resolveSelections(selections: Selection[] | Set<Selection>) {
-    const { query, variables } = buildQuery(selections);
-
-    const { data, errors } = await queryFetcher(query, variables);
-
-    if (data) {
-      mergeCache(data);
-
-      for (const interceptor of interceptors) {
-        interceptor.removeSelections(selections);
-      }
-    }
-
-    if (errors) {
-      console.error(errors);
-      const err = Error("Errors in resolve");
-
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(err, resolveAllSelections);
-      }
-
-      throw err;
-    }
-  }
 
   function resolveAllSelections() {
     if (globalInterceptor.selections.size) {
@@ -91,8 +32,90 @@ export function createClient<GeneratedSchema = never>(
     return Promise.resolve();
   }
 
+  new Scheduler(interceptorManager, resolveAllSelections);
+
+  async function resolved<T = unknown>(
+    dataFn: () => T,
+    {
+      refetch,
+      noCache,
+    }: {
+      refetch?: boolean;
+      noCache?: boolean;
+    } = {}
+  ): Promise<T> {
+    globalInterceptor.listening = false;
+    const interceptor = interceptorManager.createInterceptor();
+
+    const prevIgnoreCache = allowCache;
+    if (refetch) {
+      allowCache = false;
+    }
+    const globalCache = clientCache;
+    let tempCache: typeof clientCache | undefined;
+    if (noCache) {
+      clientCache = tempCache = createCache();
+    }
+    try {
+      const data = dataFn();
+
+      if (interceptor.selections.size === 0) {
+        return data;
+      }
+
+      allowCache = prevIgnoreCache;
+      clientCache = globalCache;
+      globalInterceptor.listening = true;
+
+      await resolveSelections(interceptor.selections, tempCache || clientCache);
+
+      allowCache = true;
+      globalInterceptor.listening = false;
+
+      if (tempCache) {
+        clientCache = tempCache;
+      }
+
+      return dataFn();
+    } finally {
+      interceptorManager.removeInterceptor(interceptor);
+
+      allowCache = prevIgnoreCache;
+      clientCache = globalCache;
+      globalInterceptor.listening = true;
+    }
+  }
+
+  async function resolveSelections(
+    selections: Selection[] | Set<Selection>,
+    cache: typeof clientCache = clientCache
+  ) {
+    try {
+      const { query, variables } = buildQuery(selections);
+
+      const { data, errors } = await queryFetcher(query, variables);
+
+      if (data) {
+        cache.mergeCache(data);
+      }
+
+      if (errors) {
+        console.error(errors);
+        const err = Error("Errors in resolve");
+
+        if (Error.captureStackTrace) {
+          Error.captureStackTrace(err, resolveAllSelections);
+        }
+
+        throw err;
+      }
+    } finally {
+      interceptorManager.removeSelections(selections);
+    }
+  }
+
   function createArrayAccessor(schemaType: Schema[string], selectionsArg: Selection) {
-    const arrayCacheValue = getCacheFromSelection(selectionsArg);
+    const arrayCacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && arrayCacheValue === null) return null;
 
     return new Proxy(
@@ -124,7 +147,7 @@ export function createClient<GeneratedSchema = never>(
   }
 
   function createAccessor(schemaType: Schema[string], selectionsArg: Selection) {
-    const cacheValue = getCacheFromSelection(selectionsArg);
+    const cacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && cacheValue === null) return null;
 
     return new Proxy(
@@ -154,22 +177,18 @@ export function createClient<GeneratedSchema = never>(
             });
 
             if (scalars[pureType]) {
-              const cacheValue = getCacheFromSelection(selection);
+              const cacheValue = clientCache.getCacheFromSelection(selection);
 
               if (cacheValue === CacheNotFound) {
                 // If cache was not found, add the selections to the queue
-                for (const interceptor of interceptors) {
-                  interceptor.addSelection(selection);
-                }
+                interceptorManager.addSelection(selection);
 
                 return null;
               }
 
               if (!allowCache) {
                 // Or if you are making the network fetch always
-                for (const interceptor of interceptors) {
-                  interceptor.addSelection(selection);
-                }
+                interceptorManager.addSelection(selection);
               }
 
               return cacheValue;
