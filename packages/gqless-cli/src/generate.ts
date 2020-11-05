@@ -51,6 +51,7 @@ export async function generate(
           declarationKind: 'interface',
           addUnderscoreToArgsType: true,
           scalars,
+          namingConvention: 'keep',
         },
       },
     ],
