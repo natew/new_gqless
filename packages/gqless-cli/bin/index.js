@@ -1,13 +1,9 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
-const { getRemoteSchema, generate } = require('../dist/index');
+const { getRemoteSchema, writeGenerate } = require('../dist/index');
 const fs = require('fs');
-const { resolve, dirname } = require('path');
-const { promisify } = require('util');
-const mkdirp = require('mkdirp');
-
-const writeFile = promisify(fs.writeFile);
+const { resolve } = require('path');
 
 program.version('1.0.0').description('CLI for gqless');
 
@@ -30,13 +26,7 @@ program
 
       const schema = await getRemoteSchema(source);
 
-      const { code } = await generate(schema);
-
-      await mkdirp(dirname(destinationPath));
-
-      await writeFile(destinationPath, code, {
-        encoding: 'utf-8',
-      });
+      await writeGenerate(schema, destinationPath);
 
       console.log('Code generated successfully at ' + destinationPath);
       process.exit(0);

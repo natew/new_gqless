@@ -14,7 +14,25 @@ import { format, resolveConfig } from 'prettier';
 import { codegen } from '@graphql-codegen/core';
 import * as typescriptPlugin from '@graphql-codegen/typescript';
 
-export async function generate(schema: GraphQLSchema) {
+export type GenerateOptions = {
+  /**
+   * Overwrite the default 'queryFetcher'
+   */
+  queryFetcher?: string;
+  /**
+   * Add a custom string at the beginning of the file, for example, add imports.
+   */
+  preImport?: string;
+  /**
+   * Specify the types of custom scalars
+   */
+  scalars?: Record<string, string>;
+};
+
+export async function generate(
+  schema: GraphQLSchema,
+  { queryFetcher, preImport = '', scalars }: GenerateOptions = {}
+) {
   const prettierConfig = resolveConfig(process.cwd()).then((conf) => {
     return conf || {};
   });
@@ -32,6 +50,7 @@ export async function generate(schema: GraphQLSchema) {
           onlyOperationTypes: true,
           declarationKind: 'interface',
           addUnderscoreToArgsType: true,
+          scalars,
         },
       },
     ],
@@ -191,7 +210,9 @@ export async function generate(schema: GraphQLSchema) {
     }
     `;
 
-  const queryFetcher = `
+  queryFetcher =
+    queryFetcher ||
+    `
     const queryFetcher : QueryFetcher = async function (query, variables) {
         const response = await fetch("/graphql", {
           method: "POST",
@@ -217,6 +238,7 @@ export async function generate(schema: GraphQLSchema) {
 
   const code = format(
     `
+  ${preImport}
   import { createClient, QueryFetcher, ScalarsEnumsHash, Schema } from "gqless";
 
   ${await codegenResult}

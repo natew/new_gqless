@@ -17,6 +17,8 @@ export const newHuman = ({ name }: { name?: string } = {}) => {
 
 app.register(Mercurius, {
   schema: `
+    scalar ExampleScalar
+
     enum GreetingsEnum {
       Hello
       Hi
@@ -25,6 +27,7 @@ app.register(Mercurius, {
     input GreetingsInput {
       language: String!
       value: String
+      scal: ExampleScalar
     }
     type Query {
         simpleString: String!

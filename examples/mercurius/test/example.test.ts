@@ -1,14 +1,11 @@
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
-import tap from 'tap';
 
 import { app } from '../src';
 import { client as generatedClient, resolved } from '../src/generated';
 
 const testClient = createMercuriusTestClient(app);
 
-tap.test('works', async (t) => {
-  t.plan(2);
-
+test('works', async () => {
   await testClient
     .query(
       `
@@ -18,7 +15,7 @@ tap.test('works', async (t) => {
     `
     )
     .then((response) => {
-      t.type(response.data?.simpleString, 'string');
+      expect(typeof response.data?.simpleString).toBe('string');
     });
 
   await testClient
@@ -38,11 +35,11 @@ tap.test('works', async (t) => {
   `
     )
     .then((resp) => {
-      t.equals(resp.errors, undefined);
+      expect(resp.errors).toBe(undefined);
     });
 });
 
-tap.test('multiple args', async (t) => {
+test('multiple args', async () => {
   const response = await testClient.query(`
   query {
     a1: objectWithArgs(who: "hello") {
@@ -55,7 +52,7 @@ tap.test('multiple args', async (t) => {
   }
   `);
 
-  t.equivalent(response, {
+  expect(response).toEqual({
     data: {
       a1: {
         zxc: 'hello',
@@ -66,87 +63,77 @@ tap.test('multiple args', async (t) => {
       },
     },
   });
-
-  t.done();
 });
 
-tap
-  .test('generatedClient', async (t) => {
-    const anon = generatedClient.query.objectWithArgs({
-      who: 'anon',
-    });
-
-    const { name, fatherName } = await resolved(() => {
-      return {
-        name: anon.name,
-        fatherName: anon.father.father.name,
-      };
-    });
-
-    t.type(name, 'string');
-    t.type(fatherName, 'string');
-
-    t.type(anon.name, 'string');
-    t.type(anon.father.father.name, 'string');
-
-    const arrayDataAfterResolved = await resolved(() => {
-      return generatedClient.query.objectArray.map((v) => v.name);
-    });
-
-    t.assert(arrayDataAfterResolved.length > 0);
-    t.equals(
-      arrayDataAfterResolved.every(
-        (v) => typeof v === 'string' && v.length > 30
-      ),
-      true
-    );
-
-    t.done();
-  })
-  .then(() => {
-    tap.test('args', async (t) => {
-      const name = await resolved(() => {
-        return generatedClient.query.objectWithArgs({
-          who: 'asd',
-        }).name;
-      });
-
-      t.equal(name, 'asd');
-
-      t.done();
-    });
+test('generatedClient', async () => {
+  const anon = generatedClient.query.objectWithArgs({
+    who: 'anon',
   });
 
-tap.test('refetch works', async (t) => {
+  const { name, fatherName } = await resolved(() => {
+    return {
+      name: anon.name,
+      fatherName: anon.father.father.name,
+    };
+  });
+
+  expect(typeof name).toBe('string');
+
+  expect(typeof fatherName).toBe('string');
+
+  expect(typeof anon.name).toBe('string');
+
+  expect(typeof anon.father.father.name).toBe('string');
+
+  const arrayDataAfterResolved = await resolved(() => {
+    return generatedClient.query.objectArray?.map((v) => v?.name);
+  });
+
+  expect((arrayDataAfterResolved?.length ?? 0) > 0).toBeTruthy();
+
+  expect(
+    arrayDataAfterResolved?.every((v) => typeof v === 'string' && v.length > 30)
+  ).toBeTruthy();
+});
+
+test('args', async () => {
+  const name = await resolved(() => {
+    return generatedClient.query.objectWithArgs({
+      who: 'asd',
+    }).name;
+  });
+
+  expect(name).toBe('asd');
+});
+
+test('refetch works', async () => {
   const firstHumanName = await resolved(() => {
-    return generatedClient.query.object.name;
+    return generatedClient.query.object?.name;
   });
 
-  t.assert(firstHumanName.length > 20);
+  expect((firstHumanName?.length ?? 0) > 20).toBeTruthy();
 
   const secondHumanName = await resolved(
     () => {
-      return generatedClient.query.object.name;
+      return generatedClient.query.object?.name;
     },
     {
       refetch: true,
     }
   );
 
-  t.assert(secondHumanName.length > 20);
+  expect((secondHumanName?.length ?? 0) > 20).toBeTruthy();
 
-  t.assert(firstHumanName !== secondHumanName, 'Both names are different');
-
-  t.done();
+  expect(firstHumanName !== secondHumanName).toBeTruthy();
 });
 
-tap.test('scheduler', async (t) => {
+test('scheduler', async () => {
   const hello = 'zxczxc';
   const shoudBeNull = generatedClient.query.stringWithArgs({
     hello,
   });
 
-  t.equal(shoudBeNull, null);
+  expect(shoudBeNull).toBe(null);
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -154,12 +141,10 @@ tap.test('scheduler', async (t) => {
     hello,
   });
 
-  t.equal(shouldBeString, hello);
-
-  t.done();
+  expect(shouldBeString).toBe(hello);
 });
 
-tap.test('resolved no cache', async (t) => {
+test('resolved no cache', async () => {
   const hello = 'asdasd';
   const helloQueryString = await resolved(
     () => {
@@ -172,13 +157,11 @@ tap.test('resolved no cache', async (t) => {
     }
   );
 
-  t.equal(helloQueryString, hello);
+  expect(helloQueryString).toBe(hello);
 
   const shouldBeNull = generatedClient.query.stringWithArgs({
     hello,
   });
 
-  t.equal(shouldBeNull, null);
-
-  t.done();
+  expect(shouldBeNull).toBe(null);
 });

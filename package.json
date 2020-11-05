@@ -1,11 +1,12 @@
 {
   "name": "gqless_refactor",
+  "private": true,
   "license": "MIT",
   "scripts": {
     "build": "pnpm build -r --stream",
     "dev": "nodemon",
-    "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test --filter mercurius -r --no-bail --no-sort --stream",
-    "test": "pnpm test -r --no-sort --no-bail --stream"
+    "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test -r --no-bail --no-sort --stream",
+    "test": "pnpm test --filter=!gqless_refactor -r --no-sort --no-bail --stream -- --coverage"
   },
   "husky": {
     "hooks": {
