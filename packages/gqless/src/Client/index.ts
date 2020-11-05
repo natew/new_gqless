@@ -7,7 +7,7 @@ import { Scheduler } from '../Scheduler';
 import {
   parseSchemaType,
   QueryFetcher,
-  ScalarsHash,
+  ScalarsEnumsHash,
   Schema,
 } from '../Schema/types';
 import { AliasManager } from '../Selection/AliasManager';
@@ -17,7 +17,7 @@ const ProxySymbol = Symbol('gqless-proxy');
 
 export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
-  scalars: ScalarsHash,
+  scalarsEnumsHash: ScalarsEnumsHash,
   queryFetcher: QueryFetcher
 ) {
   const aliasManager = new AliasManager();
@@ -196,7 +196,7 @@ export function createClient<GeneratedSchema = never>(
               argTypes: args != null ? args.argTypes : undefined,
             });
 
-            if (scalars[pureType]) {
+            if (scalarsEnumsHash[pureType]) {
               const cacheValue = clientCache.getCacheFromSelection(selection);
 
               if (cacheValue === CacheNotFound) {

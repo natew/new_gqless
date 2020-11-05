@@ -16,7 +16,7 @@ export interface Scalars {
   ID: string;
 }
 
-export type ScalarsHash = Record<string, true>;
+export type ScalarsEnumsHash = Record<string, true>;
 
 export type QueryFetcher = (
   query: string,

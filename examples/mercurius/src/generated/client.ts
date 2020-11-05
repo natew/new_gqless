@@ -1,9 +1,9 @@
-import { createClient, QueryFetcher, Scalars, ScalarsHash } from 'gqless';
+import { createClient, QueryFetcher, Scalars, ScalarsEnumsHash } from 'gqless';
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 
 import { app } from '../';
 
-export const scalars: ScalarsHash = {
+export const scalars: ScalarsEnumsHash = {
   Int: true,
   String: true,
   ID: true,

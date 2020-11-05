@@ -17,6 +17,15 @@ export const newHuman = ({ name }: { name?: string } = {}) => {
 
 app.register(Mercurius, {
   schema: `
+    enum GreetingsEnum {
+      Hello
+      Hi
+      Hey
+    }
+    input GreetingsInput {
+      language: String!
+      value: String
+    }
     type Query {
         simpleString: String!
         stringWithArgs(hello: String!): String!
@@ -27,6 +36,8 @@ app.register(Mercurius, {
         objectWithArgs(who: String!): Human!
         arrayString: [String!]!
         arrayObjectArgs(limit: Int!): [Human!]!
+        greetings: GreetingsEnum!
+        giveGreetingsInput(input: GreetingsInput!): String!
     }
     type Human {
       name: String!
