@@ -95,6 +95,7 @@ importers:
       '@size-limit/preset-small-lib': 4.7.0_812c0496e6d364a880dd402ada412b59
       '@types/lodash': 4.14.164
       husky: 4.3.0
+      mercurius-example: 'link:../../examples/mercurius'
       size-limit: 4.7.0
       tsdx: 0.14.1
       tslib: 2.0.3
@@ -111,6 +112,7 @@ importers:
       husky: ^4.3.0
       lodash: ^4.17.20
       lodash-es: ^4.17.15
+      mercurius-example: 'workspace:^1.0.0'
       prettier: ^2.1.2
       regenerator-runtime: ^0.13.7
       size-limit: ^4.7.0

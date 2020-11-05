@@ -41,6 +41,7 @@
     "@size-limit/preset-small-lib": "^4.7.0",
     "@types/lodash": "^4.14.164",
     "husky": "^4.3.0",
+    "mercurius-example": "workspace:^1.0.0",
     "size-limit": "^4.7.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.0.3",
