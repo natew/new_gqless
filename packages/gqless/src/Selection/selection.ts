@@ -41,11 +41,11 @@ export class Selection {
     }
   }
 
-  public get selectionsWithoutArrayIndex() {
-    return [...this.selections].filter((v) => typeof v.key === "string");
+  get selectionsWithoutArrayIndex() {
+    return Array.from(this.selections).filter((v) => typeof v.key === "string");
   }
 
-  public get path() {
+  get path() {
     const path: (string | number)[] = [];
 
     for (const selection of this.selections) {
