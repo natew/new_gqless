@@ -8,18 +8,43 @@ import { writeGenerate } from './writeGenerate';
 export async function inspectWriteGenerate({
   endpoint,
   overwrite,
-  destination = './graphql/generated/index.ts',
+  destination = './src/generated/index.ts',
   generateOptions,
   cli,
+  headers,
 }: {
+  /**
+   * GraphQL API endpoint
+   *
+   * @example 'http://localhost:3000/graphql'
+   */
   endpoint: string;
+  /**
+   * Whether the generation should overwrite if file already exists
+   */
   overwrite?: boolean;
+  /**
+   * File path destination
+   * @default './src/generated/index.ts'
+   */
   destination?: string;
+  /**
+   * Specify generate options
+   */
   generateOptions?: GenerateOptions;
+  /**
+   * Whether it's being called through the CLI
+   */
   cli?: boolean;
+  /**
+   * Specify headers for the introspection HTTP request
+   */
+  headers?: Record<string, string>;
 }) {
   destination = resolve(destination);
-  const schema = await getRemoteSchema(endpoint);
+  const schema = await getRemoteSchema(endpoint, {
+    headers,
+  });
 
   if (!overwrite && existsSync(destination)) {
     const err = Error(
