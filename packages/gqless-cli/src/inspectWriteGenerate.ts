@@ -1,8 +1,9 @@
-import { GenerateOptions } from 'gqless-cli/src/generate';
-import { getRemoteSchema } from './introspection';
-import { writeGenerate } from './writeGenerate';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
+
+import { GenerateOptions } from './generate';
+import { getRemoteSchema } from './introspection';
+import { writeGenerate } from './writeGenerate';
 
 export async function inspectWriteGenerate({
   endpoint,
