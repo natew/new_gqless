@@ -1,7 +1,12 @@
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 import { app } from '../';
 
-import { createClient, QueryFetcher, ScalarsEnumsHash, Schema } from 'gqless';
+import {
+  createClient,
+  QueryFetcher,
+  ScalarsEnumsHash,
+  Schema,
+} from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {

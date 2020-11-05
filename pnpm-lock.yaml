@@ -11,9 +11,9 @@ importers:
       pretty-quick: ^3.1.0
   examples/mercurius:
     dependencies:
+      '@dish/gqless': 'link:../../packages/gqless'
+      '@dish/gqless-cli': 'link:../../packages/gqless-cli'
       fastify: 3.7.0
-      gqless: 'link:../../packages/gqless'
-      gqless-cli: 'link:../../packages/gqless-cli'
       graphql: 15.4.0
       lodash: 4.17.20
       mercurius: 6.4.0
@@ -29,12 +29,12 @@ importers:
       tslib: 2.0.3
       typescript: 4.0.5
     specifiers:
+      '@dish/gqless': 'workspace:^1.0.0'
+      '@dish/gqless-cli': 'workspace:^0.1.0'
       '@size-limit/preset-small-lib': ^4.7.0
       '@types/lodash': ^4.14.165
       '@types/randomstring': ^1.1.6
       fastify: ^3.7.0
-      gqless: 'workspace:^1.0.0'
-      gqless-cli: 'workspace:^0.1.0'
       graphql: ^15.4.0
       husky: ^4.3.0
       lodash: ^4.17.20
@@ -87,13 +87,13 @@ importers:
       typescript: ^4.0.5
   packages/gqless-cli:
     dependencies:
+      '@dish/gqless': 'link:../gqless'
       '@graphql-codegen/core': 1.17.8_graphql@15.4.0
       '@graphql-codegen/typescript': 1.17.11_graphql@15.4.0
       '@graphql-tools/delegate': 7.0.4_graphql@15.4.0
       '@graphql-tools/wrap': 7.0.1_graphql@15.4.0
       commander: 6.2.0
       cross-fetch: 3.0.6
-      gqless: 'link:../gqless'
       graphql: 15.4.0
       lodash: 4.17.20
       lodash-es: 4.17.15
@@ -111,6 +111,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.0.5
     specifiers:
+      '@dish/gqless': 'workspace:^1.0.0'
       '@graphql-codegen/core': ^1.17.8
       '@graphql-codegen/typescript': ^1.17.11
       '@graphql-tools/delegate': ^7.0.4
@@ -120,7 +121,6 @@ importers:
       '@types/mkdirp': ^1.0.1
       commander: ^6.2.0
       cross-fetch: ^3.0.6
-      gqless: 'workspace:^1.0.0'
       graphql: ^15.4.0
       husky: ^4.3.0
       lodash: ^4.17.20
@@ -135,7 +135,7 @@ importers:
       typescript: ^4.0.5
   packages/gqless-react:
     dependencies:
-      gqless: 'link:../gqless'
+      '@dish/gqless': 'link:../gqless'
     devDependencies:
       '@size-limit/preset-small-lib': 4.7.0_812c0496e6d364a880dd402ada412b59
       '@types/react': 16.9.55
@@ -149,10 +149,10 @@ importers:
       tslib: 2.0.3
       typescript: 4.0.5
     specifiers:
+      '@dish/gqless': 'workspace:*'
       '@size-limit/preset-small-lib': ^4.7.0
       '@types/react': ^16.9.55
       '@types/react-dom': ^16.9.9
-      gqless: 'workspace:*'
       husky: ^4.3.0
       react: ^17.0.1
       react-dom: ^17.0.1

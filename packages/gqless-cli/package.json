@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",
@@ -26,13 +26,13 @@
     }
   },
   "dependencies": {
+    "@dish/gqless": "workspace:^1.0.0",
     "@graphql-codegen/core": "^1.17.8",
     "@graphql-codegen/typescript": "^1.17.11",
     "@graphql-tools/delegate": "^7.0.4",
     "@graphql-tools/wrap": "^7.0.1",
     "commander": "^6.2.0",
     "cross-fetch": "^3.0.6",
-    "gqless": "workspace:^1.0.0",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",

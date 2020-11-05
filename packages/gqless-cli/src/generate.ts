@@ -1,4 +1,4 @@
-import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from 'gqless';
+import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '@dish/gqless';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,

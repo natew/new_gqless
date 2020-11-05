@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "fastify": "^3.7.0",
-    "gqless": "workspace:^1.0.0",
-    "gqless-cli": "workspace:^0.1.0",
+    "@dish/gqless": "workspace:^1.0.0",
+    "@dish/gqless-cli": "workspace:^0.1.0",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "mercurius": "^6.4.0",
