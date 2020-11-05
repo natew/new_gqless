@@ -1,34 +1,27 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
-const { getRemoteSchema, writeGenerate } = require('../dist/index');
-const fs = require('fs');
-const { resolve } = require('path');
+const { inspectWriteGenerate } = require('../dist/index');
 
 program.version('1.0.0').description('CLI for gqless');
 
 program
-  .command('generate <source> [destination]')
+  .command('generate <endpoint> [destination]')
   .option('--overwrite', 'Overwrite file if already exists')
   .description(
-    'generate the gqless schema and client in the specified directory (./graphql/generated/index.ts by default)'
+    'generate the gqless schema and client in the specified directory (./graphql/generated/index.ts by default). \nexample: "gqless-cli generate http://localhost:3000/graphql src/generated/index.ts"'
   )
   .action(
-    async (source, destination = './graphql/generated/index.ts', opts) => {
-      const destinationPath = resolve(destination);
-
-      if (!opts.overwrite && fs.existsSync(destinationPath)) {
-        console.log(
-          "File already exists, specify '--overwrite' to overwrite the existing file."
-        );
-        process.exit(0);
-      }
-
-      const schema = await getRemoteSchema(source);
-
-      await writeGenerate(schema, destinationPath);
-
-      console.log('Code generated successfully at ' + destinationPath);
+    async (endpoint, destination = './graphql/generated/index.ts', opts) => {
+      await inspectWriteGenerate({
+        endpoint,
+        destination,
+        cli: true,
+        overwrite: !!opts.overwrite,
+      }).catch((err) => {
+        console.error(err);
+        process.exit(1);
+      });
       process.exit(0);
     }
   );

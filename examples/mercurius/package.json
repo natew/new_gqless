@@ -16,6 +16,7 @@
     "build": "tsdx build",
     "generate": "node generate.js",
     "lint": "tsdx lint",
+    "listen": "node listen.js",
     "prepare": "tsdx build",
     "size": "size-limit",
     "start": "tsdx watch",

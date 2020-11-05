@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises';
+import fs from 'fs';
 import { GraphQLSchema } from 'graphql';
 import mkdirp from 'mkdirp';
 import { dirname, resolve } from 'path';
@@ -15,7 +15,7 @@ export async function writeGenerate(
 
   await mkdirp(dirname(destinationPath));
 
-  await writeFile(destinationPath, code, {
+  await fs.promises.writeFile(destinationPath, code, {
     encoding: 'utf-8',
   });
 
