@@ -1,4 +1,4 @@
-import type { ExecutionResult } from "graphql";
+import type { ExecutionResult } from 'graphql';
 
 export interface Type {
   __args?: Record<string, string>;
@@ -8,12 +8,15 @@ export interface Type {
 export interface Schema extends Record<string, Record<string, Type>> {
   query: Record<string, Type>;
 }
-export interface Scalars extends Record<string, unknown> {
+
+export interface Scalars {
   String: string;
   Int: number;
+  Float: number;
+  ID: string;
 }
 
-export type ScalarsHash = { readonly [P in keyof Scalars]: true };
+export type ScalarsHash = Record<string, true>;
 
 export type QueryFetcher = (
   query: string,
@@ -22,23 +25,27 @@ export type QueryFetcher = (
 
 export function parseSchemaType(type: string) {
   let isArray = false;
+  let isNullable = true;
   let pureType = type;
-  if (pureType.endsWith("!")) {
-    // Not Nullable
+  let nullableItems = true;
+  if (pureType.endsWith('!')) {
+    isNullable = false;
     pureType = pureType.slice(0, pureType.length - 1);
   }
 
-  if (pureType.startsWith("[")) {
+  if (pureType.startsWith('[')) {
     pureType = pureType.slice(1, pureType.length - 1);
     isArray = true;
-    if (pureType.endsWith("!")) {
-      // Not Nullable items
+    if (pureType.endsWith('!')) {
+      nullableItems = false;
       pureType = pureType.slice(0, pureType.length - 1);
     }
   }
 
   return {
     pureType,
+    isNullable,
     isArray,
+    nullableItems,
   };
 }

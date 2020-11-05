@@ -1,12 +1,15 @@
-import debounce from "lodash/debounce";
+import debounce from 'lodash/debounce';
 
-import { InterceptorManager } from "../Interceptor";
+import { InterceptorManager } from '../Interceptor';
 
 export class Scheduler {
   interceptorManager: InterceptorManager;
   fetchSelections: () => void;
 
-  constructor(interceptorManager: InterceptorManager, resolveAllSelections: () => Promise<void>) {
+  constructor(
+    interceptorManager: InterceptorManager,
+    resolveAllSelections: () => Promise<void>
+  ) {
     this.interceptorManager = interceptorManager;
 
     this.fetchSelections = debounce(
@@ -19,8 +22,10 @@ export class Scheduler {
       }
     );
 
-    interceptorManager.globalInterceptor.addSelectionListeners.add((_selection) => {
-      this.fetchSelections();
-    });
+    interceptorManager.globalInterceptor.addSelectionListeners.add(
+      (_selection) => {
+        this.fetchSelections();
+      }
+    );
   }
 }

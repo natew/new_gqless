@@ -1,30 +1,35 @@
-import { stripIgnoredCharacters } from "graphql/utilities/stripIgnoredCharacters";
-import lodashSet from "lodash/set";
+import { stripIgnoredCharacters } from 'graphql/utilities/stripIgnoredCharacters';
+import lodashSet from 'lodash/set';
 
-import { Selection } from "../Selection/selection";
+import { Selection } from '../Selection/selection';
 
 interface SelectionTree {
   [P: string]: SelectionTree | true;
 }
 
 const stringSelectionTree = (v: SelectionTree, depth = 0) => {
-  const spaceDepth = "  ".repeat(depth);
+  const spaceDepth = '  '.repeat(depth);
   const treeEntries = Object.entries(v);
   return treeEntries.reduce((acum, [key, value], index) => {
-    if (typeof value === "object") {
+    if (typeof value === 'object') {
       acum += `${spaceDepth}${key} {\n`;
 
       acum += stringSelectionTree(value, depth + 1);
 
       acum += `${spaceDepth}\n${spaceDepth}}${spaceDepth}`;
     } else {
-      acum += `${index === treeEntries.length - 1 ? "\n" : ""}${spaceDepth}${key}`;
+      acum += `${
+        index === treeEntries.length - 1 ? '\n' : ''
+      }${spaceDepth}${key}`;
     }
     return acum;
-  }, "");
+  }, '');
 };
 
-export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boolean) => {
+export const buildQuery = (
+  selections: Set<Selection> | Selection[],
+  strip?: boolean
+) => {
   let variableId = 1;
 
   const selectionTree: SelectionTree = {};
@@ -34,16 +39,20 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
   for (const selection of selections) {
     lodashSet(
       selectionTree,
-      Array.from(selection.selectionsWithoutArrayIndex).map((selectionValue) => {
-        const argsLength = selectionValue.args ? Object.keys(selectionValue.args).length : 0;
+      Array.from(selection.selectionsWithoutArrayIndex).map(
+        (selectionValue) => {
+          const argsLength = selectionValue.args
+            ? Object.keys(selectionValue.args).length
+            : 0;
 
-        const selectionKey = selectionValue.alias
-          ? `${selectionValue.alias}: ${selectionValue.key}`
-          : selectionValue.key;
+          const selectionKey = selectionValue.alias
+            ? `${selectionValue.alias}: ${selectionValue.key}`
+            : selectionValue.key;
 
-        if (selectionValue.args && argsLength) {
-          return `${selectionKey}(${Object.entries(selectionValue.args).reduce(
-            (acum, [key, value], index) => {
+          if (selectionValue.args && argsLength) {
+            return `${selectionKey}(${Object.entries(
+              selectionValue.args
+            ).reduce((acum, [key, value], index) => {
               const variableMapValue = variablesMap.get(value);
               if (variableMapValue) {
                 acum += `${key}:$${variableMapValue}`;
@@ -58,17 +67,16 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
                 acum += `${key}:$${newVariableValue}`;
               }
               if (index < argsLength - 1) {
-                acum += ",";
+                acum += ',';
               }
 
               return acum;
-            },
-            ""
-          )})`;
-        }
+            }, '')})`;
+          }
 
-        return selectionKey;
-      }),
+          return selectionKey;
+        }
+      ),
       true
     );
   }
@@ -90,14 +98,17 @@ export const buildQuery = (selections: Set<Selection> | Selection[], strip?: boo
 
   if (variableTypesEntries.length) {
     query = query.replace(
-      "query",
-      `query(${variableTypesEntries.reduce((acum, [variableName, type], index) => {
-        acum += `$${variableName}:${type}`;
-        if (index !== variableTypesEntries.length - 1) {
-          acum += ",";
-        }
-        return acum;
-      }, "")})`
+      'query',
+      `query(${variableTypesEntries.reduce(
+        (acum, [variableName, type], index) => {
+          acum += `$${variableName}:${type}`;
+          if (index !== variableTypesEntries.length - 1) {
+            acum += ',';
+          }
+          return acum;
+        },
+        ''
+      )})`
     );
   }
 

@@ -1,13 +1,7 @@
-import { createClient, QueryFetcher, Scalars, ScalarsHash } from "gqless";
-import { createMercuriusTestClient } from "mercurius-integration-testing";
+import { createClient, QueryFetcher, Scalars, ScalarsHash } from 'gqless';
+import { createMercuriusTestClient } from 'mercurius-integration-testing';
 
-import { app } from "../";
-
-declare module "gqless" {
-  interface Scalars {
-    ID: string;
-  }
-}
+import { app } from '../';
 
 export const scalars: ScalarsHash = {
   Int: true,
@@ -18,60 +12,61 @@ export const scalars: ScalarsHash = {
 export const schema = {
   query: {
     simpleString: {
-      __type: "String!",
+      __type: 'String!',
     },
     stringWithArgs: {
       __args: {
-        hello: "String!",
+        hello: 'String!',
       },
-      __type: "String!",
+      __type: 'String!',
     },
     object: {
-      __type: "Human!",
+      __type: 'Human!',
     },
     objectArray: {
-      __type: "[Human!]!",
+      __type: '[Human!]!',
     },
     objectWithArgs: {
       __args: {
-        who: "String!",
+        who: 'String!',
       },
-      __type: "Human!",
+      __type: 'Human!',
     },
     arrayString: {
-      __type: "[String!]!",
+      __type: '[String!]!',
     },
     arrayObjectArgs: {
       __args: {
-        limit: "Int!",
+        limit: 'Int!',
       },
-      __type: "[Human!]!",
+      __type: '[Human!]!',
     },
   },
   Human: {
     name: {
-      __type: "String!",
+      __type: 'String!',
     },
     father: {
-      __type: "Human!",
+      __type: 'Human!',
     },
   },
 } as const;
 
 export interface Human {
-  name: Scalars["String"];
+  name: Scalars['String'];
   father: Human;
+  fieldWithArgs: (args: { id: number }) => Scalars['String'];
 }
 
 export interface GeneratedSchema {
   query: {
-    simpleString: Scalars["String"];
-    stringWithArgs: (args: { hello: Scalars["String"] }) => Scalars["String"];
+    simpleString: Scalars['String'];
+    stringWithArgs: (args: { hello: Scalars['String'] }) => Scalars['String'];
     object: Human;
     objectArray: Array<Human>;
-    objectWithArgs: (args: { who: Scalars["String"] }) => Human;
-    arrayString: Array<Scalars["String"]>;
-    arrayObjectArgs: (args: { limit: Scalars["Int"] }) => Array<Human>;
+    objectWithArgs: (args: { who: Scalars['String'] }) => Human;
+    arrayString: Array<Scalars['String']>;
+    arrayObjectArgs: (args: { limit: Scalars['Int'] }) => Array<Human>;
   };
 }
 
@@ -101,8 +96,6 @@ const queryFetcher: QueryFetcher = function (query, variables) {
   // return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<GeneratedSchema>(
-  schema,
-  scalars,
-  queryFetcher
-);
+export const { client, resolveAllSelections, resolved } = createClient<
+  GeneratedSchema
+>(schema, scalars, queryFetcher);

@@ -1,1 +1,1 @@
-export * from "./buildQuery";
+export * from './buildQuery';

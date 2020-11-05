@@ -1,4 +1,4 @@
-import { Selection } from "../Selection";
+import { Selection } from '../Selection';
 
 export class Interceptor {
   selections = new Set<Selection>();

@@ -1,14 +1,19 @@
-import fromPairs from "lodash/fromPairs";
+import fromPairs from 'lodash/fromPairs';
 
-import { CacheNotFound, createCache } from "../Cache";
-import { InterceptorManager } from "../Interceptor";
-import { buildQuery } from "../QueryBuilder";
-import { Scheduler } from "../Scheduler";
-import { parseSchemaType, QueryFetcher, ScalarsHash, Schema } from "../Schema/types";
-import { AliasManager } from "../Selection/AliasManager";
-import { Selection } from "../Selection/selection";
+import { CacheNotFound, createCache } from '../Cache';
+import { InterceptorManager } from '../Interceptor';
+import { buildQuery } from '../QueryBuilder';
+import { Scheduler } from '../Scheduler';
+import {
+  parseSchemaType,
+  QueryFetcher,
+  ScalarsHash,
+  Schema,
+} from '../Schema/types';
+import { AliasManager } from '../Selection/AliasManager';
+import { Selection } from '../Selection/selection';
 
-const ProxySymbol = Symbol("gqless-proxy");
+const ProxySymbol = Symbol('gqless-proxy');
 
 export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
@@ -103,7 +108,7 @@ export function createClient<GeneratedSchema = never>(
 
       if (errors) {
         console.error(errors);
-        const err = Error("Errors in resolve");
+        const err = Error('Errors in resolve');
 
         if (Error.captureStackTrace) {
           Error.captureStackTrace(err, resolveAllSelections);
@@ -116,18 +121,27 @@ export function createClient<GeneratedSchema = never>(
     }
   }
 
-  function createArrayAccessor(schemaType: Schema[string], selectionsArg: Selection) {
+  function createArrayAccessor(
+    schemaType: Schema[string],
+    selectionsArg: Selection
+  ) {
     const arrayCacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && arrayCacheValue === null) return null;
 
     return new Proxy(
-      arrayCacheValue === CacheNotFound ? [ProxySymbol] : (arrayCacheValue as unknown[]),
+      arrayCacheValue === CacheNotFound
+        ? [ProxySymbol]
+        : (arrayCacheValue as unknown[]),
       {
         get(target, key: string, receiver) {
           const index = parseInt(key);
 
           if (Number.isInteger(index)) {
-            if (allowCache && arrayCacheValue !== CacheNotFound && arrayCacheValue[index] == null) {
+            if (
+              allowCache &&
+              arrayCacheValue !== CacheNotFound &&
+              arrayCacheValue[index] == null
+            ) {
               /**
                * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
                */
@@ -148,7 +162,10 @@ export function createClient<GeneratedSchema = never>(
     );
   }
 
-  function createAccessor(schemaType: Schema[string], selectionsArg: Selection) {
+  function createAccessor(
+    schemaType: Schema[string],
+    selectionsArg: Selection
+  ) {
     const cacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && cacheValue === null) return null;
 
@@ -160,7 +177,8 @@ export function createClient<GeneratedSchema = never>(
       ) as Record<string, unknown>,
       {
         get(target, key: string, receiver) {
-          if (!schemaType.hasOwnProperty(key)) return Reflect.get(target, key, receiver);
+          if (!schemaType.hasOwnProperty(key))
+            return Reflect.get(target, key, receiver);
 
           const { __type, __args } = schemaType[key];
           const { pureType, isArray } = parseSchemaType(__type);
@@ -204,7 +222,7 @@ export function createClient<GeneratedSchema = never>(
               return createAccessor(typeValue, selection);
             }
 
-            throw Error("Not found!");
+            throw Error('Not found!');
           };
 
           if (__args) {

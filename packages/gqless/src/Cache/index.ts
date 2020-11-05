@@ -1,9 +1,9 @@
-import lodashGet from "lodash/get";
-import lodashMerge from "lodash/merge";
+import lodashGet from 'lodash/get';
+import lodashMerge from 'lodash/merge';
 
-import { Selection } from "../Selection";
+import { Selection } from '../Selection';
 
-export const CacheNotFound = Symbol("Not Found");
+export const CacheNotFound = Symbol('Not Found');
 
 export function createCache() {
   const cache: Record<string, unknown> = {};

@@ -1,12 +1,12 @@
-import { createMercuriusTestClient } from "mercurius-integration-testing";
-import tap from "tap";
+import { createMercuriusTestClient } from 'mercurius-integration-testing';
+import tap from 'tap';
 
-import { app } from "../src";
-import { client as generatedClient, resolved } from "../src/generated";
+import { app } from '../src';
+import { client as generatedClient, resolved } from '../src/generated';
 
 const testClient = createMercuriusTestClient(app);
 
-tap.test("works", async (t) => {
+tap.test('works', async (t) => {
   t.plan(2);
 
   await testClient
@@ -18,7 +18,7 @@ tap.test("works", async (t) => {
     `
     )
     .then((response) => {
-      t.type(response.data?.simpleString, "string");
+      t.type(response.data?.simpleString, 'string');
     });
 
   await testClient
@@ -42,7 +42,7 @@ tap.test("works", async (t) => {
     });
 });
 
-tap.test("multiple args", async (t) => {
+tap.test('multiple args', async (t) => {
   const response = await testClient.query(`
   query {
     a1: objectWithArgs(who: "hello") {
@@ -58,11 +58,11 @@ tap.test("multiple args", async (t) => {
   t.equivalent(response, {
     data: {
       a1: {
-        zxc: "hello",
-        abc: "hello",
+        zxc: 'hello',
+        abc: 'hello',
       },
       a2: {
-        name: "hello2",
+        name: 'hello2',
       },
     },
   });
@@ -71,9 +71,9 @@ tap.test("multiple args", async (t) => {
 });
 
 tap
-  .test("generatedClient", async (t) => {
+  .test('generatedClient', async (t) => {
     const anon = generatedClient.query.objectWithArgs({
-      who: "anon",
+      who: 'anon',
     });
 
     const { name, fatherName } = await resolved(() => {
@@ -83,11 +83,11 @@ tap
       };
     });
 
-    t.type(name, "string");
-    t.type(fatherName, "string");
+    t.type(name, 'string');
+    t.type(fatherName, 'string');
 
-    t.type(anon.name, "string");
-    t.type(anon.father.father.name, "string");
+    t.type(anon.name, 'string');
+    t.type(anon.father.father.name, 'string');
 
     const arrayDataAfterResolved = await resolved(() => {
       return generatedClient.query.objectArray.map((v) => v.name);
@@ -95,27 +95,29 @@ tap
 
     t.assert(arrayDataAfterResolved.length > 0);
     t.equals(
-      arrayDataAfterResolved.every((v) => typeof v === "string" && v.length > 30),
+      arrayDataAfterResolved.every(
+        (v) => typeof v === 'string' && v.length > 30
+      ),
       true
     );
 
     t.done();
   })
   .then(() => {
-    tap.test("args", async (t) => {
+    tap.test('args', async (t) => {
       const name = await resolved(() => {
         return generatedClient.query.objectWithArgs({
-          who: "asd",
+          who: 'asd',
         }).name;
       });
 
-      t.equal(name, "asd");
+      t.equal(name, 'asd');
 
       t.done();
     });
   });
 
-tap.test("refetch works", async (t) => {
+tap.test('refetch works', async (t) => {
   const firstHumanName = await resolved(() => {
     return generatedClient.query.object.name;
   });
@@ -133,13 +135,13 @@ tap.test("refetch works", async (t) => {
 
   t.assert(secondHumanName.length > 20);
 
-  t.assert(firstHumanName !== secondHumanName, "Both names are different");
+  t.assert(firstHumanName !== secondHumanName, 'Both names are different');
 
   t.done();
 });
 
-tap.test("scheduler", async (t) => {
-  const hello = "zxczxc";
+tap.test('scheduler', async (t) => {
+  const hello = 'zxczxc';
   const shoudBeNull = generatedClient.query.stringWithArgs({
     hello,
   });
@@ -157,8 +159,8 @@ tap.test("scheduler", async (t) => {
   t.done();
 });
 
-tap.test("resolved no cache", async (t) => {
-  const hello = "asdasd";
+tap.test('resolved no cache', async (t) => {
+  const hello = 'asdasd';
   const helloQueryString = await resolved(
     () => {
       return generatedClient.query.stringWithArgs({

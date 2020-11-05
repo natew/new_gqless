@@ -1,11 +1,11 @@
-import Fastify, { LogLevel } from "fastify";
-import { random, range } from "lodash";
-import Mercurius from "mercurius";
-import { generate } from "randomstring";
+import Fastify, { LogLevel } from 'fastify';
+import { random, range } from 'lodash';
+import Mercurius from 'mercurius';
+import { generate } from 'randomstring';
 
 export const app = Fastify({
   logger: {
-    level: "warn" as LogLevel,
+    level: 'warn' as LogLevel,
   },
 });
 
@@ -29,6 +29,7 @@ app.register(Mercurius, {
     type Human {
       name: String!
       father: Human!
+      fieldWithArgs(id: Int!): Int!
     }
     `,
   resolvers: {
@@ -58,6 +59,9 @@ app.register(Mercurius, {
     Human: {
       father() {
         return newHuman();
+      },
+      fieldWithArgs(_root, { id }: { id: number }) {
+        return id;
       },
     },
   },

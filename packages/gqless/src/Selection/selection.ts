@@ -1,4 +1,4 @@
-import { AliasManager } from "./AliasManager";
+import { AliasManager } from './AliasManager';
 
 export class Selection {
   args?: Record<string, unknown>;
@@ -20,8 +20,8 @@ export class Selection {
   }: {
     key: string | number;
     prevSelection?: Selection;
-    args?: Selection["args"];
-    argTypes?: Selection["argTypes"];
+    args?: Selection['args'];
+    argTypes?: Selection['argTypes'];
     isArray?: boolean;
     aliasManager: AliasManager;
   }) {
@@ -42,7 +42,7 @@ export class Selection {
   }
 
   get selectionsWithoutArrayIndex() {
-    return Array.from(this.selections).filter((v) => typeof v.key === "string");
+    return Array.from(this.selections).filter((v) => typeof v.key === 'string');
   }
 
   get path() {
@@ -51,7 +51,10 @@ export class Selection {
     for (const selection of this.selections) {
       if (selection.args && selection.argTypes) {
         if (!selection.alias) {
-          selection.alias = this.aliasManager.getVariableAlias(selection.args, selection.argTypes);
+          selection.alias = this.aliasManager.getVariableAlias(
+            selection.args,
+            selection.argTypes
+          );
         }
         path.push(selection.alias);
       } else {
