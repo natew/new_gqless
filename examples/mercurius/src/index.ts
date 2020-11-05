@@ -20,8 +20,10 @@ app.register(Mercurius, {
     type Query {
         simpleString: String!
         stringWithArgs(hello: String!): String!
-        object: Human!
-        objectArray: [Human!]!
+        stringNullableWithArgs(hello: String!, helloTwo: String): String
+        stringNullableWithArgsArray(hello: [String]!): String
+        object: Human
+        objectArray: [Human]
         objectWithArgs(who: String!): Human!
         arrayString: [String!]!
         arrayObjectArgs(limit: Int!): [Human!]!
