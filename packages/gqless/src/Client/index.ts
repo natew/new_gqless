@@ -1,3 +1,5 @@
+import fromPairs from "lodash/fromPairs";
+
 import { CacheNotFound, createCache } from "../Cache";
 import { InterceptorManager } from "../Interceptor";
 import { buildQuery } from "../QueryBuilder";
@@ -151,7 +153,7 @@ export function createClient<GeneratedSchema = never>(
     if (allowCache && cacheValue === null) return null;
 
     return new Proxy(
-      Object.fromEntries(
+      fromPairs(
         Object.keys(schemaType).map((key) => {
           return [key, ProxySymbol];
         })
@@ -222,7 +224,7 @@ export function createClient<GeneratedSchema = never>(
 
   function createSchemaAccesor() {
     return new Proxy(
-      Object.fromEntries(
+      fromPairs(
         Object.keys(schema).map((key) => {
           return [key, ProxySymbol];
         })
