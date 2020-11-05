@@ -1,18 +1,19 @@
 {
   "name": "gqless_refactor",
+  "license": "MIT",
   "scripts": {
     "build": "pnpm build -r --stream",
     "dev": "nodemon",
     "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test --filter mercurius -r --no-bail --no-sort --stream",
     "test": "pnpm test -r --no-sort --no-bail --stream"
   },
-  "dependencies": {
-    "nodemon": "^2.0.6"
-  },
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
+  },
+  "dependencies": {
+    "nodemon": "^2.0.6"
   },
   "devDependencies": {
     "prettier": "^2.1.2",

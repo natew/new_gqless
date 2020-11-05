@@ -85,17 +85,19 @@ importers:
       '@graphql-codegen/typescript': 1.17.11_graphql@15.4.0
       '@graphql-tools/delegate': 7.0.4_graphql@15.4.0
       '@graphql-tools/wrap': 7.0.1_graphql@15.4.0
-      auto-bind: 4.0.0
+      commander: 6.2.0
       cross-fetch: 3.0.6
       gqless: 'link:../gqless'
       graphql: 15.4.0
       lodash: 4.17.20
       lodash-es: 4.17.15
+      mkdirp: 1.0.4
       prettier: 2.1.2
       regenerator-runtime: 0.13.7
     devDependencies:
       '@size-limit/preset-small-lib': 4.7.0_812c0496e6d364a880dd402ada412b59
       '@types/lodash': 4.14.164
+      '@types/mkdirp': 1.0.1
       husky: 4.3.0
       mercurius-example: 'link:../../examples/mercurius'
       size-limit: 4.7.0
@@ -109,7 +111,8 @@ importers:
       '@graphql-tools/wrap': ^7.0.1
       '@size-limit/preset-small-lib': ^4.7.0
       '@types/lodash': ^4.14.164
-      auto-bind: ^4.0.0
+      '@types/mkdirp': ^1.0.1
+      commander: ^6.2.0
       cross-fetch: ^3.0.6
       gqless: 'workspace:^1.0.0'
       graphql: ^15.4.0
@@ -117,6 +120,7 @@ importers:
       lodash: ^4.17.20
       lodash-es: ^4.17.15
       mercurius-example: 'workspace:^1.0.0'
+      mkdirp: ^1.0.4
       prettier: ^2.1.2
       regenerator-runtime: ^0.13.7
       size-limit: ^4.7.0
@@ -1887,6 +1891,12 @@ packages:
     dev: true
     resolution:
       integrity: sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
+  /@types/mkdirp/1.0.1:
+    dependencies:
+      '@types/node': 14.14.6
+    dev: true
+    resolution:
+      integrity: sha512-HkGSK7CGAXncr8Qn/0VqNtExEE+PHMWb+qlR1faHMao7ng6P3tAaoWWBMdva0gL5h4zprjIO89GJOLXsMcDm1Q==
   /@types/node/14.14.6:
     dev: true
     resolution:
@@ -3533,6 +3543,12 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
+  /commander/6.2.0:
+    dev: false
+    engines:
+      node: '>= 6'
+    resolution:
+      integrity: sha512-zP4jEKbe8SHzKJYQmq8Y9gYjtO/POJLgIdKgV7B9qNmABVFVc+ctqSX6iXh4mCpJfRBOabiZ2YKPg8ciDw6C+Q==
   /common-tags/1.8.0:
     dev: false
     engines:
@@ -8058,7 +8074,6 @@ packages:
     resolution:
       integrity: sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==
   /mkdirp/1.0.4:
-    dev: true
     engines:
       node: '>=10'
     hasBin: true
