@@ -204,7 +204,7 @@ export async function generate(
   typescriptTypes += `
     export interface ScalarsEnums extends Scalars {
       ${enumsNames.reduce((acum, enumName) => {
-        acum += `${enumName}: ${enumName}`;
+        acum += `${enumName}: ${enumName};`;
         return acum;
       }, '')}
     }
@@ -239,7 +239,7 @@ export async function generate(
   const code = format(
     `
   ${preImport}
-  import { createClient, QueryFetcher, ScalarsEnumsHash, Schema } from "gqless";
+  import { createClient, QueryFetcher, ScalarsEnumsHash, Schema } from "@dish/gqless";
 
   ${await codegenResult}
 
