@@ -168,6 +168,7 @@ importers:
       fastify: 3.7.0
       graphql: 15.4.0
       mercurius: 6.4.0
+      mercurius-codegen: 1.0.5_cbb373faf98868ca4b612dffec515304
       mercurius-integration-testing: 3.1.2_cbb373faf98868ca4b612dffec515304
     devDependencies:
       '@size-limit/preset-small-lib': 4.7.0_812c0496e6d364a880dd402ada412b59
@@ -182,6 +183,7 @@ importers:
       graphql: ^15.4.0
       husky: ^4.3.0
       mercurius: ^6.4.0
+      mercurius-codegen: ^1.0.5
       mercurius-integration-testing: ^3.1.2
       size-limit: ^4.7.0
       tsdx: ^0.14.1
