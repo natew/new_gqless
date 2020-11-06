@@ -71,57 +71,86 @@ export async function generate(
   };
 
   const queryType = config.query;
+  const mutationType = config.mutation;
+  const subscriptionType = config.subscription;
 
-  const parseType = (type: GraphQLNamedType, typeName: string = type.name) => {
-    if (typeName.startsWith('__') || type === queryType) return;
+  const parseEnumType = (type: GraphQLEnumType, typeName = type.name) => {
+    scalarsEnumsHash[typeName] = true;
+    enumsNames.push(typeName);
+  };
+  const parseScalarType = (type: GraphQLScalarType, typeName = type.name) => {
+    scalarsEnumsHash[typeName] = true;
+  };
+  const parseObjectType = (type: GraphQLObjectType, typeName = type.name) => {
+    const fields = type.getFields();
 
-    if (type instanceof GraphQLEnumType) {
-      scalarsEnumsHash[typeName] = true;
-      enumsNames.push(typeName);
-    } else if (type instanceof GraphQLScalarType) {
-      scalarsEnumsHash[typeName] = true;
-    } else if (type instanceof GraphQLObjectType) {
-      const fields = type.getFields();
+    const schemaType: Record<string, Type> = {};
 
-      const schemaType: Record<string, Type> = {};
+    Object.entries(fields).forEach(([key, value]) => {
+      schemaType[key] = {
+        __type: value.type.toString(),
+      };
 
-      Object.entries(fields).forEach(([key, value]) => {
-        schemaType[key] = {
-          __type: value.type.toString(),
-        };
+      if (value.args.length) {
+        schemaType[key].__args = fromPairs(
+          value.args.map((arg) => {
+            return [arg.name, arg.type.toString()];
+          })
+        );
+      }
+    });
 
-        if (value.args.length) {
-          schemaType[key].__args = fromPairs(
-            value.args.map((arg) => {
-              return [arg.name, arg.type.toString()];
-            })
-          );
-        }
-      });
-
-      generatedSchema[typeName] = schemaType;
-    } else if (type instanceof GraphQLInputObjectType) {
-      inputTypeNames.add(typeName);
-      const fields = type.getFields();
-
-      const schemaType: Record<string, Type> = {};
-
-      Object.entries(fields).forEach(([key, value]) => {
-        schemaType[key] = {
-          __type: value.type.toString(),
-        };
-      });
-
-      generatedSchema[typeName] = schemaType;
-    }
+    generatedSchema[typeName] = schemaType;
   };
 
-  config.types.map((type) => {
-    parseType(type);
+  const parseInputType = (
+    type: GraphQLInputObjectType,
+    typeName: string = type.name
+  ) => {
+    inputTypeNames.add(typeName);
+    const fields = type.getFields();
+
+    const schemaType: Record<string, Type> = {};
+
+    Object.entries(fields).forEach(([key, value]) => {
+      schemaType[key] = {
+        __type: value.type.toString(),
+      };
+    });
+
+    generatedSchema[typeName] = schemaType;
+  };
+
+  config.types.forEach((type) => {
+    if (
+      type.name.startsWith('__') ||
+      type === queryType ||
+      type === mutationType ||
+      type === subscriptionType
+    )
+      return;
+
+    if (type instanceof GraphQLEnumType) {
+      parseEnumType(type);
+    } else if (type instanceof GraphQLScalarType) {
+      parseScalarType(type);
+    } else if (type instanceof GraphQLObjectType) {
+      parseObjectType(type);
+    } else if (type instanceof GraphQLInputObjectType) {
+      parseInputType(type);
+    }
   });
 
   if (queryType) {
-    parseType(queryType, 'query');
+    parseObjectType(queryType, 'query');
+  }
+
+  if (mutationType) {
+    parseObjectType(mutationType, 'mutation');
+  }
+
+  if (subscriptionType) {
+    parseObjectType(subscriptionType, 'subscription');
   }
 
   function parseFinalType({
