@@ -18,8 +18,12 @@ const ProxySymbol = Symbol('gqless-proxy');
 export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
   scalarsEnumsHash: ScalarsEnumsHash,
-  queryFetcher: QueryFetcher
+  queryFetcher: QueryFetcher,
+  {
+    isProduction = process.env.NODE_ENV === 'production',
+  }: { isProduction?: boolean } = {}
 ) {
+  const emptyObject = {} as const;
   const aliasManager = new AliasManager();
 
   const interceptorManager = new InterceptorManager();
@@ -170,11 +174,13 @@ export function createClient<GeneratedSchema = never>(
     if (allowCache && cacheValue === null) return null;
 
     return new Proxy(
-      fromPairs(
-        Object.keys(schemaType).map((key) => {
-          return [key, ProxySymbol];
-        })
-      ) as Record<string, unknown>,
+      isProduction
+        ? emptyObject
+        : (fromPairs(
+            Object.keys(schemaType).map((key) => {
+              return [key, ProxySymbol];
+            })
+          ) as Record<string, unknown>),
       {
         get(target, key: string, receiver) {
           if (!schemaType.hasOwnProperty(key))

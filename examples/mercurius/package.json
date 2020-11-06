@@ -28,12 +28,13 @@
     }
   },
   "dependencies": {
-    "fastify": "^3.7.0",
     "@dish/gqless": "workspace:^1.0.0",
     "@dish/gqless-cli": "workspace:^0.1.0",
+    "fastify": "^3.7.0",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "mercurius": "^6.4.0",
+    "mercurius-codegen": "1.0.5",
     "randomstring": "^1.1.5"
   },
   "devDependencies": {

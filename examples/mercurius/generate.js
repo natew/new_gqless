@@ -6,7 +6,7 @@ const { app } = require('./');
 
   const destinationPath = await writeGenerate(
     app.graphql.schema,
-    './src/generated/index.ts',
+    './src/generated/gqless.ts',
     {
       preImport: `
         import { createMercuriusTestClient } from "mercurius-integration-testing";

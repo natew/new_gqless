@@ -1,7 +1,7 @@
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 
 import { app } from '../src';
-import { client as generatedClient, resolved } from '../src/generated';
+import { client as generatedClient, resolved } from '../src/generated/gqless';
 
 const testClient = createMercuriusTestClient(app);
 

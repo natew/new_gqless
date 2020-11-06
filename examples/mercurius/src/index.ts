@@ -1,6 +1,7 @@
 import Fastify, { LogLevel } from 'fastify';
 import { random, range } from 'lodash';
 import Mercurius from 'mercurius';
+import mercuriusCodegen from 'mercurius-codegen';
 import { generate } from 'randomstring';
 
 export const app = Fastify({
@@ -53,7 +54,7 @@ app.register(Mercurius, {
       simpleString() {
         return generate();
       },
-      stringWithArgs(_root, { hello }: { hello: string }) {
+      stringWithArgs(_root, { hello }) {
         return hello;
       },
       object() {
@@ -62,13 +63,13 @@ app.register(Mercurius, {
       objectArray() {
         return range(random(1, 10)).map(() => newHuman());
       },
-      objectWithArgs(_root, { who }: { who: string }) {
+      objectWithArgs(_root, { who }) {
         return newHuman({ name: who });
       },
       arrayString() {
         return range(random(1, 10)).map(() => generate());
       },
-      arrayObjectArgs(_root, { limit }: { limit: number }) {
+      arrayObjectArgs(_root, { limit }) {
         return range(limit).map(() => newHuman());
       },
     },
@@ -76,9 +77,14 @@ app.register(Mercurius, {
       father() {
         return newHuman();
       },
-      fieldWithArgs(_root, { id }: { id: number }) {
+      fieldWithArgs(_root, { id }) {
         return id;
       },
     },
   },
+});
+
+mercuriusCodegen(app, {
+  targetPath: './src/generated/mercurius.ts',
+  silent: true,
 });

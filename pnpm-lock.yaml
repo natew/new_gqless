@@ -17,6 +17,7 @@ importers:
       graphql: 15.4.0
       lodash: 4.17.20
       mercurius: 6.4.0
+      mercurius-codegen: 1.0.5_cbb373faf98868ca4b612dffec515304
       randomstring: 1.1.5
     devDependencies:
       '@size-limit/preset-small-lib': 4.7.0_812c0496e6d364a880dd402ada412b59
@@ -39,6 +40,7 @@ importers:
       husky: ^4.3.0
       lodash: ^4.17.20
       mercurius: ^6.4.0
+      mercurius-codegen: 1.0.5
       mercurius-integration-testing: ^3.1.2
       randomstring: ^1.1.5
       size-limit: ^4.7.0
@@ -1266,6 +1268,20 @@ packages:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-jURyHDy8sUTUtRqF6U+akkPANmOYxJ7P47WExAknludiZCMOuoC6QUTxaHZcWNLCWsJFnKNta+oGHqXgkyA+VQ==
+  /@graphql-codegen/typescript-resolvers/1.17.10_graphql@15.4.0:
+    dependencies:
+      '@graphql-codegen/plugin-helpers': 1.18.1_graphql@15.4.0
+      '@graphql-codegen/typescript': 1.17.11_graphql@15.4.0
+      '@graphql-codegen/visitor-plugin-common': 1.17.17_graphql@15.4.0
+      '@graphql-tools/utils': 6.2.4_graphql@15.4.0
+      auto-bind: 4.0.0
+      graphql: 15.4.0
+      tslib: 2.0.3
+    dev: false
+    peerDependencies:
+      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-dchQOCSuIImu11fLIxzkRCfA09CgxgaCtPFROcId3VHwuQeD/41xxVhOZmHG6HkI0qjnJ0Sqb3XYi9jG+meq7A==
   /@graphql-codegen/typescript/1.17.11_graphql@15.4.0:
     dependencies:
       '@graphql-codegen/plugin-helpers': 1.18.1_graphql@15.4.0
@@ -6381,7 +6397,7 @@ packages:
   /isomorphic-fetch/2.2.1:
     dependencies:
       node-fetch: 1.7.3
-      whatwg-fetch: 3.4.1
+      whatwg-fetch: 3.5.0
     dev: false
     resolution:
       integrity: sha1-YRrhrPFPXoH3KVB0coGf6XM1WKk=
@@ -7463,6 +7479,23 @@ packages:
       node: '>=4.3.0 <5.0.0 || >=5.10'
     resolution:
       integrity: sha512-jA0rdU5KoQMC0e6ppoNRtpp6vjFq6+NY7r8hywnC7V+1Xj/MtHwGIbB1QaK/dunyjWteJzmkpd7ooeWg10T7GA==
+  /mercurius-codegen/1.0.5_cbb373faf98868ca4b612dffec515304:
+    dependencies:
+      '@graphql-codegen/core': 1.17.8_graphql@15.4.0
+      '@graphql-codegen/typescript': 1.17.11_graphql@15.4.0
+      '@graphql-codegen/typescript-resolvers': 1.17.10_graphql@15.4.0
+      fastify: 3.7.0
+      graphql: 15.4.0
+      mercurius: 6.4.0
+      mkdirp: 1.0.4
+      prettier: 2.1.2
+    dev: false
+    peerDependencies:
+      fastify: ^3.7.0
+      graphql: ^15.4.0
+      mercurius: ^6.4.0
+    resolution:
+      integrity: sha512-78qQqksdfo7UjsmZE2k1l+95qC+eWNbPfekTiPlPaY4682Yc8ScUU/QELfe4+1wIJ9k+XoJfPeL8497GYOX85Q==
   /mercurius-integration-testing/3.1.2_cbb373faf98868ca4b612dffec515304:
     dependencies:
       '@graphql-typed-document-node/core': 3.1.0_graphql@15.4.0
@@ -11651,10 +11684,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-b5lim54JOPN9HtzvK9HFXvBma/rnfFeqsic0hSpjtDbVxR3dJKLc+KB4V6GgiGOvl7CY/KNh8rxSo9DKQrnUEw==
-  /whatwg-fetch/3.4.1:
+  /whatwg-fetch/3.5.0:
     dev: false
     resolution:
-      integrity: sha512-sofZVzE1wKwO+EYPbWfiwzaKovWiZXf4coEzjGP9b2GBVgQRLQUZ2QcuPpQExGDAW5GItpEm6Tl4OU5mywnAoQ==
+      integrity: sha512-jXkLtsR42xhXg7akoDKvKWE40eJeI+2KZqcp2h3NsOrRnDvtWX36KcKl30dy+hxECivdk2BVUHVNrPtoMBUx6A==
   /whatwg-mimetype/2.3.0:
     dev: true
     resolution:
