@@ -1,7 +1,7 @@
-import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '@dish/gqless';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSchema,
@@ -11,6 +11,7 @@ import {
 import fromPairs from 'lodash/fromPairs';
 import { format, resolveConfig } from 'prettier';
 
+import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '@dish/gqless';
 import { codegen } from '@graphql-codegen/core';
 import * as typescriptPlugin from '@graphql-codegen/typescript';
 
@@ -69,15 +70,16 @@ export async function generate(
     query: {},
   };
 
-  config.types.map((type) => {
-    if (type.toString().startsWith('__')) return;
-    if (type.name === 'Query') type.name = 'query';
+  const queryType = config.query;
+
+  const parseType = (type: GraphQLNamedType, typeName: string = type.name) => {
+    if (typeName.startsWith('__') || type === queryType) return;
 
     if (type instanceof GraphQLEnumType) {
-      scalarsEnumsHash[type.name] = true;
-      enumsNames.push(type.name);
+      scalarsEnumsHash[typeName] = true;
+      enumsNames.push(typeName);
     } else if (type instanceof GraphQLScalarType) {
-      scalarsEnumsHash[type.name] = true;
+      scalarsEnumsHash[typeName] = true;
     } else if (type instanceof GraphQLObjectType) {
       const fields = type.getFields();
 
@@ -97,9 +99,9 @@ export async function generate(
         }
       });
 
-      generatedSchema[type.name] = schemaType;
+      generatedSchema[typeName] = schemaType;
     } else if (type instanceof GraphQLInputObjectType) {
-      inputTypeNames.add(type.name);
+      inputTypeNames.add(typeName);
       const fields = type.getFields();
 
       const schemaType: Record<string, Type> = {};
@@ -110,9 +112,17 @@ export async function generate(
         };
       });
 
-      generatedSchema[type.name] = schemaType;
+      generatedSchema[typeName] = schemaType;
     }
+  };
+
+  config.types.map((type) => {
+    parseType(type);
   });
+
+  if (queryType) {
+    parseType(queryType, 'query');
+  }
 
   function parseFinalType({
     pureType,
