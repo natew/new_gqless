@@ -6,7 +6,7 @@
     "build": "pnpm build -r --stream",
     "dev": "nodemon",
     "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test -r --no-bail --no-sort --stream",
-    "publish:next": "pnpm -r publish --access public --tag next",
+    "publish:next": "pnpm build && pnpm test && pnpm -r publish --access public --tag next",
     "test": "pnpm test --filter=!gqless_refactor -r --no-sort --no-bail --stream -- --coverage"
   },
   "husky": {

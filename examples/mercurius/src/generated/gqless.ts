@@ -1,4 +1,5 @@
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
+import { app } from '../';
 
 import {
   createClient,
@@ -6,8 +7,6 @@ import {
   ScalarsEnumsHash,
   Schema,
 } from '@dish/gqless';
-
-import { app } from '../';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -65,6 +64,8 @@ const generatedSchema: Schema = {
       __args: { input: 'GreetingsInput!' },
     },
   },
+  mutation: {},
+  subscription: {},
   GreetingsInput: {
     language: { __type: 'String!' },
     value: { __type: 'String' },
@@ -100,6 +101,10 @@ export interface Query {
   }) => ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface Human {
   name: ScalarsEnums['String'];
   father: Human;
@@ -108,6 +113,8 @@ export interface Human {
 
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {
@@ -121,6 +128,10 @@ const queryFetcher: QueryFetcher = function (query, variables) {
   });
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
