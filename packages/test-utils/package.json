@@ -30,7 +30,8 @@
     "graphql": "^15.4.0",
     "mercurius": "^6.4.0",
     "mercurius-codegen": "^1.0.5",
-    "mercurius-integration-testing": "^3.1.2"
+    "mercurius-integration-testing": "^3.1.2",
+    "wait-for-expect": "^3.0.2"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.7.0",

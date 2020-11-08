@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { resolve } from 'path';
 
-import { createTestApp } from '../src';
+import { assertIsDefined, createTestApp, waitForExpect } from '../src';
 
 const { readFile } = fs.promises;
 
@@ -85,4 +85,38 @@ test('create test app without codegen', async () => {
         },
       });
     });
+});
+
+test('assertIsDefined', () => {
+  let a: undefined | number = 1 as undefined | number;
+
+  //@ts-expect-error
+  expect(a.toFixed(1)).toBe('1.0');
+
+  assertIsDefined(a);
+
+  expect(a.toFixed(1)).toBe('1.0');
+
+  let b: undefined | number = undefined as undefined | number;
+
+  expect(() => {
+    assertIsDefined(b, 'expected error');
+  }).toThrowError('expected error');
+
+  let c: undefined | number = undefined as undefined | number;
+
+  expect(() => {
+    assertIsDefined(c);
+  }).toThrowError('value is nullable');
+});
+
+test('waitForExpect', () => {
+  let a: number | undefined;
+
+  setTimeout(() => {
+    a = 1;
+  }, 200);
+  waitForExpect(() => {
+    expect(a).toBe(1);
+  });
 });

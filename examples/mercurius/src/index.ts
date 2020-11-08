@@ -4,6 +4,8 @@ import Mercurius from 'mercurius';
 import mercuriusCodegen from 'mercurius-codegen';
 import { generate } from 'randomstring';
 
+import { GreetingsEnum } from './generated/mercurius';
+
 export const app = Fastify({
   logger: {
     level: 'warn' as LogLevel,
@@ -72,6 +74,18 @@ app.register(Mercurius, {
       arrayObjectArgs(_root, { limit }) {
         return range(limit).map(() => newHuman());
       },
+      giveGreetingsInput(_root, { input }) {
+        return input.language;
+      },
+      greetings() {
+        return GreetingsEnum.Hello;
+      },
+      stringNullableWithArgs(_root, { hello, helloTwo }) {
+        return hello || helloTwo;
+      },
+      stringNullableWithArgsArray(_root, { hello }) {
+        return hello[0];
+      },
     },
     Human: {
       father() {
@@ -84,7 +98,8 @@ app.register(Mercurius, {
   },
 });
 
-mercuriusCodegen(app, {
-  targetPath: './src/generated/mercurius.ts',
-  silent: true,
-});
+export const codegen = () =>
+  mercuriusCodegen(app, {
+    targetPath: './src/generated/mercurius.ts',
+    silent: true,
+  });

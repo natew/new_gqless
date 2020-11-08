@@ -1,9 +1,18 @@
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
+import { waitForExpect } from 'test-utils';
 
-import { app } from '../src';
-import { client as generatedClient, resolved } from '../src/generated/gqless';
+import { app, codegen } from '../src';
+import {
+  client as generatedClient,
+  GreetingsEnum,
+  resolved,
+} from '../src/generated/gqless';
 
 const testClient = createMercuriusTestClient(app);
+
+beforeAll(async () => {
+  await codegen();
+});
 
 test('works', async () => {
   await testClient
@@ -135,13 +144,13 @@ test('scheduler', async () => {
 
   expect(shoudBeNull).toBe(null);
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  waitForExpect(() => {
+    const shouldBeString = generatedClient.query.stringWithArgs({
+      hello,
+    });
 
-  const shouldBeString = generatedClient.query.stringWithArgs({
-    hello,
+    expect(shouldBeString).toBe(hello);
   });
-
-  expect(shouldBeString).toBe(hello);
 });
 
 test('resolved no cache', async () => {
@@ -164,4 +173,86 @@ test('resolved no cache', async () => {
   });
 
   expect(shouldBeNull).toBe(null);
+});
+
+test('arrays', async () => {
+  const result = await resolved(() => {
+    return generatedClient.query.arrayString;
+  });
+
+  expect(result.length).toBeGreaterThanOrEqual(1);
+
+  expect(
+    result.every((v) => {
+      expect(v.length).toBeGreaterThan(10);
+      expect(typeof v).toBe('string');
+    })
+  );
+});
+
+test('input type', async () => {
+  const result = await resolved(() => {
+    return generatedClient.query.giveGreetingsInput({
+      input: {
+        language: 'spanish',
+      },
+    });
+  });
+
+  expect(result).toBe('spanish');
+});
+
+test('enum', async () => {
+  const result = await resolved(() => {
+    return generatedClient.query.greetings;
+  });
+
+  expect(Object.values(GreetingsEnum).includes(result)).toBeTruthy();
+});
+
+test('nullable', async () => {
+  const resultA = await resolved(() => {
+    return generatedClient.query.stringNullableWithArgs({
+      hello: 'a',
+    });
+  });
+
+  expect(resultA).toBe('a');
+
+  const resultB = await resolved(() => {
+    return generatedClient.query.stringNullableWithArgs({
+      hello: '',
+      helloTwo: 'b',
+    });
+  });
+
+  expect(resultB).toBe('b');
+});
+
+test('args array', async () => {
+  const resultA = await resolved(() => {
+    return generatedClient.query.stringNullableWithArgsArray({
+      hello: ['a', 'b', 'c'],
+    });
+  });
+
+  expect(resultA).toBe('a');
+
+  const resultEmpty = await resolved(() => {
+    return generatedClient.query.stringNullableWithArgsArray({
+      hello: [],
+    });
+  });
+
+  expect(resultEmpty).toBe(null);
+});
+
+test('type field with args', async () => {
+  const result = await resolved(() => {
+    return generatedClient.query.object?.fieldWithArgs({
+      id: 123,
+    });
+  });
+
+  expect(result).toBe(123);
 });

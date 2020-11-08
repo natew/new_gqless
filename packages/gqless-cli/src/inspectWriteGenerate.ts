@@ -42,6 +42,7 @@ export async function inspectWriteGenerate({
   headers?: Record<string, string>;
 }) {
   destination = resolve(destination);
+
   const schema = await getRemoteSchema(endpoint, {
     headers,
   });

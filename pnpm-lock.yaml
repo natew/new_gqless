@@ -28,6 +28,7 @@ importers:
       husky: 4.3.0
       mercurius-integration-testing: 3.1.2_cbb373faf98868ca4b612dffec515304
       size-limit: 4.7.0
+      test-utils: 'link:../../packages/test-utils'
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.0.5
@@ -46,6 +47,7 @@ importers:
       mercurius-integration-testing: ^3.1.2
       randomstring: ^1.1.5
       size-limit: ^4.7.0
+      test-utils: 'workspace:^0.1.0'
       tsdx: ^0.14.1
       tslib: ^2.0.3
       typescript: ^4.0.5
@@ -109,8 +111,10 @@ importers:
       '@types/lodash': 4.14.164
       '@types/mkdirp': 1.0.1
       husky: 4.3.0
+      mercurius-example: 'link:../../examples/mercurius'
       size-limit: 4.7.0
       test-utils: 'link:../test-utils'
+      tmp-promise: 3.0.2
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.0.5
@@ -129,11 +133,13 @@ importers:
       husky: ^4.3.0
       lodash: ^4.17.20
       lodash-es: ^4.17.15
+      mercurius-example: 'workspace:^0.1.0'
       mkdirp: ^1.0.4
       prettier: ^2.1.2
       regenerator-runtime: ^0.13.7
       size-limit: ^4.7.0
       test-utils: 'workspace:^0.1.0'
+      tmp-promise: ^3.0.2
       tsdx: ^0.14.1
       tslib: ^2.0.3
       typescript: ^4.0.5
@@ -172,6 +178,7 @@ importers:
       mercurius: 6.4.0
       mercurius-codegen: 1.0.5_cbb373faf98868ca4b612dffec515304
       mercurius-integration-testing: 3.1.2_cbb373faf98868ca4b612dffec515304
+      wait-for-expect: 3.0.2
     devDependencies:
       '@size-limit/preset-small-lib': 4.7.0_812c0496e6d364a880dd402ada412b59
       husky: 4.3.0
@@ -191,6 +198,7 @@ importers:
       tsdx: ^0.14.1
       tslib: ^2.0.3
       typescript: ^4.0.5
+      wait-for-expect: ^3.0.2
 lockfileVersion: 5.2
 packages:
   /@ardatan/aggregate-error/0.0.6:
@@ -10880,6 +10888,12 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-zNYO0Kvgn5rXzWpL0y3RS09sMK67eGaQj9805jlK9G6pSadfriTczzLHFXa/xcW4mIRfmlB9HyQ/+SgL0V1uow==
+  /tmp-promise/3.0.2:
+    dependencies:
+      tmp: 0.2.1
+    dev: true
+    resolution:
+      integrity: sha512-OyCLAKU1HzBjL6Ev3gxUeraJNlbNingmi8IrHHEsYH8LTmEuhvYfqvhn2F/je+mjf4N58UmZ96OMEy1JanSCpA==
   /tmp/0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -10888,6 +10902,14 @@ packages:
       node: '>=0.6.0'
     resolution:
       integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==
+  /tmp/0.2.1:
+    dependencies:
+      rimraf: 3.0.2
+    dev: true
+    engines:
+      node: '>=8.17.0'
+    resolution:
+      integrity: sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==
   /tmpl/1.0.4:
     dev: true
     resolution:
@@ -11580,6 +11602,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-p10l/ayESzrBMYWRID6xbuCKh2Fp77+sA0doRuGn4tTIMrrZVeqfpKjXHY+oDh3K4nLdPgNwMTVP6Vp4pvqbNg==
+  /wait-for-expect/3.0.2:
+    dev: false
+    resolution:
+      integrity: sha512-cfS1+DZxuav1aBYbaO/kE06EOS8yRw7qOFoD3XtjTkYvCvh3zUvNST8DXK/nPaeqIzIv3P3kL3lRJn8iwOiSag==
   /walker/1.0.7:
     dependencies:
       makeerror: 1.0.11

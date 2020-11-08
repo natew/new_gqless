@@ -18,6 +18,29 @@ import * as typescriptPlugin from '@graphql-codegen/typescript';
 export type GenerateOptions = {
   /**
    * Overwrite the default 'queryFetcher'
+   * 
+   * @default
+   * const queryFetcher: QueryFetcher = async function (query, variables) {
+        const response = await fetch('/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query,
+            variables,
+          }),
+          mode: 'cors',
+        });
+
+      if (!response.ok) {
+        throw new Error(`Network error, received status code ${response.status}`);
+      }
+
+      const json = await response.json();
+
+      return json;
+    };
    */
   queryFetcher?: string;
   /**
