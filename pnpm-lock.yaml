@@ -117,7 +117,6 @@ importers:
       '@types/lodash': 4.14.164
       '@types/mkdirp': 1.0.1
       husky: 4.3.0
-      mercurius-example: 'link:../../examples/mercurius'
       size-limit: 4.7.0
       test-utils: 'link:../test-utils'
       tmp-promise: 3.0.2
@@ -139,7 +138,6 @@ importers:
       husky: ^4.3.0
       lodash: ^4.17.20
       lodash-es: ^4.17.15
-      mercurius-example: 'workspace:^0.1.0'
       mkdirp: ^1.0.4
       prettier: ^2.1.2
       regenerator-runtime: ^0.13.7

@@ -1,4 +1,3 @@
-import { app } from 'mercurius-example';
 import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '../src';
@@ -161,12 +160,51 @@ export interface Scalars {
 });
 
 describe('feature complete app', () => {
+  const { server, isReady } = createTestApp({
+    schema: gql`
+      scalar ExampleScalar
+
+      enum GreetingsEnum {
+        Hello
+        Hi
+        Hey
+      }
+      input GreetingsInput {
+        language: String!
+        value: String
+        scal: ExampleScalar
+      }
+      type Query {
+        simpleString: String!
+        stringWithArgs(hello: String!): String!
+        stringNullableWithArgs(hello: String!, helloTwo: String): String
+        stringNullableWithArgsArray(hello: [String]!): String
+        object: Human
+        objectArray: [Human]
+        objectWithArgs(who: String!): Human!
+        arrayString: [String!]!
+        arrayObjectArgs(limit: Int!): [Human!]!
+        greetings: GreetingsEnum!
+        giveGreetingsInput(input: GreetingsInput!): String!
+        number: Int!
+      }
+      type Mutation {
+        increment(n: Int!): Int!
+      }
+      type Human {
+        name: String!
+        father: Human!
+        fieldWithArgs(id: Int!): Int!
+      }
+    `,
+    resolvers: {},
+  });
   beforeAll(async () => {
-    await app.ready();
+    await isReady;
   });
   test('generate works', async () => {
     const { code, generatedSchema, scalarsEnumsHash } = await generate(
-      app.graphql.schema
+      server.graphql.schema
     );
 
     expect(code).toMatchSnapshot('featureComplete_code');
@@ -180,8 +218,17 @@ describe('feature complete app', () => {
 });
 
 test('prettier detects invalid code', async () => {
+  const { server, isReady } = createTestApp({
+    schema: gql`
+      type Query {
+        hello: String!
+      }
+    `,
+  });
+  await isReady;
+
   await expect(
-    generate(app.graphql.schema, {
+    generate(server.graphql.schema, {
       preImport: `
         con a; // invalid code
         `,
