@@ -4,6 +4,7 @@ import { waitForExpect } from 'test-utils';
 import { app, codegen } from '../src';
 import {
   client as generatedClient,
+  mutation,
   GreetingsEnum,
   resolved,
 } from '../src/generated/gqless';
@@ -255,4 +256,35 @@ test('type field with args', async () => {
   });
 
   expect(result).toBe(123);
+});
+
+describe('mutation', () => {
+  test('mutation works', async () => {
+    await resolved(() => {
+      return mutation.increment({
+        n: 1,
+      });
+    }).then((n) => {
+      expect(n).toBe(1);
+    });
+
+    await resolved(
+      () => {
+        return mutation.increment({
+          n: 2,
+        });
+      },
+      {
+        refetch: true,
+      }
+    ).then((n) => {
+      expect(n).toBe(3);
+    });
+
+    const n = mutation.increment({
+      n: 2,
+    });
+
+    expect(n).toBe(3);
+  });
 });

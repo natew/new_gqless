@@ -46,6 +46,7 @@ export type Query = {
   arrayObjectArgs: Array<Human>;
   greetings: GreetingsEnum;
   giveGreetingsInput: Scalars['String'];
+  number: Scalars['Int'];
 };
 
 export type QueryStringWithArgsArgs = {
@@ -71,6 +72,15 @@ export type QueryArrayObjectArgsArgs = {
 
 export type QueryGiveGreetingsInputArgs = {
   input: GreetingsInput;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  increment: Scalars['Int'];
+};
+
+export type MutationIncrementArgs = {
+  n: Scalars['Int'];
 };
 
 export type Human = {
@@ -206,6 +216,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<DeepPartial<Scalars['String']>>;
   Query: ResolverTypeWrapper<{}>;
   Int: ResolverTypeWrapper<DeepPartial<Scalars['Int']>>;
+  Mutation: ResolverTypeWrapper<{}>;
   Human: ResolverTypeWrapper<DeepPartial<Human>>;
   Boolean: ResolverTypeWrapper<DeepPartial<Scalars['Boolean']>>;
 };
@@ -217,6 +228,7 @@ export type ResolversParentTypes = {
   String: DeepPartial<Scalars['String']>;
   Query: {};
   Int: DeepPartial<Scalars['Int']>;
+  Mutation: {};
   Human: DeepPartial<Human>;
   Boolean: DeepPartial<Scalars['Boolean']>;
 };
@@ -283,6 +295,19 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QueryGiveGreetingsInputArgs, 'input'>
   >;
+  number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+};
+
+export type MutationResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']
+> = {
+  increment?: Resolver<
+    ResolversTypes['Int'],
+    ParentType,
+    ContextType,
+    RequireFields<MutationIncrementArgs, 'n'>
+  >;
 };
 
 export type HumanResolvers<
@@ -303,6 +328,7 @@ export type HumanResolvers<
 export type Resolvers<ContextType = any> = {
   ExampleScalar?: GraphQLScalarType;
   Query?: QueryResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
   Human?: HumanResolvers<ContextType>;
 };
 

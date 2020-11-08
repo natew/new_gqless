@@ -11,7 +11,8 @@ import {
   Schema,
 } from '../Schema/types';
 import { AliasManager } from '../Selection/AliasManager';
-import { Selection } from '../Selection/selection';
+import { Selection, SelectionType } from '../Selection/selection';
+import { SelectionManager } from '../Selection/SelectionManager';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
@@ -19,11 +20,8 @@ export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
   scalarsEnumsHash: ScalarsEnumsHash,
   queryFetcher: QueryFetcher,
-  {
-    isProduction = process.env.NODE_ENV === 'production',
-  }: { isProduction?: boolean } = {}
+  {}: { isProduction?: boolean } = {}
 ) {
-  const emptyObject = {} as const;
   const aliasManager = new AliasManager();
 
   const interceptorManager = new InterceptorManager();
@@ -42,6 +40,8 @@ export function createClient<GeneratedSchema = never>(
 
     return Promise.resolve();
   }
+
+  const selectionManager = new SelectionManager();
 
   new Scheduler(interceptorManager, resolveAllSelections);
 
@@ -97,12 +97,17 @@ export function createClient<GeneratedSchema = never>(
     }
   }
 
-  async function resolveSelections(
-    selections: Selection[] | Set<Selection>,
-    cache: typeof clientCache = clientCache
+  async function buildAndFetchSelections(
+    selections: Selection[],
+    cache: typeof clientCache,
+    type: 'query' | 'mutation' | 'subscription'
   ) {
+    if (selections.length === 0) return;
+
     try {
-      const { query, variables } = buildQuery(selections);
+      const { query, variables } = buildQuery(selections, {
+        type,
+      });
 
       const { data, errors } = await queryFetcher(query, variables);
 
@@ -123,6 +128,23 @@ export function createClient<GeneratedSchema = never>(
     } finally {
       interceptorManager.removeSelections(selections);
     }
+  }
+
+  async function resolveSelections(
+    selections: Selection[] | Set<Selection>,
+    cache: typeof clientCache = clientCache
+  ) {
+    const {
+      querySelections,
+      mutationSelections,
+      subscriptionSelections,
+    } = selectionManager.separateSelectionTypes(selections);
+
+    await Promise.all([
+      buildAndFetchSelections(querySelections, cache, 'query'),
+      buildAndFetchSelections(mutationSelections, cache, 'mutation'),
+      buildAndFetchSelections(subscriptionSelections, cache, 'subscription'),
+    ]);
   }
 
   function createArrayAccessor(
@@ -174,13 +196,11 @@ export function createClient<GeneratedSchema = never>(
     if (allowCache && cacheValue === null) return null;
 
     return new Proxy(
-      isProduction
-        ? emptyObject
-        : (fromPairs(
-            Object.keys(schemaType).map((key) => {
-              return [key, ProxySymbol];
-            })
-          ) as Record<string, unknown>),
+      fromPairs(
+        Object.keys(schemaType).map((key) => {
+          return [key, ProxySymbol];
+        })
+      ) as Record<string, unknown>,
       {
         get(target, key: string, receiver) {
           if (!schemaType.hasOwnProperty(key))
@@ -255,12 +275,31 @@ export function createClient<GeneratedSchema = never>(
       ) as Record<string, unknown>,
       {
         get(target, key: string, receiver) {
+          if (!schema.hasOwnProperty(key))
+            return Reflect.get(target, key, receiver);
+
           const value = schema[key];
 
           if (value) {
             const selection = new Selection({
               key,
               aliasManager,
+              type: (() => {
+                switch (key) {
+                  case 'subscription': {
+                    return SelectionType.Subscription;
+                  }
+                  case 'mutation': {
+                    return SelectionType.Mutation;
+                  }
+                  case 'query': {
+                    return SelectionType.Query;
+                  }
+                  default: {
+                    throw Error('Not expected schema type');
+                  }
+                }
+              })(),
             });
 
             return createAccessor(value, selection);

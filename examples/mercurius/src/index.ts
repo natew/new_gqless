@@ -3,6 +3,7 @@ import { random, range } from 'lodash';
 import Mercurius from 'mercurius';
 import mercuriusCodegen from 'mercurius-codegen';
 import { generate } from 'randomstring';
+import { gql } from 'test-utils';
 
 import { GreetingsEnum } from './generated/mercurius';
 
@@ -18,8 +19,9 @@ export const newHuman = ({ name }: { name?: string } = {}) => {
   };
 };
 
+let inc = 0;
 app.register(Mercurius, {
-  schema: `
+  schema: gql`
     scalar ExampleScalar
 
     enum GreetingsEnum {
@@ -33,24 +35,28 @@ app.register(Mercurius, {
       scal: ExampleScalar
     }
     type Query {
-        simpleString: String!
-        stringWithArgs(hello: String!): String!
-        stringNullableWithArgs(hello: String!, helloTwo: String): String
-        stringNullableWithArgsArray(hello: [String]!): String
-        object: Human
-        objectArray: [Human]
-        objectWithArgs(who: String!): Human!
-        arrayString: [String!]!
-        arrayObjectArgs(limit: Int!): [Human!]!
-        greetings: GreetingsEnum!
-        giveGreetingsInput(input: GreetingsInput!): String!
+      simpleString: String!
+      stringWithArgs(hello: String!): String!
+      stringNullableWithArgs(hello: String!, helloTwo: String): String
+      stringNullableWithArgsArray(hello: [String]!): String
+      object: Human
+      objectArray: [Human]
+      objectWithArgs(who: String!): Human!
+      arrayString: [String!]!
+      arrayObjectArgs(limit: Int!): [Human!]!
+      greetings: GreetingsEnum!
+      giveGreetingsInput(input: GreetingsInput!): String!
+      number: Int!
+    }
+    type Mutation {
+      increment(n: Int!): Int!
     }
     type Human {
       name: String!
       father: Human!
       fieldWithArgs(id: Int!): Int!
     }
-    `,
+  `,
   resolvers: {
     Query: {
       simpleString() {
@@ -85,6 +91,14 @@ app.register(Mercurius, {
       },
       stringNullableWithArgsArray(_root, { hello }) {
         return hello[0];
+      },
+      number() {
+        return inc;
+      },
+    },
+    Mutation: {
+      increment(_root, { n }) {
+        return (inc += n);
       },
     },
     Human: {

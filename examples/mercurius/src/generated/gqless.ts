@@ -63,8 +63,9 @@ const generatedSchema: Schema = {
       __type: 'String!',
       __args: { input: 'GreetingsInput!' },
     },
+    number: { __type: 'Int!' },
   },
-  mutation: {},
+  mutation: { increment: { __type: 'Int!', __args: { n: 'Int!' } } },
   subscription: {},
   GreetingsInput: {
     language: { __type: 'String!' },
@@ -99,9 +100,12 @@ export interface Query {
   giveGreetingsInput: (args: {
     input: GreetingsInput;
   }) => ScalarsEnums['String'];
+  number: ScalarsEnums['Int'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  increment: (args: { n: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
+}
 
 export interface Subscription {}
 

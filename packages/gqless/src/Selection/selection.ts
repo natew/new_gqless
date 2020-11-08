@@ -1,5 +1,11 @@
 import { AliasManager } from './AliasManager';
 
+export enum SelectionType {
+  Query,
+  Mutation,
+  Subscription,
+}
+
 export class Selection {
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
@@ -7,8 +13,13 @@ export class Selection {
   selections = new Set<Selection>();
   isArray: boolean;
 
+  type: SelectionType;
+
   alias?: string;
   aliasManager: AliasManager;
+
+  path: (string | number)[];
+  pathString: string;
 
   constructor({
     key,
@@ -17,6 +28,7 @@ export class Selection {
     argTypes,
     isArray = false,
     aliasManager,
+    type,
   }: {
     key: string | number;
     prevSelection?: Selection;
@@ -24,12 +36,14 @@ export class Selection {
     argTypes?: Selection['argTypes'];
     isArray?: boolean;
     aliasManager: AliasManager;
+    type?: SelectionType;
   }) {
     this.key = key;
     this.args = args;
     this.argTypes = argTypes;
     this.isArray = isArray;
     this.aliasManager = aliasManager;
+    this.type = type || prevSelection?.type || SelectionType.Query;
 
     if (prevSelection) {
       for (const selection of prevSelection.selections) {
@@ -39,13 +53,16 @@ export class Selection {
     } else {
       this.selections.add(this);
     }
+
+    this.path = this.getPath();
+    this.pathString = this.path.join('.');
   }
 
   get selectionsWithoutArrayIndex() {
     return Array.from(this.selections).filter((v) => typeof v.key === 'string');
   }
 
-  get path() {
+  private getPath() {
     const path: (string | number)[] = [];
 
     for (const selection of this.selections) {

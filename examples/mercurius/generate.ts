@@ -1,5 +1,5 @@
-const { writeGenerate } = require('gqless-cli');
-const { app } = require('./');
+import { writeGenerate } from '@dish/gqless-cli';
+import { app } from './src';
 
 (async () => {
   await app.ready();

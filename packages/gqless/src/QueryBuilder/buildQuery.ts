@@ -28,7 +28,13 @@ const stringSelectionTree = (v: SelectionTree, depth = 0) => {
 
 export const buildQuery = (
   selections: Set<Selection> | Selection[],
-  strip?: boolean
+  {
+    strip,
+    type,
+  }: {
+    strip?: boolean;
+    type: 'query' | 'mutation' | 'subscription';
+  }
 ) => {
   let variableId = 1;
 
@@ -98,8 +104,8 @@ export const buildQuery = (
 
   if (variableTypesEntries.length) {
     query = query.replace(
-      'query',
-      `query(${variableTypesEntries.reduce(
+      type,
+      `${type}(${variableTypesEntries.reduce(
         (acum, [variableName, type], index) => {
           acum += `$${variableName}:${type}`;
           if (index !== variableTypesEntries.length - 1) {
