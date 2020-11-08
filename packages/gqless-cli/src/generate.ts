@@ -1,7 +1,6 @@
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
-  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSchema,
@@ -91,6 +90,8 @@ export async function generate(
 
   const generatedSchema: Schema = {
     query: {},
+    mutation: {},
+    subscription: {},
   };
 
   const queryType = config.query;
@@ -204,10 +205,20 @@ export async function generate(
   let typescriptTypes = Object.entries(generatedSchema).reduce(
     (acum, [typeKey, typeValue]) => {
       const typeName = (() => {
-        if (typeKey === 'query') {
-          return 'Query';
+        switch (typeKey) {
+          case 'query': {
+            return 'Query';
+          }
+          case 'mutation': {
+            return 'Mutation';
+          }
+          case 'subscription': {
+            return 'Subscription';
+          }
+          default: {
+            return typeKey;
+          }
         }
-        return typeKey;
       })();
 
       if (inputTypeNames.has(typeName)) return acum;
@@ -261,6 +272,8 @@ export async function generate(
   typescriptTypes += `
     export interface GeneratedSchema {
       query: Query
+      mutation: Mutation
+      subscription: Subscription
     }
     `;
 
@@ -315,7 +328,9 @@ export async function generate(
 
   ${queryFetcher}
 
-  export const { client, resolveAllSelections, resolved } = createClient<GeneratedSchema>(generatedSchema, scalarsEnumsHash, queryFetcher)
+  export const { client, resolved } = createClient<GeneratedSchema>(generatedSchema, scalarsEnumsHash, queryFetcher)
+
+  export const { query, mutation, subscription } = client;
   `,
     {
       ...(await prettierConfig),

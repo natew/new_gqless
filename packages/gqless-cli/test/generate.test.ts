@@ -1,15 +1,15 @@
 import { app } from 'mercurius-example';
-import { createTestApp } from 'test-utils';
+import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '../src';
 
 test('basic functionality works', async () => {
   const { server, isReady } = createTestApp({
-    schema: `
-        type Query {
-            hello: String!
-        }
-        `,
+    schema: gql`
+      type Query {
+        hello: String!
+      }
+    `,
     resolvers: {
       Query: {
         hello() {
@@ -47,11 +47,11 @@ test('basic functionality works', async () => {
 
 test('custom query fetcher', async () => {
   const { server, isReady } = createTestApp({
-    schema: `
-          type Query {
-              hello: String!
-          }
-          `,
+    schema: gql`
+      type Query {
+        hello: String!
+      }
+    `,
     resolvers: {
       Query: {
         hello() {
@@ -108,12 +108,12 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
 
 test('custom scalars works', async () => {
   const { server, isReady } = createTestApp({
-    schema: `
-          scalar Custom
-          type Query {
-              hello: Custom!
-          }
-          `,
+    schema: gql`
+      scalar Custom
+      type Query {
+        hello: Custom!
+      }
+    `,
     resolvers: {
       Query: {
         hello() {
@@ -187,4 +187,72 @@ test('prettier detects invalid code', async () => {
         `,
     })
   ).rejects.toThrow("';' expected. (3:13)");
+});
+
+describe('mutation', () => {
+  const { server, isReady } = createTestApp({
+    schema: gql`
+      type Query {
+        hello: String!
+      }
+      type Mutation {
+        helloMutation(hello: String!): String!
+      }
+    `,
+    resolvers: {
+      Mutation: {
+        helloMutation(_root, { hello }: { hello: string }) {
+          return hello;
+        },
+      },
+    },
+  });
+
+  beforeAll(async () => {
+    await isReady;
+  });
+
+  test('generates mutation', async () => {
+    const { code, generatedSchema, scalarsEnumsHash } = await generate(
+      server.graphql.schema
+    );
+
+    expect(code).toMatchSnapshot('mutation_code');
+    expect(generatedSchema).toMatchSnapshot('mutation_generatedSchema');
+    expect(scalarsEnumsHash).toMatchSnapshot('mutation_scalarsEnumHash');
+  });
+});
+
+describe('subscription', () => {
+  const { server, isReady } = createTestApp({
+    schema: gql`
+      type Query {
+        hello: String!
+      }
+      type Subscription {
+        newNotification: String!
+      }
+    `,
+    resolvers: {
+      Query: {
+        hello() {
+          return 'hello world';
+        },
+      },
+    },
+  });
+
+  beforeAll(async () => {
+    await isReady;
+  });
+
+  test('generates subscription', async () => {
+    const { code, generatedSchema, scalarsEnumsHash } = await generate(
+      server.graphql.schema
+    );
+
+    expect(code).toMatchSnapshot('subscription_code');
+    expect(generatedSchema).toMatchSnapshot('subscription_generatedSchema');
+    expect(scalarsEnumsHash).toMatchSnapshot('subscription_scalarsEnumHash');
+  });
 });

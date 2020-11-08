@@ -7,6 +7,8 @@ export interface Type {
 
 export interface Schema extends Record<string, Record<string, Type>> {
   query: Record<string, Type>;
+  mutation: Record<string, Type>;
+  subscription: Record<string, Type>;
 }
 
 export interface Scalars {

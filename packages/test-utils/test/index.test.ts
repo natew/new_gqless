@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { resolve } from 'path';
 
-import { assertIsDefined, createTestApp, waitForExpect } from '../src';
+import { assertIsDefined, createTestApp, gql, waitForExpect } from '../src';
 
 const { readFile } = fs.promises;
 
@@ -119,4 +119,30 @@ test('waitForExpect', () => {
   waitForExpect(() => {
     expect(a).toBe(1);
   });
+});
+
+test('gql', () => {
+  const doc = gql`
+    query {
+      hello
+    }
+  `;
+
+  expect(doc).toBe(`
+    query {
+      hello
+    }
+  `);
+
+  const doc2 = gql`
+    query {
+      hello${'world'}
+    }
+  `;
+
+  expect(doc2).toBe(`
+    query {
+      helloworld
+    }
+  `);
 });

@@ -1,7 +1,1 @@
-module.exports = {
-  globals: {
-    "ts-jest": {
-      packageJson: "package.json",
-    },
-  },
-};
+module.exports = require('test-utils/jest.config.js');

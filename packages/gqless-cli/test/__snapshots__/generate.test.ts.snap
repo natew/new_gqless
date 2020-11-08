@@ -24,14 +24,24 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = { query: { hello: { __type: 'String!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -58,9 +68,13 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
@@ -70,7 +84,9 @@ exports[`basic functionality works: generate_generatedSchema 1`] = `
     \\"hello\\": {
       \\"__type\\": \\"String!\\"
     }
-  }
+  },
+  \\"mutation\\": {},
+  \\"subscription\\": {}
 }"
 `;
 
@@ -103,14 +119,24 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = { query: { hello: { __type: 'String!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -136,9 +162,13 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   const json = await response.json();
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
@@ -148,7 +178,9 @@ exports[`custom query fetcher: generate_customQueryFetcher_generatedSchema 1`] =
     \\"hello\\": {
       \\"__type\\": \\"String!\\"
     }
-  }
+  },
+  \\"mutation\\": {},
+  \\"subscription\\": {}
 }"
 `;
 
@@ -186,14 +218,24 @@ const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
   String: true,
 };
-const generatedSchema: Schema = { query: { hello: { __type: 'Custom!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'Custom!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['Custom'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -220,9 +262,13 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
@@ -232,7 +278,9 @@ exports[`custom scalars works: generate_customScalars_generatedSchema 1`] = `
     \\"hello\\": {
       \\"__type\\": \\"Custom!\\"
     }
-  }
+  },
+  \\"mutation\\": {},
+  \\"subscription\\": {}
 }"
 `;
 
@@ -308,6 +356,8 @@ const generatedSchema: Schema = {
       __args: { input: 'GreetingsInput!' },
     },
   },
+  mutation: {},
+  subscription: {},
   GreetingsInput: {
     language: { __type: 'String!' },
     value: { __type: 'String' },
@@ -343,6 +393,10 @@ export interface Query {
   }) => ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface Human {
   name: ScalarsEnums['String'];
   father: Human;
@@ -351,6 +405,8 @@ export interface Human {
 
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {
@@ -379,12 +435,225 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
-exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int!\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}}},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"name\\":{\\"__type\\":\\"String!\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}}}}"`;
+exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int!\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}}},\\"mutation\\":{},\\"subscription\\":{},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"name\\":{\\"__type\\":\\"String!\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}}}}"`;
 
 exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
+
+exports[`mutation generates mutation: mutation_code 1`] = `
+"import {
+  createClient,
+  QueryFetcher,
+  ScalarsEnumsHash,
+  Schema,
+} from '@dish/gqless';
+
+export type Maybe<T> = T | null;
+export type Exact<T extends { [key: string]: unknown }> = {
+  [K in keyof T]: T[K];
+};
+/** All built-in and custom scalars, mapped to their actual values */
+export interface Scalars {
+  ID: string;
+  String: string;
+  Boolean: boolean;
+  Int: number;
+  Float: number;
+}
+
+const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {
+    helloMutation: { __type: 'String!', __args: { hello: 'String!' } },
+  },
+  subscription: {},
+};
+
+export interface Query {
+  hello: ScalarsEnums['String'];
+}
+
+export interface Mutation {
+  helloMutation: (args: {
+    hello: ScalarsEnums['String'];
+  }) => ScalarsEnums['String'];
+}
+
+export interface Subscription {}
+
+export interface GeneratedSchema {
+  query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
+}
+
+export interface ScalarsEnums extends Scalars {}
+
+const queryFetcher: QueryFetcher = async function (query, variables) {
+  const response = await fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+    mode: 'cors',
+  });
+
+  if (!response.ok) {
+    throw new Error(\`Network error, received status code \${response.status}\`);
+  }
+
+  const json = await response.json();
+
+  return json;
+};
+
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
+"
+`;
+
+exports[`mutation generates mutation: mutation_generatedSchema 1`] = `
+Object {
+  "mutation": Object {
+    "helloMutation": Object {
+      "__args": Object {
+        "hello": "String!",
+      },
+      "__type": "String!",
+    },
+  },
+  "query": Object {
+    "hello": Object {
+      "__type": "String!",
+    },
+  },
+  "subscription": Object {},
+}
+`;
+
+exports[`mutation generates mutation: mutation_scalarsEnumHash 1`] = `
+Object {
+  "Boolean": true,
+  "String": true,
+}
+`;
+
+exports[`subscription generates subscription: subscription_code 1`] = `
+"import {
+  createClient,
+  QueryFetcher,
+  ScalarsEnumsHash,
+  Schema,
+} from '@dish/gqless';
+
+export type Maybe<T> = T | null;
+export type Exact<T extends { [key: string]: unknown }> = {
+  [K in keyof T]: T[K];
+};
+/** All built-in and custom scalars, mapped to their actual values */
+export interface Scalars {
+  ID: string;
+  String: string;
+  Boolean: boolean;
+  Int: number;
+  Float: number;
+}
+
+const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: { newNotification: { __type: 'String!' } },
+};
+
+export interface Query {
+  hello: ScalarsEnums['String'];
+}
+
+export interface Mutation {}
+
+export interface Subscription {
+  newNotification: ScalarsEnums['String'];
+}
+
+export interface GeneratedSchema {
+  query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
+}
+
+export interface ScalarsEnums extends Scalars {}
+
+const queryFetcher: QueryFetcher = async function (query, variables) {
+  const response = await fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+    mode: 'cors',
+  });
+
+  if (!response.ok) {
+    throw new Error(\`Network error, received status code \${response.status}\`);
+  }
+
+  const json = await response.json();
+
+  return json;
+};
+
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
+"
+`;
+
+exports[`subscription generates subscription: subscription_generatedSchema 1`] = `
+Object {
+  "mutation": Object {},
+  "query": Object {
+    "hello": Object {
+      "__type": "String!",
+    },
+  },
+  "subscription": Object {
+    "newNotification": Object {
+      "__type": "String!",
+    },
+  },
+}
+`;
+
+exports[`subscription generates subscription: subscription_scalarsEnumHash 1`] = `
+Object {
+  "Boolean": true,
+  "String": true,
+}
+`;

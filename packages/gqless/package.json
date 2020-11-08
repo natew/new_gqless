@@ -34,11 +34,13 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
+    "@dish/gqless-cli": "workspace:^0.1.6",
     "@size-limit/preset-small-lib": "^4.7.0",
     "@types/lodash": "^4.14.164",
     "@types/node": "^14.14.6",
     "@types/tap": "^14.10.1",
     "husky": "^4.3.0",
+    "mercurius": "^6.4.0",
     "nodemon": "^2.0.6",
     "rimraf": "^3.0.2",
     "size-limit": "^4.7.0",

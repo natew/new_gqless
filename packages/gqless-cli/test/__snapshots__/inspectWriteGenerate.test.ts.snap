@@ -22,14 +22,24 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = { query: { hello: { __type: 'String!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -56,9 +66,13 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
@@ -84,14 +98,24 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = { query: { hello: { __type: 'String!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -118,9 +142,13 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
@@ -147,14 +175,24 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = { query: { hello: { __type: 'String!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -181,9 +219,13 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
 
@@ -211,14 +253,24 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = { query: { hello: { __type: 'String!' } } };
+const generatedSchema: Schema = {
+  query: { hello: { __type: 'String!' } },
+  mutation: {},
+  subscription: {},
+};
 
 export interface Query {
   hello: ScalarsEnums['String'];
 }
 
+export interface Mutation {}
+
+export interface Subscription {}
+
 export interface GeneratedSchema {
   query: Query;
+  mutation: Mutation;
+  subscription: Subscription;
 }
 
 export interface ScalarsEnums extends Scalars {}
@@ -245,8 +297,12 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolveAllSelections, resolved } = createClient<
-  GeneratedSchema
->(generatedSchema, scalarsEnumsHash, queryFetcher);
+export const { client, resolved } = createClient<GeneratedSchema>(
+  generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher
+);
+
+export const { query, mutation, subscription } = client;
 "
 `;
