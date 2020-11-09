@@ -11,7 +11,11 @@ import {
   Schema,
 } from '../Schema/types';
 import { AliasManager } from '../Selection/AliasManager';
-import { Selection, SelectionType } from '../Selection/selection';
+import {
+  Selection,
+  SelectionType,
+  separateSelectionTypes,
+} from '../Selection/selection';
 import { SelectionManager } from '../Selection/SelectionManager';
 
 const ProxySymbol = Symbol('gqless-proxy');
@@ -41,7 +45,7 @@ export function createClient<GeneratedSchema = never>(
     return Promise.resolve();
   }
 
-  const selectionManager = new SelectionManager();
+  new SelectionManager();
 
   new Scheduler(interceptorManager, resolveAllSelections);
 
@@ -138,7 +142,7 @@ export function createClient<GeneratedSchema = never>(
       querySelections,
       mutationSelections,
       subscriptionSelections,
-    } = selectionManager.separateSelectionTypes(selections);
+    } = separateSelectionTypes(selections);
 
     await Promise.all([
       buildAndFetchSelections(querySelections, cache, 'query'),

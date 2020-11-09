@@ -18,7 +18,7 @@
     "prepare": "tsdx build",
     "size": "size-limit",
     "start": "tsdx watch",
-    "test": "tsdx test --coverage"
+    "test": "tsdx test"
   },
   "husky": {
     "hooks": {
@@ -34,6 +34,7 @@
     "wait-for-expect": "^3.0.2"
   },
   "devDependencies": {
+    "@jest/types": "^26.6.2",
     "@size-limit/preset-small-lib": "^4.7.0",
     "husky": "^4.3.0",
     "size-limit": "^4.7.0",
