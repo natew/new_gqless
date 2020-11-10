@@ -1,6 +1,7 @@
 import fromPairs from 'lodash/fromPairs';
 
 import { CacheNotFound, createCache } from '../Cache';
+import { AccessorCache } from '../Cache/accessorCache';
 import { InterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { Scheduler } from '../Scheduler';
@@ -10,13 +11,12 @@ import {
   ScalarsEnumsHash,
   Schema,
 } from '../Schema/types';
-import { AliasManager } from '../Selection/AliasManager';
 import {
   Selection,
+  SelectionManager,
   SelectionType,
   separateSelectionTypes,
-} from '../Selection/selection';
-import { SelectionManager } from '../Selection/SelectionManager';
+} from '../Selection';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
@@ -26,8 +26,6 @@ export function createClient<GeneratedSchema = never>(
   queryFetcher: QueryFetcher,
   {}: { isProduction?: boolean } = {}
 ) {
-  const aliasManager = new AliasManager();
-
   const interceptorManager = new InterceptorManager();
 
   const globalInterceptor = interceptorManager.globalInterceptor;
@@ -45,7 +43,9 @@ export function createClient<GeneratedSchema = never>(
     return Promise.resolve();
   }
 
-  new SelectionManager();
+  const selectionManager = new SelectionManager();
+
+  const accessorCache = new AccessorCache();
 
   new Scheduler(interceptorManager, resolveAllSelections);
 
@@ -158,38 +158,39 @@ export function createClient<GeneratedSchema = never>(
     const arrayCacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && arrayCacheValue === null) return null;
 
-    return new Proxy(
-      arrayCacheValue === CacheNotFound
-        ? [ProxySymbol]
-        : (arrayCacheValue as unknown[]),
-      {
-        get(target, key: string, receiver) {
-          const index = parseInt(key);
+    return accessorCache.getAccessor(selectionsArg, () => {
+      return new Proxy(
+        arrayCacheValue === CacheNotFound
+          ? [ProxySymbol]
+          : (arrayCacheValue as unknown[]),
+        {
+          get(target, key: string, receiver) {
+            const index = parseInt(key);
 
-          if (Number.isInteger(index)) {
-            if (
-              allowCache &&
-              arrayCacheValue !== CacheNotFound &&
-              arrayCacheValue[index] == null
-            ) {
-              /**
-               * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
-               */
-              return arrayCacheValue[index];
+            if (Number.isInteger(index)) {
+              if (
+                allowCache &&
+                arrayCacheValue !== CacheNotFound &&
+                arrayCacheValue[index] == null
+              ) {
+                /**
+                 * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
+                 */
+                return arrayCacheValue[index];
+              }
+
+              const selection = selectionManager.getSelection({
+                key: index,
+                prevSelection: selectionsArg,
+              });
+              return createAccessor(schemaType, selection);
             }
 
-            const selection = new Selection({
-              key: index,
-              prevSelection: selectionsArg,
-              aliasManager,
-            });
-            return createAccessor(schemaType, selection);
-          }
-
-          return Reflect.get(target, key, receiver);
-        },
-      }
-    );
+            return Reflect.get(target, key, receiver);
+          },
+        }
+      );
+    });
   }
 
   function createAccessor(
@@ -199,84 +200,86 @@ export function createClient<GeneratedSchema = never>(
     const cacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && cacheValue === null) return null;
 
-    return new Proxy(
-      fromPairs(
-        Object.keys(schemaType).map((key) => {
-          return [key, ProxySymbol];
-        })
-      ) as Record<string, unknown>,
-      {
-        get(target, key: string, receiver) {
-          if (!schemaType.hasOwnProperty(key))
-            return Reflect.get(target, key, receiver);
+    return accessorCache.getAccessor(selectionsArg, () => {
+      return new Proxy(
+        fromPairs(
+          Object.keys(schemaType).map((key) => {
+            return [key, ProxySymbol];
+          })
+        ) as Record<string, unknown>,
+        {
+          get(target, key: string, receiver) {
+            if (!schemaType.hasOwnProperty(key))
+              return Reflect.get(target, key, receiver);
 
-          const { __type, __args } = schemaType[key];
-          const { pureType, isArray } = parseSchemaType(__type);
+            const { __type, __args } = schemaType[key];
+            const { pureType, isArray } = parseSchemaType(__type);
 
-          const resolve = (args?: {
-            argValues: Record<string, unknown>;
-            argTypes: Record<string, string>;
-          }): unknown => {
-            const selection = new Selection({
-              key,
-              prevSelection: selectionsArg,
-              isArray,
-              aliasManager,
-              args: args != null ? args.argValues : undefined,
-              argTypes: args != null ? args.argTypes : undefined,
-            });
+            const resolve = (args?: {
+              argValues: Record<string, unknown>;
+              argTypes: Record<string, string>;
+            }): unknown => {
+              const selection = selectionManager.getSelection({
+                key,
+                prevSelection: selectionsArg,
+                isArray,
 
-            if (scalarsEnumsHash[pureType]) {
-              const cacheValue = clientCache.getCacheFromSelection(selection);
-
-              if (cacheValue === CacheNotFound) {
-                // If cache was not found, add the selections to the queue
-                interceptorManager.addSelection(selection);
-
-                return null;
-              }
-
-              if (!allowCache) {
-                // Or if you are making the network fetch always
-                interceptorManager.addSelection(selection);
-              }
-
-              return cacheValue;
-            }
-
-            const typeValue = schema[pureType];
-            if (typeValue) {
-              if (isArray) {
-                return createArrayAccessor(typeValue, selection);
-              }
-              return createAccessor(typeValue, selection);
-            }
-
-            throw Error('Not found!');
-          };
-
-          if (__args) {
-            return (argValues: Record<string, unknown> = {}) => {
-              return resolve({
-                argValues,
-                argTypes: __args,
+                args: args != null ? args.argValues : undefined,
+                argTypes: args != null ? args.argTypes : undefined,
               });
-            };
-          }
 
-          return resolve();
-        },
-      }
-    );
+              if (scalarsEnumsHash[pureType]) {
+                const cacheValue = clientCache.getCacheFromSelection(selection);
+
+                if (cacheValue === CacheNotFound) {
+                  // If cache was not found, add the selections to the queue
+                  interceptorManager.addSelection(selection);
+
+                  return null;
+                }
+
+                if (!allowCache) {
+                  // Or if you are making the network fetch always
+                  interceptorManager.addSelection(selection);
+                }
+
+                return cacheValue;
+              }
+
+              const typeValue = schema[pureType];
+              if (typeValue) {
+                if (isArray) {
+                  return createArrayAccessor(typeValue, selection);
+                }
+                return createAccessor(typeValue, selection);
+              }
+
+              throw Error('Not found!');
+            };
+
+            if (__args) {
+              return (argValues: Record<string, unknown> = {}) => {
+                return resolve({
+                  argValues,
+                  argTypes: __args,
+                });
+              };
+            }
+
+            return resolve();
+          },
+        }
+      );
+    });
   }
 
   function createSchemaAccesor() {
-    return new Proxy(
-      fromPairs(
-        Object.keys(schema).map((key) => {
-          return [key, ProxySymbol];
-        })
-      ) as Record<string, unknown>,
+    return (new Proxy(
+      {
+        query: ProxySymbol,
+        mutation: ProxySymbol,
+        subscription: ProxySymbol,
+      },
       {
         get(target, key: string, receiver) {
           if (!schema.hasOwnProperty(key))
@@ -285,9 +288,8 @@ export function createClient<GeneratedSchema = never>(
           const value = schema[key];
 
           if (value) {
-            const selection = new Selection({
+            const selection = selectionManager.getSelection({
               key,
-              aliasManager,
               type: (() => {
                 switch (key) {
                   case 'subscription': {
@@ -312,7 +314,7 @@ export function createClient<GeneratedSchema = never>(
           return Reflect.get(target, key, receiver);
         },
       }
-    ) as GeneratedSchema;
+    ) as unknown) as GeneratedSchema;
   }
 
   return {

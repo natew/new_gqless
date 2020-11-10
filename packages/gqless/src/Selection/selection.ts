@@ -1,5 +1,3 @@
-import { AliasManager } from './AliasManager';
-
 export enum SelectionType {
   Query,
   Mutation,
@@ -16,10 +14,11 @@ export class Selection {
   type: SelectionType;
 
   alias?: string;
-  aliasManager: AliasManager;
 
-  path: (string | number)[];
+  path: (string | number)[] = [];
   pathString: string;
+
+  selectionsWithoutArrayIndex: Selection[];
 
   constructor({
     key,
@@ -27,23 +26,23 @@ export class Selection {
     args,
     argTypes,
     isArray = false,
-    aliasManager,
     type,
+    alias,
   }: {
     key: string | number;
     prevSelection?: Selection;
     args?: Selection['args'];
     argTypes?: Selection['argTypes'];
     isArray?: boolean;
-    aliasManager: AliasManager;
     type?: SelectionType;
+    alias?: string;
   }) {
     this.key = key;
     this.args = args;
     this.argTypes = argTypes;
     this.isArray = isArray;
-    this.aliasManager = aliasManager;
     this.type = type || prevSelection?.type || SelectionType.Query;
+    this.alias = alias;
 
     if (prevSelection) {
       for (const selection of prevSelection.selections) {
@@ -54,62 +53,13 @@ export class Selection {
       this.selections.add(this);
     }
 
-    this.path = this.getPath();
-    this.pathString = this.path.join('.');
-  }
-
-  get selectionsWithoutArrayIndex() {
-    return Array.from(this.selections).filter((v) => typeof v.key === 'string');
-  }
-
-  private getPath() {
-    const path: (string | number)[] = [];
-
     for (const selection of this.selections) {
-      if (selection.args && selection.argTypes) {
-        if (!selection.alias) {
-          selection.alias = this.aliasManager.getVariableAlias(
-            selection.args,
-            selection.argTypes
-          );
-        }
-        path.push(selection.alias);
-      } else {
-        path.push(selection.key);
-      }
+      this.path.push(selection.alias || selection.key);
     }
+    this.pathString = this.path.join('.');
 
-    return path;
+    this.selectionsWithoutArrayIndex = Array.from(this.selections).filter(
+      (v) => typeof v.key === 'string'
+    );
   }
-}
-
-export function separateSelectionTypes(
-  selections: Selection[] | Set<Selection>
-) {
-  const querySelections: Selection[] = [];
-  const mutationSelections: Selection[] = [];
-  const subscriptionSelections: Selection[] = [];
-
-  for (const selection of selections) {
-    switch (selection.type) {
-      case SelectionType.Query: {
-        querySelections.push(selection);
-        break;
-      }
-      case SelectionType.Mutation: {
-        mutationSelections.push(selection);
-        break;
-      }
-      case SelectionType.Subscription: {
-        subscriptionSelections.push(selection);
-        break;
-      }
-    }
-  }
-
-  return {
-    querySelections,
-    mutationSelections,
-    subscriptionSelections,
-  };
 }

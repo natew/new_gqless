@@ -1,22 +1,19 @@
 import {
-  Selection,
+  SelectionManager,
   SelectionType,
-  AliasManager,
   separateSelectionTypes,
 } from '../src/Selection';
 
 describe('selection creation', () => {
-  const aliasManager = new AliasManager();
+  const manager = new SelectionManager();
 
   test('selection with manager and separating types', () => {
-    const selectionA = new Selection({
+    const selectionA = manager.getSelection({
       key: 'a',
-      aliasManager,
       type: SelectionType.Mutation,
     });
 
     expect(selectionA.key).toBe('a'), expect(selectionA.alias).toBe(undefined);
-    expect(selectionA.aliasManager).toBe(aliasManager);
     expect(selectionA.type).toBe(SelectionType.Mutation);
     expect(selectionA.isArray).toBe(false);
 
@@ -27,15 +24,13 @@ describe('selection creation', () => {
     expect(selectionA.path).toEqual(['a']);
     expect(selectionA.pathString).toBe('a');
 
-    const selectionB = new Selection({
+    const selectionB = manager.getSelection({
       key: 'b',
-      aliasManager,
       prevSelection: selectionA,
       isArray: true,
     });
 
     expect(selectionB.key).toBe('b');
-    expect(selectionB.aliasManager).toBe(aliasManager);
     expect(selectionB.type).toBe(SelectionType.Mutation);
     expect(selectionB.isArray).toBe(true);
 
@@ -43,9 +38,8 @@ describe('selection creation', () => {
     expect(selectionB.path).toEqual(['a', 'b']);
     expect(selectionB.pathString).toBe('a.b');
 
-    const selectionC = new Selection({
+    const selectionC = manager.getSelection({
       key: 0,
-      aliasManager,
       prevSelection: selectionB,
     });
 
@@ -53,9 +47,8 @@ describe('selection creation', () => {
       Array.from(selectionB.selections)
     );
 
-    const selectionD = new Selection({
+    const selectionD = manager.getSelection({
       key: 'd',
-      aliasManager,
       prevSelection: selectionC,
       args: {
         a: 1,
@@ -69,9 +62,8 @@ describe('selection creation', () => {
     expect(selectionD.pathString).toBe('a.b.0.gqlessAlias_0');
     expect(selectionD.alias).toBe('gqlessAlias_0');
 
-    const repeatSelectionD = new Selection({
+    const repeatSelectionD = manager.getSelection({
       key: 'd',
-      aliasManager,
       prevSelection: selectionC,
       args: {
         a: 1,
@@ -85,23 +77,20 @@ describe('selection creation', () => {
     expect(repeatSelectionD.pathString).toBe('a.b.0.gqlessAlias_0');
     expect(repeatSelectionD.alias).toBe('gqlessAlias_0');
 
-    const selectionE = new Selection({
+    const selectionE = manager.getSelection({
       key: 'e',
-      aliasManager,
       prevSelection: selectionD,
     });
 
     expect(selectionE.path).toEqual(['a', 'b', 0, 'gqlessAlias_0', 'e']);
     expect(selectionE.pathString).toBe('a.b.0.gqlessAlias_0.e');
 
-    const selectionF = new Selection({
+    const selectionF = manager.getSelection({
       key: 'f',
-      aliasManager,
     });
 
-    const selectionG = new Selection({
+    const selectionG = manager.getSelection({
       key: 'g',
-      aliasManager,
       type: SelectionType.Subscription,
     });
 

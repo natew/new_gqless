@@ -1,7 +1,7 @@
 import { stripIgnoredCharacters } from 'graphql/utilities/stripIgnoredCharacters';
 import lodashSet from 'lodash/set';
 
-import { Selection } from '../Selection/selection';
+import { Selection } from '../Selection';
 
 interface SelectionTree {
   [P: string]: SelectionTree | true;
