@@ -328,7 +328,7 @@ export async function generate(
 
   ${queryFetcher}
 
-  export const { client, resolved } = createClient<GeneratedSchema>(generatedSchema, scalarsEnumsHash, queryFetcher)
+  export const { client, resolved, selectFields } = createClient<GeneratedSchema>(generatedSchema, scalarsEnumsHash, queryFetcher)
 
   export const { query, mutation, subscription } = client;
   `,

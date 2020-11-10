@@ -124,7 +124,7 @@ export function createClient<GeneratedSchema = never>(
         const err = Error('Errors in resolve');
 
         if (Error.captureStackTrace) {
-          Error.captureStackTrace(err, resolveAllSelections);
+          Error.captureStackTrace(err, buildAndFetchSelections);
         }
 
         throw err;
@@ -343,7 +343,6 @@ export function createClient<GeneratedSchema = never>(
 
   return {
     client,
-    resolveAllSelections,
     resolved,
     selectFields,
   };

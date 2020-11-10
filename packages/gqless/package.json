@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -34,7 +34,7 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.6",
+    "@dish/gqless-cli": "workspace:^0.1.8",
     "@size-limit/preset-small-lib": "^4.7.0",
     "@types/lodash": "^4.14.164",
     "@types/node": "^14.14.6",

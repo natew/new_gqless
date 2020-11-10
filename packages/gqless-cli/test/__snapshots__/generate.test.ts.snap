@@ -68,7 +68,7 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher
@@ -162,7 +162,7 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   const json = await response.json();
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher
@@ -262,7 +262,7 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher
@@ -439,7 +439,7 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher
@@ -525,7 +525,7 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher
@@ -629,7 +629,7 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher
