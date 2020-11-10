@@ -76,6 +76,7 @@ const generatedSchema: Schema = {
     name: { __type: 'String!' },
     father: { __type: 'Human!' },
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
+    sons: { __type: '[Human!]' },
   },
 };
 
@@ -113,6 +114,7 @@ export interface Human {
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
+  sons: Maybe<Array<Human>>;
 }
 
 export interface GeneratedSchema {
@@ -132,7 +134,7 @@ const queryFetcher: QueryFetcher = function (query, variables) {
   });
 };
 
-export const { client, resolved } = createClient<GeneratedSchema>(
+export const { client, resolved, selectFields } = createClient<GeneratedSchema>(
   generatedSchema,
   scalarsEnumsHash,
   queryFetcher

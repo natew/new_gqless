@@ -8,6 +8,7 @@ import {
   mutation,
   query,
   resolved,
+  selectFields,
 } from '../src/generated/gqless';
 
 const testClient = createMercuriusTestClient(app);
@@ -296,6 +297,53 @@ describe('gqless integration tests', () => {
       }).then((n) => {
         expect(n).toBe(3);
       });
+    });
+  });
+});
+
+describe('select fields', () => {
+  test('selectFields recursive', async () => {
+    await resolved(
+      () => {
+        const one = selectFields(query, '*', 1);
+        const two = selectFields(query, '*', 2);
+        const three = selectFields(query, '*', 3);
+
+        return {
+          one,
+          two,
+          three,
+        };
+      },
+      {
+        refetch: true,
+      }
+    ).then((response) => {
+      expect(typeof response.one?.arrayObjectArgs).toBe('function');
+      expect(response.one?.objectArray?.length).toBeGreaterThanOrEqual(2);
+      expect(typeof response.two?.object?.name).toBe('string');
+    });
+  });
+
+  test('selectFields named', async () => {
+    await resolved(
+      () => {
+        return selectFields(query.object, [
+          'name',
+          'father.name',
+          'sons.0.name',
+          'fieldWithArgs',
+          'sons',
+        ]);
+      },
+      {
+        noCache: true,
+      }
+    ).then((response) => {
+      expect(typeof response?.name).toBe('string');
+      expect(typeof response?.father?.name).toBe('string');
+      expect(typeof response?.fieldWithArgs).toBe('function');
+      expect(typeof response?.sons?.[0]?.name).toBe('string');
     });
   });
 });

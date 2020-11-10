@@ -21,12 +21,15 @@ export function createAccessorCache() {
     return proxy;
   }
 
-  function getProxySelection(proxy: object) {
+  function getProxySelection(proxy: any) {
     return selectionProxyMap.get(proxy);
   }
 
   function isProxy(obj: any): obj is object {
-    return proxySet.has(obj);
+    return (
+      proxySet.has(obj) ||
+      (typeof obj === 'object' && obj !== null && !Array.isArray(obj))
+    );
   }
 
   return {

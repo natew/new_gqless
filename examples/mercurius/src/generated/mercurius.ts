@@ -88,6 +88,7 @@ export type Human = {
   name: Scalars['String'];
   father: Human;
   fieldWithArgs: Scalars['Int'];
+  sons?: Maybe<Array<Human>>;
 };
 
 export type HumanFieldWithArgsArgs = {
@@ -321,6 +322,11 @@ export type HumanResolvers<
     ParentType,
     ContextType,
     RequireFields<HumanFieldWithArgsArgs, 'id'>
+  >;
+  sons?: Resolver<
+    Maybe<Array<ResolversTypes['Human']>>,
+    ParentType,
+    ContextType
   >;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

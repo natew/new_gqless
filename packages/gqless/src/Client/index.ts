@@ -7,6 +7,7 @@ import { InterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { Scheduler } from '../Scheduler';
 import {
+  DeepPartial,
   parseSchemaType,
   QueryFetcher,
   ScalarsEnumsHash,
@@ -24,8 +25,7 @@ const ProxySymbol = Symbol('gqless-proxy');
 export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
   scalarsEnumsHash: ScalarsEnumsHash,
-  queryFetcher: QueryFetcher,
-  {}: { isProduction?: boolean } = {}
+  queryFetcher: QueryFetcher
 ) {
   const interceptorManager = new InterceptorManager();
 
@@ -159,45 +159,38 @@ export function createClient<GeneratedSchema = never>(
     const arrayCacheValue = clientCache.getCacheFromSelection(selectionsArg);
     if (allowCache && arrayCacheValue === null) return null;
 
-    return accessorCache.getAccessor(selectionsArg, () => {
-      return new Proxy(
-        arrayCacheValue === CacheNotFound
-          ? [ProxySymbol]
-          : (arrayCacheValue as unknown[]),
-        {
-          get(target, key: string, receiver) {
-            const index = parseInt(key);
+    return new Proxy(
+      arrayCacheValue === CacheNotFound || !Array.isArray(arrayCacheValue)
+        ? [ProxySymbol]
+        : (arrayCacheValue as unknown[]),
+      {
+        get(target, key: string, receiver) {
+          const index = parseInt(key);
 
-            if (Number.isInteger(index)) {
-              if (
-                allowCache &&
-                arrayCacheValue !== CacheNotFound &&
-                arrayCacheValue[index] == null
-              ) {
-                /**
-                 * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
-                 */
-                return arrayCacheValue[index];
-              }
-
-              const selection = selectionManager.getSelection({
-                key: index,
-                prevSelection: selectionsArg,
-              });
-              return createAccessor(schemaType, selection);
+          if (Number.isInteger(index)) {
+            if (
+              allowCache &&
+              arrayCacheValue !== CacheNotFound &&
+              arrayCacheValue[index] == null
+            ) {
+              /**
+               * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
+               */
+              return arrayCacheValue[index];
             }
 
-            return Reflect.get(target, key, receiver);
-          },
-        }
-      );
-    });
-  }
+            const selection = selectionManager.getSelection({
+              key: index,
+              prevSelection: selectionsArg,
+            });
+            return createAccessor(schemaType, selection);
+          }
 
-  type AccessorFn = {
-    (argValues?: Record<string, unknown>): unknown;
-    onlyNullableArgs?: boolean;
-  };
+          return Reflect.get(target, key, receiver);
+        },
+      }
+    );
+  }
 
   function createAccessor(
     schemaType: Schema[string],
@@ -263,22 +256,12 @@ export function createClient<GeneratedSchema = never>(
             };
 
             if (__args) {
-              const fnResolve: AccessorFn = function (
-                argValues: Record<string, unknown> = {}
-              ) {
+              return function ProxyFn(argValues: Record<string, unknown> = {}) {
                 return resolve({
                   argValues,
                   argTypes: __args,
                 });
               };
-
-              fnResolve.onlyNullableArgs = Object.entries(__args).every(
-                ([, argType]) => {
-                  return !argType.endsWith('!');
-                }
-              );
-
-              return fnResolve;
             }
 
             return resolve();
@@ -288,43 +271,48 @@ export function createClient<GeneratedSchema = never>(
     });
   }
 
-  function selectFields<A extends object>(
+  function selectFields<A extends object | null | undefined>(
     accessor: A,
+    fields?: '*',
+    recursionDepth?: number
+  ): A;
+  function selectFields<A extends object | null | undefined>(
+    accessor: A,
+    fields: Array<string | number>,
+    recursionDepth?: undefined
+  ): DeepPartial<A>;
+  function selectFields<A extends object>(
+    accessor: A | null | undefined,
     fields: '*' | Array<string | number> = '*',
     recursionDepth = 1
   ) {
+    if (accessor == null) return accessor;
+
+    if (!accessorCache.isProxy(accessor)) return accessor;
+
+    if (fields.length === 0) {
+      return {} as A;
+    }
+
     let prevAllowCache = allowCache;
-
     try {
-      if (!Array.isArray(fields)) {
-        fields = [fields];
-      } else if (fields.length === 0) {
-        return {} as A;
-      }
-
+      // This basically enables "refetch" by default
       allowCache = false;
 
-      if (fields[0] === '*') {
+      if (fields === '*') {
         if (recursionDepth > 0) {
           const allAccessorKeys = Object.keys(accessor);
           return allAccessorKeys.reduce((acum, fieldName) => {
             const fieldValue: unknown = lodashGet(accessor, fieldName);
-            if (typeof fieldValue === 'function') {
-              if ((fieldValue as AccessorFn).onlyNullableArgs) {
-                const returnedValue: unknown = fieldValue();
-                if (accessorCache.isProxy(returnedValue)) {
-                  const selection = accessorCache.getProxySelection(
-                    returnedValue
-                  );
-                  lodashSet(
-                    acum,
-                    selection?.alias || fieldName,
-                    selectFields(returnedValue, '*', recursionDepth - 1)
-                  );
-                } else {
-                  lodashSet(acum, fieldName, returnedValue);
-                }
-              }
+
+            if (Array.isArray(fieldValue)) {
+              lodashSet(
+                acum,
+                fieldName,
+                fieldValue.map((value) => {
+                  return selectFields(value, '*', recursionDepth - 1);
+                })
+              );
             } else if (accessorCache.isProxy(fieldValue)) {
               lodashSet(
                 acum,
@@ -342,16 +330,16 @@ export function createClient<GeneratedSchema = never>(
       }
 
       return fields.reduce((acum, fieldName) => {
-        const fieldValue = lodashGet(accessor, fieldName);
+        const fieldValue = lodashGet(accessor, fieldName, CacheNotFound);
 
-        if (typeof fieldValue === 'function') {
-          if ((fieldValue as AccessorFn).onlyNullableArgs) {
-            const returnedValue = fieldValue();
-            if (!accessorCache.isProxy(returnedValue)) {
-              lodashSet(acum, fieldName, returnedValue);
-            }
-          }
-        } else if (!accessorCache.isProxy(fieldValue)) {
+        if (fieldValue === CacheNotFound || Array.isArray(fieldValue)) {
+          return acum;
+        }
+
+        if (
+          typeof fieldValue === 'function' ||
+          !accessorCache.isProxy(fieldValue)
+        ) {
           lodashSet(acum, fieldName, fieldValue);
         }
 

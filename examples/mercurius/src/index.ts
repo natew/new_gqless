@@ -55,6 +55,7 @@ app.register(Mercurius, {
       name: String!
       father: Human!
       fieldWithArgs(id: Int!): Int!
+      sons: [Human!]
     }
   `,
   resolvers: {
@@ -69,13 +70,13 @@ app.register(Mercurius, {
         return newHuman();
       },
       objectArray() {
-        return range(random(1, 10)).map(() => newHuman());
+        return range(random(2, 3)).map(() => newHuman());
       },
       objectWithArgs(_root, { who }) {
         return newHuman({ name: who });
       },
       arrayString() {
-        return range(random(1, 10)).map(() => generate());
+        return range(random(1, 2)).map(() => generate());
       },
       arrayObjectArgs(_root, { limit }) {
         return range(limit).map(() => newHuman());
@@ -107,6 +108,9 @@ app.register(Mercurius, {
       },
       fieldWithArgs(_root, { id }) {
         return id;
+      },
+      sons() {
+        return range(random(2, 3)).map(() => newHuman());
       },
     },
   },
