@@ -1,5 +1,6 @@
 import fromPairs from 'lodash/fromPairs';
 import lodashGet from 'lodash/get';
+import lodashSet from 'lodash/set';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../Cache';
 import { InterceptorManager } from '../Interceptor';
@@ -193,6 +194,11 @@ export function createClient<GeneratedSchema = never>(
     });
   }
 
+  type AccessorFn = {
+    (argValues?: Record<string, unknown>): unknown;
+    onlyNullableArgs?: boolean;
+  };
+
   function createAccessor(
     schemaType: Schema[string],
     selectionsArg: Selection
@@ -223,7 +229,6 @@ export function createClient<GeneratedSchema = never>(
                 key,
                 prevSelection: selectionsArg,
                 isArray,
-
                 args: args != null ? args.argValues : undefined,
                 argTypes: args != null ? args.argTypes : undefined,
               });
@@ -258,12 +263,22 @@ export function createClient<GeneratedSchema = never>(
             };
 
             if (__args) {
-              return (argValues: Record<string, unknown> = {}) => {
+              const fnResolve: AccessorFn = function (
+                argValues: Record<string, unknown> = {}
+              ) {
                 return resolve({
                   argValues,
                   argTypes: __args,
                 });
               };
+
+              fnResolve.onlyNullableArgs = Object.entries(__args).every(
+                ([, argType]) => {
+                  return !argType.endsWith('!');
+                }
+              );
+
+              return fnResolve;
             }
 
             return resolve();
@@ -273,28 +288,78 @@ export function createClient<GeneratedSchema = never>(
     });
   }
 
-  function selectFields(accessor: object, fields: string, recursionDepth = 1) {
+  function selectFields<A extends object>(
+    accessor: A,
+    fields: '*' | Array<string | number> = '*',
+    recursionDepth = 1
+  ) {
     let prevAllowCache = allowCache;
 
-    allowCache = false;
+    try {
+      if (!Array.isArray(fields)) {
+        fields = [fields];
+      } else if (fields.length === 0) {
+        return {} as A;
+      }
 
-    if (fields === '*') {
-      if (recursionDepth > 0) {
-        const keys = Object.keys(accessor || {});
-        if (keys.length) {
-          for (const key of keys) {
-            const obj = lodashGet(accessor, key);
-            if (typeof obj === 'object' && obj !== null) {
-              selectFields(obj, '*', recursionDepth - 1);
+      allowCache = false;
+
+      if (fields[0] === '*') {
+        if (recursionDepth > 0) {
+          const allAccessorKeys = Object.keys(accessor);
+          return allAccessorKeys.reduce((acum, fieldName) => {
+            const fieldValue: unknown = lodashGet(accessor, fieldName);
+            if (typeof fieldValue === 'function') {
+              if ((fieldValue as AccessorFn).onlyNullableArgs) {
+                const returnedValue: unknown = fieldValue();
+                if (accessorCache.isProxy(returnedValue)) {
+                  const selection = accessorCache.getProxySelection(
+                    returnedValue
+                  );
+                  lodashSet(
+                    acum,
+                    selection?.alias || fieldName,
+                    selectFields(returnedValue, '*', recursionDepth - 1)
+                  );
+                } else {
+                  lodashSet(acum, fieldName, returnedValue);
+                }
+              }
+            } else if (accessorCache.isProxy(fieldValue)) {
+              lodashSet(
+                acum,
+                fieldName,
+                selectFields(fieldValue, '*', recursionDepth - 1)
+              );
+            } else {
+              lodashSet(acum, fieldName, fieldValue);
             }
-          }
+            return acum;
+          }, {} as A);
+        } else {
+          return {} as A;
         }
       }
-    } else {
-      lodashGet(accessor, fields);
-    }
 
-    allowCache = prevAllowCache;
+      return fields.reduce((acum, fieldName) => {
+        const fieldValue = lodashGet(accessor, fieldName);
+
+        if (typeof fieldValue === 'function') {
+          if ((fieldValue as AccessorFn).onlyNullableArgs) {
+            const returnedValue = fieldValue();
+            if (!accessorCache.isProxy(returnedValue)) {
+              lodashSet(acum, fieldName, returnedValue);
+            }
+          }
+        } else if (!accessorCache.isProxy(fieldValue)) {
+          lodashSet(acum, fieldName, fieldValue);
+        }
+
+        return acum;
+      }, {} as A);
+    } finally {
+      allowCache = prevAllowCache;
+    }
   }
 
   function createSchemaAccesor() {
