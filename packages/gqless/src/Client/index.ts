@@ -288,6 +288,12 @@ export function createClient<GeneratedSchema = never>(
   ) {
     if (accessor == null) return accessor;
 
+    if (Array.isArray(accessor)) {
+      return accessor.map((value) =>
+        selectFields(value, fields as any, recursionDepth)
+      );
+    }
+
     if (!accessorCache.isProxy(accessor)) return accessor;
 
     if (fields.length === 0) {

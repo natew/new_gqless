@@ -325,6 +325,20 @@ describe('select fields', () => {
     });
   });
 
+  test('selectFields an array', async () => {
+    await resolved(
+      () => {
+        return selectFields(query.objectArray, '*', 2);
+      },
+      {
+        noCache: true,
+      }
+    ).then((response) => {
+      expect(typeof response?.[0]?.name).toBe('string');
+      expect(typeof response?.[0]?.father.name).toBe('string');
+    });
+  });
+
   test('selectFields named', async () => {
     await resolved(
       () => {
