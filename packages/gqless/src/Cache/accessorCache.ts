@@ -1,16 +1,23 @@
 import { Selection } from '../Selection';
 
-export class AccessorCache {
-  proxyMap = new WeakMap<Selection, object>();
+export function createAccessorCache() {
+  const proxyMap = new WeakMap<Selection, object>();
 
-  getAccessor(selection: Selection, proxyFactory: () => object): object {
-    let proxy = this.proxyMap.get(selection);
+  function getAccessor(
+    selection: Selection,
+    proxyFactory: () => object
+  ): object {
+    let proxy = proxyMap.get(selection);
 
     if (proxy == null) {
       proxy = proxyFactory();
-      this.proxyMap.set(selection, proxy);
+      proxyMap.set(selection, proxy);
     }
 
     return proxy;
   }
+
+  return {
+    getAccessor,
+  };
 }

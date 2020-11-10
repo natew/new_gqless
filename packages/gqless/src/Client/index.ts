@@ -1,7 +1,7 @@
 import fromPairs from 'lodash/fromPairs';
+import lodashGet from 'lodash/get';
 
-import { CacheNotFound, createCache } from '../Cache';
-import { AccessorCache } from '../Cache/accessorCache';
+import { CacheNotFound, createAccessorCache, createCache } from '../Cache';
 import { InterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { Scheduler } from '../Scheduler';
@@ -45,7 +45,7 @@ export function createClient<GeneratedSchema = never>(
 
   const selectionManager = new SelectionManager();
 
-  const accessorCache = new AccessorCache();
+  const accessorCache = createAccessorCache();
 
   new Scheduler(interceptorManager, resolveAllSelections);
 
@@ -273,6 +273,30 @@ export function createClient<GeneratedSchema = never>(
     });
   }
 
+  function selectFields(accessor: object, fields: string, recursionDepth = 1) {
+    let prevAllowCache = allowCache;
+
+    allowCache = false;
+
+    if (fields === '*') {
+      if (recursionDepth > 0) {
+        const keys = Object.keys(accessor || {});
+        if (keys.length) {
+          for (const key of keys) {
+            const obj = lodashGet(accessor, key);
+            if (typeof obj === 'object' && obj !== null) {
+              selectFields(obj, '*', recursionDepth - 1);
+            }
+          }
+        }
+      }
+    } else {
+      lodashGet(accessor, fields);
+    }
+
+    allowCache = prevAllowCache;
+  }
+
   function createSchemaAccesor() {
     return (new Proxy(
       {
@@ -321,5 +345,6 @@ export function createClient<GeneratedSchema = never>(
     client,
     resolveAllSelections,
     resolved,
+    selectFields,
   };
 }
