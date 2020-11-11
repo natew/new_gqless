@@ -10,17 +10,15 @@ interface SelectionTree {
 const stringSelectionTree = (v: SelectionTree, depth = 0) => {
   const spaceDepth = '  '.repeat(depth);
   const treeEntries = Object.entries(v);
-  return treeEntries.reduce((acum, [key, value], index) => {
+  return treeEntries.reduce((acum, [key, value]) => {
     if (typeof value === 'object') {
-      acum += `${spaceDepth}${key} {\n`;
+      acum += `${spaceDepth}${key} {`;
 
       acum += stringSelectionTree(value, depth + 1);
 
       acum += `${spaceDepth}\n${spaceDepth}}${spaceDepth}`;
     } else {
-      acum += `${
-        index === treeEntries.length - 1 ? '\n' : ''
-      }${spaceDepth}${key}`;
+      acum += `\n${spaceDepth}${key}`;
     }
     return acum;
   }, '');
@@ -29,18 +27,17 @@ const stringSelectionTree = (v: SelectionTree, depth = 0) => {
 export const buildQuery = (
   selections: Set<Selection> | Selection[],
   {
-    strip,
     type,
   }: {
-    strip?: boolean;
     type: 'query' | 'mutation' | 'subscription';
   }
 ) => {
   let variableId = 1;
 
   const selectionTree: SelectionTree = {};
-  const variablesMap = new Map<unknown, string>();
+  const variablesMap = new Map<string, string>();
   const variableTypes: Record<string, string> = {};
+  const variablesMapKeyValue: Record<string, unknown> = {};
 
   for (const selection of selections) {
     lodashSet(
@@ -55,23 +52,30 @@ export const buildQuery = (
             ? `${selectionValue.alias}: ${selectionValue.key}`
             : selectionValue.key;
 
-          if (selectionValue.args && argsLength) {
+          if (selectionValue.args && selectionValue.argTypes && argsLength) {
             return `${selectionKey}(${Object.entries(
               selectionValue.args
             ).reduce((acum, [key, value], index) => {
-              const variableMapValue = variablesMap.get(value);
+              const variableMapKey = `${
+                selectionValue.argTypes![key]
+              }-${key}-${JSON.stringify(value)}`;
+
+              variablesMapKeyValue[variableMapKey] = value;
+
+              const variableMapValue = variablesMap.get(variableMapKey);
+
               if (variableMapValue) {
                 acum += `${key}:$${variableMapValue}`;
               } else {
                 const newVariableValue = `${key}${variableId++}`;
-                const newVariableType = selectionValue.argTypes?.[key];
-                if (newVariableType) {
-                  variableTypes[newVariableValue] = newVariableType;
-                }
+                const newVariableType = selectionValue.argTypes![key];
 
-                variablesMap.set(value, newVariableValue);
+                variableTypes[newVariableValue] = newVariableType;
+                variablesMap.set(variableMapKey, newVariableValue);
+
                 acum += `${key}:$${newVariableValue}`;
               }
+
               if (index < argsLength - 1) {
                 acum += ',';
               }
@@ -94,7 +98,7 @@ export const buildQuery = (
     variables = variablesObj;
 
     variablesMap.forEach((value, key) => {
-      variablesObj[value] = key;
+      variablesObj[value] = variablesMapKeyValue[key];
     });
   }
 
@@ -118,9 +122,7 @@ export const buildQuery = (
     );
   }
 
-  if (strip) {
-    query = stripIgnoredCharacters(query);
-  }
+  query = stripIgnoredCharacters(query);
 
   return {
     query,

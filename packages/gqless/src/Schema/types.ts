@@ -25,6 +25,8 @@ export type QueryFetcher = (
   variables?: Record<string, any>
 ) => Promise<ExecutionResult> | ExecutionResult;
 
+export type ParseSchemaTypeInfo = ReturnType<typeof parseSchemaType>;
+
 export function parseSchemaType(type: string) {
   let isArray = false;
   let isNullable = true;

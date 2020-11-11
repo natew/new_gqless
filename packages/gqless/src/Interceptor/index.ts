@@ -22,38 +22,47 @@ export class Interceptor {
   }
 }
 
-export class InterceptorManager {
-  interceptors = new Set<Interceptor>();
-  globalInterceptor: Interceptor;
+export type InterceptorManager = ReturnType<typeof createInterceptorManager>;
 
-  constructor() {
-    this.globalInterceptor = new Interceptor();
-    this.interceptors.add(this.globalInterceptor);
-  }
+export function createInterceptorManager() {
+  const interceptors = new Set<Interceptor>();
 
-  createInterceptor() {
+  const globalInterceptor = new Interceptor();
+  interceptors.add(globalInterceptor);
+
+  function createInterceptor() {
     const interceptor = new Interceptor();
-    this.interceptors.add(interceptor);
+    interceptors.add(interceptor);
     return interceptor;
   }
 
-  removeInterceptor(interceptor: Interceptor) {
-    this.interceptors.delete(interceptor);
+  function removeInterceptor(interceptor: Interceptor) {
+    interceptors.delete(interceptor);
   }
 
-  addSelection(selection: Selection) {
-    for (const interceptor of this.interceptors) {
+  function addSelection(selection: Selection) {
+    for (const interceptor of interceptors) {
       interceptor.addSelection(selection);
     }
   }
 
-  addSelections(selection: Selection[] | Set<Selection>) {
-    selection.forEach(this.addSelection);
+  function addSelections(selection: Selection[] | Set<Selection>) {
+    selection.forEach(addSelection);
   }
 
-  removeSelections(selections: Selection[] | Set<Selection>) {
-    for (const interceptor of this.interceptors) {
+  function removeSelections(selections: Selection[] | Set<Selection>) {
+    for (const interceptor of interceptors) {
       interceptor.removeSelections(selections);
     }
   }
+
+  return {
+    interceptors,
+    globalInterceptor,
+    createInterceptor,
+    removeInterceptor,
+    addSelection,
+    addSelections,
+    removeSelections,
+  };
 }

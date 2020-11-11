@@ -1,4 +1,8 @@
-import { Selection, SelectionType } from './selection';
+import {
+  Selection,
+  SelectionType,
+  SelectionConstructorArgs,
+} from './selection';
 
 export function separateSelectionTypes(
   selections: Selection[] | Set<Selection>
@@ -62,14 +66,7 @@ export class SelectionManager {
     argTypes,
     isArray,
     type,
-  }: {
-    key: Selection['key'];
-    prevSelection?: Selection;
-    args?: Selection['args'];
-    argTypes?: Selection['argTypes'];
-    isArray?: Selection['isArray'];
-    type?: Selection['type'];
-  }) {
+  }: SelectionConstructorArgs) {
     let alias: string | undefined;
     let cacheKey = key.toString();
     if (args && argTypes) {

@@ -3,7 +3,7 @@ import lodashGet from 'lodash/get';
 import lodashSet from 'lodash/set';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../Cache';
-import { InterceptorManager } from '../Interceptor';
+import { createInterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { Scheduler } from '../Scheduler';
 import {
@@ -27,7 +27,7 @@ export function createClient<GeneratedSchema = never>(
   scalarsEnumsHash: ScalarsEnumsHash,
   queryFetcher: QueryFetcher
 ) {
-  const interceptorManager = new InterceptorManager();
+  const interceptorManager = createInterceptorManager();
 
   const globalInterceptor = interceptorManager.globalInterceptor;
 

@@ -4,20 +4,30 @@ export enum SelectionType {
   Subscription,
 }
 
-export class Selection {
+export type SelectionConstructorArgs = {
+  key: string | number;
+  prevSelection?: Selection;
+  isArray?: boolean;
+  type?: SelectionType;
+  alias?: string;
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
-  key: string | number;
-  selections = new Set<Selection>();
-  isArray: boolean;
+};
 
+export class Selection {
+  key: string | number;
+
+  isArray: boolean;
   type: SelectionType;
 
+  args?: Record<string, unknown>;
+  argTypes?: Record<string, string>;
   alias?: string;
 
   path: (string | number)[] = [];
   pathString: string;
 
+  selections = new Set<Selection>();
   selectionsWithoutArrayIndex: Selection[];
 
   constructor({
@@ -28,15 +38,7 @@ export class Selection {
     isArray = false,
     type,
     alias,
-  }: {
-    key: string | number;
-    prevSelection?: Selection;
-    args?: Selection['args'];
-    argTypes?: Selection['argTypes'];
-    isArray?: boolean;
-    type?: SelectionType;
-    alias?: string;
-  }) {
+  }: SelectionConstructorArgs) {
     this.key = key;
     this.args = args;
     this.argTypes = argTypes;
