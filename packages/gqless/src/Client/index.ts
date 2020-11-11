@@ -279,7 +279,7 @@ export function createClient<GeneratedSchema = never>(
   function selectFields<A extends object | null | undefined>(
     accessor: A,
     fields: Array<string | number>,
-    recursionDepth?: undefined
+    recursionDepth?: number
   ): DeepPartial<A>;
   function selectFields<A extends object>(
     accessor: A | null | undefined,
@@ -338,14 +338,23 @@ export function createClient<GeneratedSchema = never>(
       return fields.reduce((acum, fieldName) => {
         const fieldValue = lodashGet(accessor, fieldName, CacheNotFound);
 
-        if (fieldValue === CacheNotFound || Array.isArray(fieldValue)) {
-          return acum;
-        }
+        if (fieldValue === CacheNotFound) return acum;
 
-        if (
-          typeof fieldValue === 'function' ||
-          !accessorCache.isProxy(fieldValue)
-        ) {
+        if (Array.isArray(fieldValue)) {
+          lodashSet(
+            acum,
+            fieldName,
+            fieldValue.map((value) => {
+              return selectFields(value, '*', recursionDepth);
+            })
+          );
+        } else if (accessorCache.isProxy(fieldValue)) {
+          lodashSet(
+            acum,
+            fieldName,
+            selectFields(fieldValue, '*', recursionDepth)
+          );
+        } else {
           lodashSet(acum, fieldName, fieldValue);
         }
 

@@ -357,7 +357,9 @@ describe('select fields', () => {
       expect(typeof response?.name).toBe('string');
       expect(typeof response?.father?.name).toBe('string');
       expect(typeof response?.fieldWithArgs).toBe('function');
+      expect(response?.sons?.length).toBeGreaterThanOrEqual(2);
       expect(typeof response?.sons?.[0]?.name).toBe('string');
+      expect(typeof response?.sons?.[1]?.name).toBe('string');
     });
   });
 });
