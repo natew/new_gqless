@@ -3,12 +3,7 @@
 exports[`basic functionality works: generate_code 1`] = `
 "// This should be included
 
-import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -24,11 +19,11 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
-};
+} as const;
 
 export interface Query {
   hello: ScalarsEnums['String'];
@@ -98,12 +93,7 @@ exports[`basic functionality works: generate_scalarsEnumHash 1`] = `
 `;
 
 exports[`custom query fetcher: generate_customQueryFetcher_code 1`] = `
-"import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+"import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -119,11 +109,11 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
-};
+} as const;
 
 export interface Query {
   hello: ScalarsEnums['String'];
@@ -192,12 +182,7 @@ exports[`custom query fetcher: generate_customQueryFetcher_scalarsEnumHash 1`] =
 `;
 
 exports[`custom scalars works: generate_code 1`] = `
-"import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+"import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -218,11 +203,11 @@ const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
   String: true,
 };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: { hello: { __type: 'Custom!' } },
   mutation: {},
   subscription: {},
-};
+} as const;
 
 export interface Query {
   hello: ScalarsEnums['Custom'];
@@ -293,12 +278,7 @@ exports[`custom scalars works: generate_customScalars_scalarsEnumHash 1`] = `
 `;
 
 exports[`feature complete app generate works: featureComplete_code 1`] = `
-"import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+"import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -333,7 +313,7 @@ const scalarsEnumsHash: ScalarsEnumsHash = {
   Int: true,
   Boolean: true,
 };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: {
     simpleString: { __type: 'String!' },
     stringWithArgs: { __type: 'String!', __args: { hello: 'String!' } },
@@ -369,7 +349,7 @@ const generatedSchema: Schema = {
     father: { __type: 'Human!' },
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
   },
-};
+} as const;
 
 export interface Query {
   simpleString: ScalarsEnums['String'];
@@ -454,12 +434,7 @@ exports[`feature complete app generate works: featureComplete_generatedSchema 1`
 exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
 
 exports[`mutation generates mutation: mutation_code 1`] = `
-"import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+"import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -475,13 +450,13 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {
     helloMutation: { __type: 'String!', __args: { hello: 'String!' } },
   },
   subscription: {},
-};
+} as const;
 
 export interface Query {
   hello: ScalarsEnums['String'];
@@ -562,12 +537,7 @@ Object {
 `;
 
 exports[`subscription generates subscription: subscription_code 1`] = `
-"import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+"import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -583,11 +553,11 @@ export interface Scalars {
 }
 
 const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {},
   subscription: { newNotification: { __type: 'String!' } },
-};
+} as const;
 
 export interface Query {
   hello: ScalarsEnums['String'];

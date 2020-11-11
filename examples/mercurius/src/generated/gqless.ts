@@ -1,12 +1,7 @@
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 import { app } from '../';
 
-import {
-  createClient,
-  QueryFetcher,
-  ScalarsEnumsHash,
-  Schema,
-} from '@dish/gqless';
+import { createClient, QueryFetcher, ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -41,7 +36,7 @@ const scalarsEnumsHash: ScalarsEnumsHash = {
   Int: true,
   Boolean: true,
 };
-const generatedSchema: Schema = {
+export const generatedSchema = {
   query: {
     simpleString: { __type: 'String!' },
     stringWithArgs: { __type: 'String!', __args: { hello: 'String!' } },
@@ -78,7 +73,7 @@ const generatedSchema: Schema = {
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
     sons: { __type: '[Human!]' },
   },
-};
+} as const;
 
 export interface Query {
   simpleString: ScalarsEnums['String'];

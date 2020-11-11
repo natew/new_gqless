@@ -315,14 +315,14 @@ export async function generate(
   const code = format(
     `
   ${preImport}
-  import { createClient, QueryFetcher, ScalarsEnumsHash, Schema } from "@dish/gqless";
+  import { createClient, QueryFetcher, ScalarsEnumsHash } from "@dish/gqless";
 
   ${await codegenResult}
 
   const scalarsEnumsHash: ScalarsEnumsHash = ${JSON.stringify(
     scalarsEnumsHash
   )};
-  const generatedSchema: Schema = ${JSON.stringify(generatedSchema)};
+  export const generatedSchema = ${JSON.stringify(generatedSchema)} as const;
 
   ${typescriptTypes}
 
