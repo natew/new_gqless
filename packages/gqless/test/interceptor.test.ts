@@ -1,4 +1,4 @@
-import { Interceptor, createInterceptorManager } from '../src/Interceptor';
+import { createInterceptorManager, Interceptor } from '../src/Interceptor';
 import { Selection } from '../src/Selection';
 
 describe('base interceptor', () => {

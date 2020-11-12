@@ -1,6 +1,7 @@
-import { createAccessorCache, createCache, CacheNotFound } from '../src/Cache';
-import { Selection } from '../src/Selection';
 import { assertIsDefined } from 'test-utils';
+
+import { CacheNotFound, createAccessorCache, createCache } from '../src/Cache';
+import { Selection } from '../src/Selection';
 
 describe('accessorCache', () => {
   test('works', () => {

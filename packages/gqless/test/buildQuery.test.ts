@@ -1,6 +1,7 @@
+import { parse } from 'graphql';
+
 import { buildQuery } from '../src/QueryBuilder';
 import { Selection, SelectionType } from '../src/Selection';
-import { parse } from 'graphql';
 
 describe('basic', () => {
   test('query', () => {

@@ -423,5 +423,6 @@ export function createClient<GeneratedSchema = never>(
     client,
     resolved,
     selectFields,
+    cache: clientCache.cache,
   };
 }

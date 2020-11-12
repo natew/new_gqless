@@ -1,9 +1,11 @@
+import '../src/Client';
+
 import { merge } from 'lodash';
 import { createTestApp, gql, waitForExpect } from 'test-utils';
 
 import { generate } from '@dish/gqless-cli';
 
-import { createClient, DeepPartial, Schema } from '../src';
+import { createClient, DeepPartial, QueryFetcher, Schema } from '../src';
 
 type Maybe<T> = T | null;
 type Human = {
@@ -14,7 +16,8 @@ type Human = {
 };
 
 const createTestClient = async (
-  addedToGeneratedSchema?: DeepPartial<Schema>
+  addedToGeneratedSchema?: DeepPartial<Schema>,
+  queryFetcher?: QueryFetcher
 ) => {
   const createHuman = (name?: string) => {
     return {
@@ -30,6 +33,8 @@ const createTestClient = async (
         nFetchCalls: Int!
         throw: Boolean
         throw2: Boolean
+        nullArray: [Human]
+        nullStringArray: [String]
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
@@ -54,6 +59,12 @@ const createTestClient = async (
         },
         nFetchCalls() {
           return nFetchCalls;
+        },
+        nullArray() {
+          return null;
+        },
+        nullStringArray() {
+          return null;
         },
         async throw() {
           throw Error('expected error');
@@ -101,10 +112,20 @@ const createTestClient = async (
     server.graphql.schema
   );
 
+  if (queryFetcher == null) {
+    queryFetcher = (query, variables) => {
+      return mercuriusTestClient.query(query, {
+        variables,
+      });
+    };
+  }
+
   return createClient<{
     query: {
       hello: string;
       human: (args?: { name?: string }) => Human;
+      nullArray?: Maybe<Array<Maybe<Human>>>;
+      nullStringArray?: Maybe<Array<Maybe<string>>>;
       nFetchCalls: number;
       throw?: boolean;
       throw2?: boolean;
@@ -118,11 +139,7 @@ const createTestClient = async (
   }>(
     merge(generatedSchema, addedToGeneratedSchema),
     scalarsEnumsHash,
-    (query, variables) => {
-      return mercuriusTestClient.query(query, {
-        variables,
-      });
-    }
+    queryFetcher
   );
 };
 
@@ -398,6 +415,87 @@ describe('selectFields', () => {
       ],
     });
   });
+
+  test('named fields object values - depth 1', async () => {
+    const { client, resolved, selectFields } = await createTestClient();
+
+    const data = await resolved(() => {
+      return selectFields(client.query.human(), ['father']);
+    });
+
+    expect(data).toEqual({
+      father: { name: 'default', father: null, nullFather: null, sons: [null] },
+    });
+  });
+
+  test('named fields object values - depth 2', async () => {
+    const { client, resolved, selectFields } = await createTestClient();
+
+    const data = await resolved(() => {
+      return selectFields(client.query.human(), ['father'], 2);
+    });
+
+    expect(data).toEqual({
+      father: {
+        name: 'default',
+        father: {
+          name: 'default',
+          father: null,
+          nullFather: null,
+          sons: [null],
+        },
+        nullFather: null,
+        sons: [
+          { name: 'default', father: null, nullFather: null, sons: [null] },
+          { name: 'default', father: null, nullFather: null, sons: [null] },
+        ],
+      },
+    });
+  });
+
+  test('named non-existent field', async () => {
+    const { client, resolved, selectFields } = await createTestClient();
+
+    const data = await resolved(() => {
+      return selectFields(client.query.human(), ['non_existent_field']);
+    });
+
+    expect(data).toStrictEqual({});
+  });
+
+  test('null accessor', async () => {
+    const { client, resolved, selectFields } = await createTestClient();
+
+    const data = await resolved(() => {
+      return selectFields(client.query.nullArray);
+    });
+
+    expect(data).toBe(null);
+  });
+
+  test('primitive wrong accessor', async () => {
+    const { resolved, selectFields } = await createTestClient();
+
+    const data = await resolved(() => {
+      return selectFields(123 as any);
+    });
+
+    expect(data).toBe(123);
+  });
+
+  test('object wrong accessor', async () => {
+    const { resolved, selectFields } = await createTestClient();
+
+    const data = await resolved(() => {
+      return selectFields({
+        a: 1,
+      });
+    });
+
+    expect(data).toStrictEqual({
+      a: 1,
+    });
+  });
 });
 
 describe('resolved cache options', () => {
@@ -569,6 +667,30 @@ describe('array accessors', () => {
 
     expect(cachedDataHumanOutOfSize).toBe(undefined);
   });
+
+  test('null cache object array', async () => {
+    const { client, resolved } = await createTestClient();
+
+    const data = await resolved(() => {
+      return client.query.nullArray?.map((v) => v?.name) ?? null;
+    });
+
+    expect(data).toBe(null);
+
+    expect(client.query.nullArray).toBe(null);
+  });
+
+  test('null cache scalar array', async () => {
+    const { client, resolved } = await createTestClient();
+
+    const data = await resolved(() => {
+      return client.query.nullStringArray?.map((v) => v) ?? null;
+    });
+
+    expect(data).toBe(null);
+
+    expect(client.query.nullStringArray).toBe(null);
+  });
 });
 
 describe('accessor undefined paths', () => {
@@ -633,6 +755,22 @@ test('subscription usage', async () => {
   await resolved(() => {
     return client.subscription.newNotification;
   }).then((data) => {
+    expect(data).toBe(null);
+  });
+});
+
+describe('custom query fetcher', () => {
+  test('empty data', async () => {
+    const { client, resolved } = await createTestClient(
+      undefined,
+      (_query, _variables) => {
+        return {};
+      }
+    );
+
+    const data = await resolved(() => {
+      return client.query.hello;
+    });
     expect(data).toBe(null);
   });
 });
