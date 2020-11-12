@@ -8,7 +8,7 @@ import { writeGenerate } from './writeGenerate';
 export async function inspectWriteGenerate({
   endpoint,
   overwrite,
-  destination = './src/generated/index.ts',
+  destination,
   generateOptions,
   cli,
   headers,
@@ -25,9 +25,9 @@ export async function inspectWriteGenerate({
   overwrite?: boolean;
   /**
    * File path destination
-   * @default './src/generated/index.ts'
+   * @example './src/generated/graphql.ts'
    */
-  destination?: string;
+  destination: string;
   /**
    * Specify generate options
    */

@@ -34,7 +34,7 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.8",
+    "@dish/gqless-cli": "workspace:^0.1.11",
     "@size-limit/preset-small-lib": "^4.7.0",
     "@types/lodash": "^4.14.164",
     "@types/node": "^14.14.6",

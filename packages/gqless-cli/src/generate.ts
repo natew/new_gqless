@@ -8,7 +8,7 @@ import {
   printSchema,
 } from 'graphql';
 import fromPairs from 'lodash/fromPairs';
-import { format, resolveConfig } from 'prettier';
+import { format, Options as PrettierOptions, resolveConfig } from 'prettier';
 
 import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '@dish/gqless';
 import { codegen } from '@graphql-codegen/core';
@@ -56,9 +56,7 @@ export async function generate(
   schema: GraphQLSchema,
   { queryFetcher, preImport = '', scalars }: GenerateOptions = {}
 ) {
-  const prettierConfig = resolveConfig(process.cwd()).then((conf) => {
-    return conf || {};
-  });
+  const prettierConfig = resolveConfig(process.cwd());
   const codegenResult = codegen({
     schema: parse(printSchema(schema)),
     config: {},
@@ -98,12 +96,12 @@ export async function generate(
   const mutationType = config.mutation;
   const subscriptionType = config.subscription;
 
-  const parseEnumType = (type: GraphQLEnumType, typeName = type.name) => {
-    scalarsEnumsHash[typeName] = true;
-    enumsNames.push(typeName);
+  const parseEnumType = (type: GraphQLEnumType) => {
+    scalarsEnumsHash[type.name] = true;
+    enumsNames.push(type.name);
   };
-  const parseScalarType = (type: GraphQLScalarType, typeName = type.name) => {
-    scalarsEnumsHash[typeName] = true;
+  const parseScalarType = (type: GraphQLScalarType) => {
+    scalarsEnumsHash[type.name] = true;
   };
   const parseObjectType = (type: GraphQLObjectType, typeName = type.name) => {
     const fields = type.getFields();
@@ -127,11 +125,8 @@ export async function generate(
     generatedSchema[typeName] = schemaType;
   };
 
-  const parseInputType = (
-    type: GraphQLInputObjectType,
-    typeName: string = type.name
-  ) => {
-    inputTypeNames.add(typeName);
+  const parseInputType = (type: GraphQLInputObjectType) => {
+    inputTypeNames.add(type.name);
     const fields = type.getFields();
 
     const schemaType: Record<string, Type> = {};
@@ -142,7 +137,7 @@ export async function generate(
       };
     });
 
-    generatedSchema[typeName] = schemaType;
+    generatedSchema[type.name] = schemaType;
   };
 
   config.types.forEach((type) => {
@@ -165,6 +160,7 @@ export async function generate(
     }
   });
 
+  /* istanbul ignore else */
   if (queryType) {
     parseObjectType(queryType, 'query');
   }
@@ -332,10 +328,9 @@ export async function generate(
 
   export const { query, mutation, subscription } = client;
   `,
-    {
-      ...(await prettierConfig),
+    Object.assign({}, await prettierConfig, {
       parser: 'typescript',
-    }
+    } as PrettierOptions)
   );
 
   return {

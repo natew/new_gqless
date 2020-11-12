@@ -183,7 +183,7 @@ describe('feature complete app', () => {
         objectArray: [Human]
         objectWithArgs(who: String!): Human!
         arrayString: [String!]!
-        arrayObjectArgs(limit: Int!): [Human!]!
+        arrayObjectArgs(limit: Int): [Human!]!
         greetings: GreetingsEnum!
         giveGreetingsInput(input: GreetingsInput!): String!
         number: Int!
@@ -196,6 +196,11 @@ describe('feature complete app', () => {
         father: Human!
         fieldWithArgs(id: Int!): Int!
       }
+      type OtherHuman {
+        name: String!
+      }
+      # TODO union support
+      union HumanType = Human | OtherHuman
     `,
     resolvers: {},
   });

@@ -9,10 +9,10 @@ program
   .command('generate <endpoint> [destination]')
   .option('--overwrite', 'Overwrite file if already exists')
   .description(
-    'generate the gqless schema and client in the specified directory (./graphql/generated/index.ts by default). \nexample: "gqless-cli generate http://localhost:3000/graphql src/generated/index.ts"'
+    'generate the gqless schema and client in the specified directory (./src/generated/graphql.ts by default). \nexample: "gqless-cli generate http://localhost:3000/graphql src/generated/index.ts"'
   )
   .action(
-    async (endpoint, destination = './graphql/generated/index.ts', opts) => {
+    async (endpoint, destination = './src/generated/graphql.ts', opts) => {
       await inspectWriteGenerate({
         endpoint,
         destination,

@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql/error';
 import fromPairs from 'lodash/fromPairs';
 import lodashGet from 'lodash/get';
 import lodashSet from 'lodash/set';
@@ -22,6 +23,10 @@ import {
 
 const ProxySymbol = Symbol('gqless-proxy');
 
+export interface GraphQLErrorsContainer extends Error {
+  errors: readonly GraphQLError[];
+}
+
 export function createClient<GeneratedSchema = never>(
   schema: Readonly<Schema>,
   scalarsEnumsHash: ScalarsEnumsHash,
@@ -37,11 +42,10 @@ export function createClient<GeneratedSchema = never>(
   let allowCache = true;
 
   function resolveAllSelections() {
-    if (globalInterceptor.selections.size) {
-      return resolveSelections(globalInterceptor.selections);
-    }
-
-    return Promise.resolve();
+    return resolveSelections(globalInterceptor.selections).catch((err) => {
+      // TODO: Improve error handling customization
+      console.error(err);
+    });
   }
 
   const selectionManager = new SelectionManager();
@@ -93,6 +97,15 @@ export function createClient<GeneratedSchema = never>(
       }
 
       return dataFn();
+    } catch (err) {
+      /* istanbul ignore else */
+      if (err instanceof Error) {
+        /* istanbul ignore else */
+        if (Error.captureStackTrace!) {
+          Error.captureStackTrace(err, resolved);
+        }
+      }
+      throw err;
     } finally {
       interceptorManager.removeInterceptor(interceptor);
 
@@ -121,14 +134,20 @@ export function createClient<GeneratedSchema = never>(
       }
 
       if (errors) {
-        console.error(errors);
-        const err = Error('Errors in resolve');
+        if (errors.length > 1) {
+          const err: GraphQLErrorsContainer = Object.assign(
+            Error(`Errors in GraphQL ${type}, check .errors property`),
+            {
+              errors,
+            }
+          );
 
-        if (Error.captureStackTrace) {
-          Error.captureStackTrace(err, buildAndFetchSelections);
+          throw err;
+        } else {
+          const error = Object.assign(Error(), errors[0]);
+
+          throw error;
         }
-
-        throw err;
       }
     } finally {
       interceptorManager.removeSelections(selections);
@@ -252,7 +271,7 @@ export function createClient<GeneratedSchema = never>(
                 return createAccessor(typeValue, selection);
               }
 
-              throw Error('Not found!');
+              throw Error('GraphQL Type not found!');
             };
 
             if (__args) {
@@ -300,69 +319,61 @@ export function createClient<GeneratedSchema = never>(
       return {} as A;
     }
 
-    let prevAllowCache = allowCache;
-    try {
-      // This basically enables "refetch" by default
-      allowCache = false;
+    if (fields === '*') {
+      if (recursionDepth > 0) {
+        const allAccessorKeys = Object.keys(accessor);
+        return allAccessorKeys.reduce((acum, fieldName) => {
+          const fieldValue: unknown = lodashGet(accessor, fieldName);
 
-      if (fields === '*') {
-        if (recursionDepth > 0) {
-          const allAccessorKeys = Object.keys(accessor);
-          return allAccessorKeys.reduce((acum, fieldName) => {
-            const fieldValue: unknown = lodashGet(accessor, fieldName);
+          if (Array.isArray(fieldValue)) {
+            lodashSet(
+              acum,
+              fieldName,
+              fieldValue.map((value) => {
+                return selectFields(value, '*', recursionDepth - 1);
+              })
+            );
+          } else if (accessorCache.isProxy(fieldValue)) {
+            lodashSet(
+              acum,
+              fieldName,
+              selectFields(fieldValue, '*', recursionDepth - 1)
+            );
+          } else {
+            lodashSet(acum, fieldName, fieldValue);
+          }
+          return acum;
+        }, {} as A);
+      } else {
+        return null;
+      }
+    }
 
-            if (Array.isArray(fieldValue)) {
-              lodashSet(
-                acum,
-                fieldName,
-                fieldValue.map((value) => {
-                  return selectFields(value, '*', recursionDepth - 1);
-                })
-              );
-            } else if (accessorCache.isProxy(fieldValue)) {
-              lodashSet(
-                acum,
-                fieldName,
-                selectFields(fieldValue, '*', recursionDepth - 1)
-              );
-            } else {
-              lodashSet(acum, fieldName, fieldValue);
-            }
-            return acum;
-          }, {} as A);
-        } else {
-          return {} as A;
-        }
+    return fields.reduce((acum, fieldName) => {
+      const fieldValue = lodashGet(accessor, fieldName, CacheNotFound);
+
+      if (fieldValue === CacheNotFound) return acum;
+
+      if (Array.isArray(fieldValue)) {
+        lodashSet(
+          acum,
+          fieldName,
+          fieldValue.map((value) => {
+            return selectFields(value, '*', recursionDepth);
+          })
+        );
+      } else if (accessorCache.isProxy(fieldValue)) {
+        lodashSet(
+          acum,
+          fieldName,
+          selectFields(fieldValue, '*', recursionDepth)
+        );
+      } else {
+        lodashSet(acum, fieldName, fieldValue);
       }
 
-      return fields.reduce((acum, fieldName) => {
-        const fieldValue = lodashGet(accessor, fieldName, CacheNotFound);
-
-        if (fieldValue === CacheNotFound) return acum;
-
-        if (Array.isArray(fieldValue)) {
-          lodashSet(
-            acum,
-            fieldName,
-            fieldValue.map((value) => {
-              return selectFields(value, '*', recursionDepth);
-            })
-          );
-        } else if (accessorCache.isProxy(fieldValue)) {
-          lodashSet(
-            acum,
-            fieldName,
-            selectFields(fieldValue, '*', recursionDepth)
-          );
-        } else {
-          lodashSet(acum, fieldName, fieldValue);
-        }
-
-        return acum;
-      }, {} as A);
-    } finally {
-      allowCache = prevAllowCache;
-    }
+      return acum;
+    }, {} as A);
   }
 
   function createSchemaAccesor() {
@@ -380,24 +391,23 @@ export function createClient<GeneratedSchema = never>(
           const value = schema[key];
 
           if (value) {
+            let type: SelectionType;
+            switch (key) {
+              case 'subscription': {
+                type = SelectionType.Subscription;
+                break;
+              }
+              case 'mutation': {
+                type = SelectionType.Mutation;
+                break;
+              }
+              default: {
+                type = SelectionType.Query;
+              }
+            }
             const selection = selectionManager.getSelection({
               key,
-              type: (() => {
-                switch (key) {
-                  case 'subscription': {
-                    return SelectionType.Subscription;
-                  }
-                  case 'mutation': {
-                    return SelectionType.Mutation;
-                  }
-                  case 'query': {
-                    return SelectionType.Query;
-                  }
-                  default: {
-                    throw Error('Not expected schema type');
-                  }
-                }
-              })(),
+              type,
             });
 
             return createAccessor(value, selection);
