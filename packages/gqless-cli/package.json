@@ -29,7 +29,7 @@
     "@dish/gqless": "workspace:^1.0.8",
     "@graphql-codegen/core": "^1.17.8",
     "@graphql-codegen/typescript": "^1.17.11",
-    "@graphql-tools/delegate": "^7.0.4",
+    "@graphql-tools/delegate": "^7.0.5",
     "@graphql-tools/wrap": "^7.0.1",
     "commander": "^6.2.0",
     "cross-fetch": "^3.0.6",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.7.0",
-    "@types/lodash": "^4.14.164",
+    "@types/lodash": "^4.14.165",
     "@types/mkdirp": "^1.0.1",
     "husky": "^4.3.0",
     "size-limit": "^4.7.0",

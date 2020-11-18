@@ -34,21 +34,21 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.11",
+    "@dish/gqless-cli": "workspace:^0.1.12",
     "@size-limit/preset-small-lib": "^4.7.0",
-    "@types/lodash": "^4.14.164",
-    "@types/node": "^14.14.6",
+    "@types/lodash": "^4.14.165",
+    "@types/node": "^14.14.8",
     "@types/tap": "^14.10.1",
     "husky": "^4.3.0",
     "mercurius": "^6.4.0",
     "nodemon": "^2.0.6",
     "rimraf": "^3.0.2",
     "size-limit": "^4.7.0",
-    "tap": "^14.10.8",
+    "tap": "^14.11.0",
     "test-utils": "workspace:^0.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.0.3",
-    "tsup": "^3.7.1",
+    "tsup": "^3.8.0",
     "typescript": "^4.0.5"
   },
   "size-limit": [
