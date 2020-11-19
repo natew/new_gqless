@@ -18,7 +18,10 @@ export interface Scalars {
   Float: number;
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
+export const scalarsEnumsHash: ScalarsEnumsHash = {
+  String: true,
+  Boolean: true,
+};
 export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {},
@@ -108,7 +111,10 @@ export interface Scalars {
   Float: number;
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
+export const scalarsEnumsHash: ScalarsEnumsHash = {
+  String: true,
+  Boolean: true,
+};
 export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {},
@@ -198,7 +204,7 @@ export interface Scalars {
   Custom: 'hello world';
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = {
+export const scalarsEnumsHash: ScalarsEnumsHash = {
   Custom: true,
   Boolean: true,
   String: true,
@@ -306,7 +312,7 @@ export interface GreetingsInput {
   scal?: Maybe<Scalars['ExampleScalar']>;
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = {
+export const scalarsEnumsHash: ScalarsEnumsHash = {
   ExampleScalar: true,
   GreetingsEnum: true,
   String: true,
@@ -456,7 +462,10 @@ export interface Scalars {
   Float: number;
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
+export const scalarsEnumsHash: ScalarsEnumsHash = {
+  String: true,
+  Boolean: true,
+};
 export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {
@@ -559,7 +568,10 @@ export interface Scalars {
   Float: number;
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = { String: true, Boolean: true };
+export const scalarsEnumsHash: ScalarsEnumsHash = {
+  String: true,
+  Boolean: true,
+};
 export const generatedSchema = {
   query: { hello: { __type: 'String!' } },
   mutation: {},

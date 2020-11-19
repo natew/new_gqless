@@ -5,14 +5,14 @@
     "dev": "next -p 4000"
   },
   "dependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.12",
+    "@dish/gqless-cli": "workspace:^0.1.13",
     "@dish/gqless-react": "workspace:^0.1.0",
     "aws-serverless-express": "^3.3.8",
     "fastify": "^3.8.0",
     "graphql": "^15.4.0",
     "mercurius": "^6.4.0",
     "mercurius-codegen": "^1.1.4",
-    "next": "^10.0.1",
+    "next": "^10.0.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1"
   },

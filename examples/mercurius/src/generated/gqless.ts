@@ -29,7 +29,7 @@ export interface GreetingsInput {
   scal?: Maybe<Scalars['ExampleScalar']>;
 }
 
-const scalarsEnumsHash: ScalarsEnumsHash = {
+export const scalarsEnumsHash: ScalarsEnumsHash = {
   ExampleScalar: true,
   GreetingsEnum: true,
   String: true,

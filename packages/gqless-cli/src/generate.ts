@@ -315,7 +315,7 @@ export async function generate(
 
   ${await codegenResult}
 
-  const scalarsEnumsHash: ScalarsEnumsHash = ${JSON.stringify(
+  export const scalarsEnumsHash: ScalarsEnumsHash = ${JSON.stringify(
     scalarsEnumsHash
   )};
   export const generatedSchema = ${JSON.stringify(generatedSchema)} as const;

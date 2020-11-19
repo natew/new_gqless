@@ -25,16 +25,16 @@
     }
   },
   "dependencies": {
-    "@dish/gqless": "workspace:^1.0.8"
+    "@dish/gqless": "workspace:^1.0.9"
   },
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^4.7.0",
+    "@size-limit/preset-small-lib": "^4.8.0",
     "@types/react": "^16.9.56",
     "@types/react-dom": "^16.9.9",
     "husky": "^4.3.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "size-limit": "^4.7.0",
+    "size-limit": "^4.8.0",
     "test-utils": "workspace:^0.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.0.3",
