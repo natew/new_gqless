@@ -1,8 +1,16 @@
+import { MercuriusContext } from 'mercurius';
+import { FastifyReply } from 'fastify';
 import { GraphQLResolveInfo } from 'graphql';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
+export type ResolverFn<TResult, TParent, TContext, TArgs> = (
+  parent: TParent,
+  args: TArgs,
+  context: TContext,
+  info: GraphQLResolveInfo
+) => Promise<DeepPartial<TResult>> | DeepPartial<TResult>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -34,13 +42,6 @@ export type StitchingResolver<TResult, TParent, TContext, TArgs> =
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
   | ResolverFn<TResult, TParent, TContext, TArgs>
   | StitchingResolver<TResult, TParent, TContext, TArgs>;
-
-export type ResolverFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Promise<TResult> | TResult;
 
 export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -134,15 +135,15 @@ export type DirectiveResolverFn<
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
-  String: ResolverTypeWrapper<DeepPartial<Scalars['String']>>;
-  Boolean: ResolverTypeWrapper<DeepPartial<Scalars['Boolean']>>;
+  String: ResolverTypeWrapper<Scalars['String']>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Query: {};
-  String: DeepPartial<Scalars['String']>;
-  Boolean: DeepPartial<Scalars['Boolean']>;
+  String: Scalars['String'];
+  Boolean: Scalars['Boolean'];
 };
 
 export type QueryResolvers<
@@ -162,6 +163,26 @@ export type Resolvers<ContextType = any> = {
  */
 export type IResolvers<ContextType = any> = Resolvers<ContextType>;
 
+type Loader<TReturn, TObj, TParams, TContext> = (
+  queries: Array<{
+    obj: TObj;
+    params: TParams;
+  }>,
+  context: TContext & {
+    reply: FastifyReply;
+  }
+) => Promise<Array<DeepPartial<TReturn>>>;
+type LoaderResolver<TReturn, TObj, TParams, TContext> =
+  | Loader<TReturn, TObj, TParams, TContext>
+  | {
+      loader: Loader<TReturn, TObj, TParams, TContext>;
+      opts?: {
+        cache?: boolean;
+      };
+    };
+export interface Loaders<
+  TContext = MercuriusContext & { reply: FastifyReply }
+> {}
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>
@@ -174,6 +195,6 @@ interface _DeepPartialArray<T> extends Array<DeepPartial<T>> {}
 type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 declare module 'mercurius' {
-  interface IResolvers
-    extends Resolvers<import('mercurius').MercuriusContext> {}
+  interface IResolvers extends Resolvers<MercuriusContext> {}
+  interface MercuriusLoaders extends Loaders {}
 }

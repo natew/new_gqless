@@ -1,3 +1,5 @@
+import { MercuriusContext } from 'mercurius';
+import { FastifyReply } from 'fastify';
 import {
   GraphQLResolveInfo,
   GraphQLScalarType,
@@ -7,6 +9,12 @@ export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
+export type ResolverFn<TResult, TParent, TContext, TArgs> = (
+  parent: TParent,
+  args: TArgs,
+  context: TContext,
+  info: GraphQLResolveInfo
+) => Promise<DeepPartial<TResult>> | DeepPartial<TResult>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
 } &
@@ -49,28 +57,28 @@ export type Query = {
   number: Scalars['Int'];
 };
 
-export type QueryStringWithArgsArgs = {
+export type QuerystringWithArgsArgs = {
   hello: Scalars['String'];
 };
 
-export type QueryStringNullableWithArgsArgs = {
+export type QuerystringNullableWithArgsArgs = {
   hello: Scalars['String'];
   helloTwo?: Maybe<Scalars['String']>;
 };
 
-export type QueryStringNullableWithArgsArrayArgs = {
+export type QuerystringNullableWithArgsArrayArgs = {
   hello: Array<Maybe<Scalars['String']>>;
 };
 
-export type QueryObjectWithArgsArgs = {
+export type QueryobjectWithArgsArgs = {
   who: Scalars['String'];
 };
 
-export type QueryArrayObjectArgsArgs = {
+export type QueryarrayObjectArgsArgs = {
   limit: Scalars['Int'];
 };
 
-export type QueryGiveGreetingsInputArgs = {
+export type QuerygiveGreetingsInputArgs = {
   input: GreetingsInput;
 };
 
@@ -79,7 +87,7 @@ export type Mutation = {
   increment: Scalars['Int'];
 };
 
-export type MutationIncrementArgs = {
+export type MutationincrementArgs = {
   n: Scalars['Int'];
 };
 
@@ -91,7 +99,7 @@ export type Human = {
   sons?: Maybe<Array<Human>>;
 };
 
-export type HumanFieldWithArgsArgs = {
+export type HumanfieldWithArgsArgs = {
   id: Scalars['Int'];
 };
 
@@ -112,13 +120,6 @@ export type StitchingResolver<TResult, TParent, TContext, TArgs> =
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
   | ResolverFn<TResult, TParent, TContext, TArgs>
   | StitchingResolver<TResult, TParent, TContext, TArgs>;
-
-export type ResolverFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Promise<TResult> | TResult;
 
 export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -211,27 +212,27 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  ExampleScalar: ResolverTypeWrapper<DeepPartial<Scalars['ExampleScalar']>>;
-  GreetingsEnum: ResolverTypeWrapper<DeepPartial<GreetingsEnum>>;
-  GreetingsInput: ResolverTypeWrapper<DeepPartial<GreetingsInput>>;
-  String: ResolverTypeWrapper<DeepPartial<Scalars['String']>>;
+  ExampleScalar: ResolverTypeWrapper<Scalars['ExampleScalar']>;
+  GreetingsEnum: GreetingsEnum;
+  GreetingsInput: GreetingsInput;
+  String: ResolverTypeWrapper<Scalars['String']>;
   Query: ResolverTypeWrapper<{}>;
-  Int: ResolverTypeWrapper<DeepPartial<Scalars['Int']>>;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
-  Human: ResolverTypeWrapper<DeepPartial<Human>>;
-  Boolean: ResolverTypeWrapper<DeepPartial<Scalars['Boolean']>>;
+  Human: ResolverTypeWrapper<Human>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  ExampleScalar: DeepPartial<Scalars['ExampleScalar']>;
-  GreetingsInput: DeepPartial<GreetingsInput>;
-  String: DeepPartial<Scalars['String']>;
+  ExampleScalar: Scalars['ExampleScalar'];
+  GreetingsInput: GreetingsInput;
+  String: Scalars['String'];
   Query: {};
-  Int: DeepPartial<Scalars['Int']>;
+  Int: Scalars['Int'];
   Mutation: {};
-  Human: DeepPartial<Human>;
-  Boolean: DeepPartial<Scalars['Boolean']>;
+  Human: Human;
+  Boolean: Scalars['Boolean'];
 };
 
 export interface ExampleScalarScalarConfig
@@ -248,19 +249,19 @@ export type QueryResolvers<
     ResolversTypes['String'],
     ParentType,
     ContextType,
-    RequireFields<QueryStringWithArgsArgs, 'hello'>
+    RequireFields<QuerystringWithArgsArgs, 'hello'>
   >;
   stringNullableWithArgs?: Resolver<
     Maybe<ResolversTypes['String']>,
     ParentType,
     ContextType,
-    RequireFields<QueryStringNullableWithArgsArgs, 'hello'>
+    RequireFields<QuerystringNullableWithArgsArgs, 'hello'>
   >;
   stringNullableWithArgsArray?: Resolver<
     Maybe<ResolversTypes['String']>,
     ParentType,
     ContextType,
-    RequireFields<QueryStringNullableWithArgsArrayArgs, 'hello'>
+    RequireFields<QuerystringNullableWithArgsArrayArgs, 'hello'>
   >;
   object?: Resolver<Maybe<ResolversTypes['Human']>, ParentType, ContextType>;
   objectArray?: Resolver<
@@ -272,7 +273,7 @@ export type QueryResolvers<
     ResolversTypes['Human'],
     ParentType,
     ContextType,
-    RequireFields<QueryObjectWithArgsArgs, 'who'>
+    RequireFields<QueryobjectWithArgsArgs, 'who'>
   >;
   arrayString?: Resolver<
     Array<ResolversTypes['String']>,
@@ -283,7 +284,7 @@ export type QueryResolvers<
     Array<ResolversTypes['Human']>,
     ParentType,
     ContextType,
-    RequireFields<QueryArrayObjectArgsArgs, 'limit'>
+    RequireFields<QueryarrayObjectArgsArgs, 'limit'>
   >;
   greetings?: Resolver<
     ResolversTypes['GreetingsEnum'],
@@ -294,7 +295,7 @@ export type QueryResolvers<
     ResolversTypes['String'],
     ParentType,
     ContextType,
-    RequireFields<QueryGiveGreetingsInputArgs, 'input'>
+    RequireFields<QuerygiveGreetingsInputArgs, 'input'>
   >;
   number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 };
@@ -307,7 +308,7 @@ export type MutationResolvers<
     ResolversTypes['Int'],
     ParentType,
     ContextType,
-    RequireFields<MutationIncrementArgs, 'n'>
+    RequireFields<MutationincrementArgs, 'n'>
   >;
 };
 
@@ -321,7 +322,7 @@ export type HumanResolvers<
     ResolversTypes['Int'],
     ParentType,
     ContextType,
-    RequireFields<HumanFieldWithArgsArgs, 'id'>
+    RequireFields<HumanfieldWithArgsArgs, 'id'>
   >;
   sons?: Resolver<
     Maybe<Array<ResolversTypes['Human']>>,
@@ -344,6 +345,38 @@ export type Resolvers<ContextType = any> = {
  */
 export type IResolvers<ContextType = any> = Resolvers<ContextType>;
 
+type Loader<TReturn, TObj, TParams, TContext> = (
+  queries: Array<{
+    obj: TObj;
+    params: TParams;
+  }>,
+  context: TContext & {
+    reply: FastifyReply;
+  }
+) => Promise<Array<DeepPartial<TReturn>>>;
+type LoaderResolver<TReturn, TObj, TParams, TContext> =
+  | Loader<TReturn, TObj, TParams, TContext>
+  | {
+      loader: Loader<TReturn, TObj, TParams, TContext>;
+      opts?: {
+        cache?: boolean;
+      };
+    };
+export interface Loaders<
+  TContext = MercuriusContext & { reply: FastifyReply }
+> {
+  Human?: {
+    name?: LoaderResolver<Scalars['String'], Human, {}, TContext>;
+    father?: LoaderResolver<Human, Human, {}, TContext>;
+    fieldWithArgs?: LoaderResolver<
+      Scalars['Int'],
+      Human,
+      HumanfieldWithArgsArgs,
+      TContext
+    >;
+    sons?: LoaderResolver<Maybe<Array<Human>>, Human, {}, TContext>;
+  };
+}
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>
@@ -356,6 +389,6 @@ interface _DeepPartialArray<T> extends Array<DeepPartial<T>> {}
 type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 declare module 'mercurius' {
-  interface IResolvers
-    extends Resolvers<import('mercurius').MercuriusContext> {}
+  interface IResolvers extends Resolvers<MercuriusContext> {}
+  interface MercuriusLoaders extends Loaders {}
 }

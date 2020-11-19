@@ -27,7 +27,13 @@ export interface GraphQLErrorsContainer extends Error {
   errors: readonly GraphQLError[];
 }
 
-export function createClient<GeneratedSchema = never>(
+export function createClient<
+  GeneratedSchema extends {
+    query: {};
+    mutation: {};
+    subscription: {};
+  } = never
+>(
   schema: Readonly<Schema>,
   scalarsEnumsHash: ScalarsEnumsHash,
   queryFetcher: QueryFetcher
@@ -385,9 +391,6 @@ export function createClient<GeneratedSchema = never>(
       },
       {
         get(target, key: string, receiver) {
-          if (!schema.hasOwnProperty(key))
-            return Reflect.get(target, key, receiver);
-
           const value = schema[key];
 
           if (value) {
@@ -419,8 +422,14 @@ export function createClient<GeneratedSchema = never>(
     ) as unknown) as GeneratedSchema;
   }
 
+  const query: GeneratedSchema['query'] = client.query;
+  const mutation: GeneratedSchema['mutation'] = client.mutation;
+  const subscription: GeneratedSchema['subscription'] = client.subscription;
+
   return {
-    client,
+    query,
+    mutation,
+    subscription,
     resolved,
     selectFields,
     cache: clientCache.cache,

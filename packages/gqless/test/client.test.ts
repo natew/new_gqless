@@ -145,15 +145,15 @@ const createTestClient = async (
 
 describe('core', () => {
   test('scheduler', async () => {
-    const { client } = await createTestClient();
+    const { query } = await createTestClient();
 
-    expect(typeof client).toBe('object');
+    expect(typeof query).toBe('object');
 
-    expect(client.query.hello).toBe(null);
+    expect(query.hello).toBe(null);
 
     waitForExpect(
       () => {
-        expect(client.query.hello).toBe('hello world');
+        expect(query.hello).toBe('hello world');
       },
       100,
       10
@@ -161,12 +161,12 @@ describe('core', () => {
   });
 
   test('resolved', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
-    expect(typeof client).toBe('object');
+    expect(typeof query).toBe('object');
 
     await resolved(() => {
-      return client.query.hello;
+      return query.hello;
     }).then((value) => {
       expect(value).toBe('hello world');
     });
@@ -175,11 +175,11 @@ describe('core', () => {
 
 describe('selectFields', () => {
   test('recursive *, depth 1', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
       return selectFields(
-        client.query.human({
+        query.human({
           name: 'foo',
         })
       );
@@ -194,11 +194,11 @@ describe('selectFields', () => {
   });
 
   test('recursive *, depth 2', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
       return selectFields(
-        client.query.human({
+        query.human({
           name: 'foo',
         }),
         '*',
@@ -233,11 +233,11 @@ describe('selectFields', () => {
   });
 
   test('named no recursive', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
       return selectFields(
-        client.query.human({
+        query.human({
           name: 'bar',
         }),
         ['name', 'father.name']
@@ -253,11 +253,11 @@ describe('selectFields', () => {
   });
 
   test('named recursive, depth 1', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
       return selectFields(
-        client.query.human({
+        query.human({
           name: 'bar',
         }),
         ['father']
@@ -275,11 +275,11 @@ describe('selectFields', () => {
   });
 
   test('named recursive, depth 2', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
       return selectFields(
-        client.query.human({
+        query.human({
           name: 'bar',
         }),
         ['father'],
@@ -316,10 +316,10 @@ describe('selectFields', () => {
   });
 
   test('named recursive - array', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human().sons, ['name']);
+      return selectFields(query.human().sons, ['name']);
     });
 
     expect(data).toEqual([
@@ -333,10 +333,10 @@ describe('selectFields', () => {
   });
 
   test('recursive * - array', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human().sons, '*');
+      return selectFields(query.human().sons, '*');
     });
 
     expect(data).toEqual([
@@ -351,20 +351,20 @@ describe('selectFields', () => {
   });
 
   test('empty named fields array', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human(), []);
+      return selectFields(query.human(), []);
     });
 
     expect(data).toEqual({});
   });
 
   test('named fields array values - depth 1', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human(), ['sons']);
+      return selectFields(query.human(), ['sons']);
     });
 
     expect(data).toEqual({
@@ -376,10 +376,10 @@ describe('selectFields', () => {
   });
 
   test('named fields array values - depth 2', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human(), ['sons'], 2);
+      return selectFields(query.human(), ['sons'], 2);
     });
 
     expect(data).toEqual({
@@ -417,10 +417,10 @@ describe('selectFields', () => {
   });
 
   test('named fields object values - depth 1', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human(), ['father']);
+      return selectFields(query.human(), ['father']);
     });
 
     expect(data).toEqual({
@@ -429,10 +429,10 @@ describe('selectFields', () => {
   });
 
   test('named fields object values - depth 2', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human(), ['father'], 2);
+      return selectFields(query.human(), ['father'], 2);
     });
 
     expect(data).toEqual({
@@ -454,20 +454,20 @@ describe('selectFields', () => {
   });
 
   test('named non-existent field', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.human(), ['non_existent_field']);
+      return selectFields(query.human(), ['non_existent_field']);
     });
 
     expect(data).toStrictEqual({});
   });
 
   test('null accessor', async () => {
-    const { client, resolved, selectFields } = await createTestClient();
+    const { query, resolved, selectFields } = await createTestClient();
 
     const data = await resolved(() => {
-      return selectFields(client.query.nullArray);
+      return selectFields(query.nullArray);
     });
 
     expect(data).toBe(null);
@@ -500,15 +500,15 @@ describe('selectFields', () => {
 
 describe('resolved cache options', () => {
   test('refetch', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     const resolveFn = () => {
-      const human = client.query.human({
+      const human = query.human({
         name: 'a',
       });
       return {
         name: human.name,
-        nFetchCalls: client.query.nFetchCalls,
+        nFetchCalls: query.nFetchCalls,
       };
     };
 
@@ -530,15 +530,15 @@ describe('resolved cache options', () => {
   });
 
   test('noCache', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     const resolveFn = () => {
-      const human = client.query.human({
+      const human = query.human({
         name: 'a',
       });
       return {
         name: human.name,
-        nFetchCalls: client.query.nFetchCalls,
+        nFetchCalls: query.nFetchCalls,
       };
     };
 
@@ -562,10 +562,10 @@ describe('resolved cache options', () => {
 
 describe('error handling', () => {
   test('resolved single throws', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     await resolved(() => {
-      client.query.throw;
+      query.throw;
     })
       .then(() => {
         throw Error("Shouldn't reach here");
@@ -583,11 +583,11 @@ describe('error handling', () => {
   });
 
   test('resolved multiple throws', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     await resolved(() => {
-      client.query.throw;
-      client.query.throw2;
+      query.throw;
+      query.throw2;
     })
       .then(() => {
         throw Error("Shouldn't reach here");
@@ -618,7 +618,7 @@ describe('error handling', () => {
   });
 
   test('scheduler logs to console', async () => {
-    const { client } = await createTestClient();
+    const { query } = await createTestClient();
 
     const logErrorSpy = jest
       .spyOn(global.console, 'error')
@@ -632,7 +632,7 @@ describe('error handling', () => {
       });
 
     try {
-      client.query.throw;
+      query.throw;
 
       await waitForExpect(
         () => {
@@ -649,10 +649,10 @@ describe('error handling', () => {
 
 describe('array accessors', () => {
   test('array query', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     const data = await resolved(() => {
-      const human = client.query.human();
+      const human = query.human();
       return human.sons.map((son) => {
         return son.name;
       });
@@ -661,7 +661,7 @@ describe('array accessors', () => {
     expect(data).toEqual(['default', 'default']);
 
     const cachedDataHumanOutOfSize = await resolved(() => {
-      const human = client.query.human();
+      const human = query.human();
       return human.sons[2];
     });
 
@@ -669,51 +669,54 @@ describe('array accessors', () => {
   });
 
   test('null cache object array', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     const data = await resolved(() => {
-      return client.query.nullArray?.map((v) => v?.name) ?? null;
+      return query.nullArray?.map((v) => v?.name) ?? null;
     });
 
     expect(data).toBe(null);
 
-    expect(client.query.nullArray).toBe(null);
+    expect(query.nullArray).toBe(null);
   });
 
   test('null cache scalar array', async () => {
-    const { client, resolved } = await createTestClient();
+    const { query, resolved } = await createTestClient();
 
     const data = await resolved(() => {
-      return client.query.nullStringArray?.map((v) => v) ?? null;
+      return query.nullStringArray?.map((v) => v) ?? null;
     });
 
     expect(data).toBe(null);
 
-    expect(client.query.nullStringArray).toBe(null);
+    expect(query.nullStringArray).toBe(null);
   });
 });
 
 describe('accessor undefined paths', () => {
   test('undefined object path', async () => {
-    const { client } = await createTestClient();
+    const { query } = await createTestClient();
 
     //@ts-expect-error
-    const shouldBeUndefined = client.query.other;
+    const shouldBeUndefined = query.other;
 
     expect(shouldBeUndefined).toBe(undefined);
   });
 
   test('undefined schema root path', async () => {
-    const { client } = await createTestClient();
+    const { mutation } = await createTestClient({
+      //@ts-expect-error
+      mutation: null,
+    });
 
     //@ts-expect-error
-    const shouldBeUndefined = client.other;
+    const shouldBeUndefined = mutation.other;
 
     expect(shouldBeUndefined).toBe(undefined);
   });
 
   test('intentionally manipulated schema', async () => {
-    const { client } = await createTestClient({
+    const { query } = await createTestClient({
       query: {
         other: {
           __type: 'error',
@@ -724,22 +727,22 @@ describe('accessor undefined paths', () => {
 
     expect(() => {
       //@ts-expect-error
-      client.query.other;
+      query.other;
     }).toThrow('GraphQL Type not found!');
 
     expect(
       //@ts-expect-error
-      client.wrongroot
+      query.wrongroot
     ).toBe(undefined);
   });
 });
 
 describe('mutation', () => {
   test('mutation usage', async () => {
-    const { client, resolved } = await createTestClient();
+    const { mutation, resolved } = await createTestClient();
 
     const data = await resolved(() => {
-      return client.mutation.sendNotification({
+      return mutation.sendNotification({
         message: 'hello world',
       });
     });
@@ -750,10 +753,10 @@ describe('mutation', () => {
 
 // TODO: It's a false positive, until subscriptions are implemented
 test('subscription usage', async () => {
-  const { client, resolved } = await createTestClient();
+  const { subscription, resolved } = await createTestClient();
 
   await resolved(() => {
-    return client.subscription.newNotification;
+    return subscription.newNotification;
   }).then((data) => {
     expect(data).toBe(null);
   });
@@ -761,7 +764,7 @@ test('subscription usage', async () => {
 
 describe('custom query fetcher', () => {
   test('empty data', async () => {
-    const { client, resolved } = await createTestClient(
+    const { query, resolved } = await createTestClient(
       undefined,
       (_query, _variables) => {
         return {};
@@ -769,7 +772,7 @@ describe('custom query fetcher', () => {
     );
 
     const data = await resolved(() => {
-      return client.query.hello;
+      return query.hello;
     });
     expect(data).toBe(null);
   });
