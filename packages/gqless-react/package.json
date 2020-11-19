@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "@dish/gqless": "workspace:^1.0.9"
+    "@dish/gqless": "workspace:^1.0.10"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.8.0",

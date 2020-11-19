@@ -59,7 +59,7 @@ export async function generate(
   const prettierConfig = resolveConfig(process.cwd());
   const codegenResult = codegen({
     schema: parse(printSchema(schema)),
-    config: {},
+    config: {} as typescriptPlugin.TypeScriptPluginConfig,
     documents: [],
     filename: 'gqless.generated.ts',
     pluginMap: {
@@ -106,7 +106,9 @@ export async function generate(
   const parseObjectType = (type: GraphQLObjectType, typeName = type.name) => {
     const fields = type.getFields();
 
-    const schemaType: Record<string, Type> = {};
+    const schemaType: Record<string, Type> = {
+      __typename: { __type: 'String!' },
+    };
 
     Object.entries(fields).forEach(([key, value]) => {
       schemaType[key] = {
@@ -221,8 +223,11 @@ export async function generate(
 
       acum += `
 
-      export interface ${typeName} {
-        ${Object.entries(typeValue).reduce((acum, [fieldKey, fieldValue]) => {
+      export interface ${typeName} { 
+        __typename: "${typeName}"; ${Object.entries(typeValue).reduce(
+        (acum, [fieldKey, fieldValue]) => {
+          if (fieldKey === '__typename') return acum;
+
           const fieldValueProps = parseSchemaType(fieldValue.__type);
           const typeToReturn = parseFinalType(fieldValueProps);
           if (fieldValue.__args) {
@@ -256,7 +261,9 @@ export async function generate(
           }
 
           return acum;
-        }, '')}
+        },
+        ''
+      )}
       }
       `;
 

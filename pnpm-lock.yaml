@@ -34,8 +34,8 @@ importers:
       tslib: 2.0.3
       typescript: 4.0.5
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.9'
-      '@dish/gqless-cli': 'workspace:^0.1.13'
+      '@dish/gqless': 'workspace:^1.0.10'
+      '@dish/gqless-cli': 'workspace:^0.1.14'
       '@size-limit/preset-small-lib': ^4.8.0
       '@types/lodash': ^4.14.165
       '@types/randomstring': ^1.1.6
@@ -77,7 +77,7 @@ importers:
       tsup: 3.8.0_typescript@4.0.5
       typescript: 4.0.5
     specifiers:
-      '@dish/gqless-cli': 'workspace:^0.1.13'
+      '@dish/gqless-cli': 'workspace:^0.1.14'
       '@size-limit/preset-small-lib': ^4.8.0
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.8
@@ -124,7 +124,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.0.5
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.9'
+      '@dish/gqless': 'workspace:^1.0.10'
       '@graphql-codegen/core': ^1.17.8
       '@graphql-codegen/typescript': ^1.17.11
       '@graphql-tools/delegate': ^7.0.5
@@ -163,7 +163,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.0.5
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.9'
+      '@dish/gqless': 'workspace:^1.0.10'
       '@size-limit/preset-small-lib': ^4.8.0
       '@types/react': ^16.9.56
       '@types/react-dom': ^16.9.9
@@ -193,7 +193,7 @@ importers:
       '@types/react-dom': 16.9.9
       typescript: 4.0.5
     specifiers:
-      '@dish/gqless-cli': 'workspace:^0.1.13'
+      '@dish/gqless-cli': 'workspace:^0.1.14'
       '@dish/gqless-react': 'workspace:^0.1.0'
       '@types/node': ^14.14.8
       '@types/react': ^16.9.56

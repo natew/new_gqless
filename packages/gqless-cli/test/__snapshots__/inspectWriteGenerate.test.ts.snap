@@ -21,18 +21,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -95,18 +100,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -170,18 +180,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -246,18 +261,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;

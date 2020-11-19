@@ -23,18 +23,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -79,6 +84,9 @@ export const { query, mutation, subscription, resolved, selectFields } = client;
 exports[`basic functionality works: generate_generatedSchema 1`] = `
 "{
   \\"query\\": {
+    \\"__typename\\": {
+      \\"__type\\": \\"String!\\"
+    },
     \\"hello\\": {
       \\"__type\\": \\"String!\\"
     }
@@ -116,18 +124,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -171,6 +184,9 @@ export const { query, mutation, subscription, resolved, selectFields } = client;
 exports[`custom query fetcher: generate_customQueryFetcher_generatedSchema 1`] = `
 "{
   \\"query\\": {
+    \\"__typename\\": {
+      \\"__type\\": \\"String!\\"
+    },
     \\"hello\\": {
       \\"__type\\": \\"String!\\"
     }
@@ -210,18 +226,23 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   String: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'Custom!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'Custom!' } },
   mutation: {},
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['Custom'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -266,6 +287,9 @@ export const { query, mutation, subscription, resolved, selectFields } = client;
 exports[`custom scalars works: generate_customScalars_generatedSchema 1`] = `
 "{
   \\"query\\": {
+    \\"__typename\\": {
+      \\"__type\\": \\"String!\\"
+    },
     \\"hello\\": {
       \\"__type\\": \\"Custom!\\"
     }
@@ -321,6 +345,7 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
 };
 export const generatedSchema = {
   query: {
+    __typename: { __type: 'String!' },
     simpleString: { __type: 'String!' },
     stringWithArgs: { __type: 'String!', __args: { hello: 'String!' } },
     stringNullableWithArgs: {
@@ -343,7 +368,10 @@ export const generatedSchema = {
     },
     number: { __type: 'Int!' },
   },
-  mutation: { increment: { __type: 'Int!', __args: { n: 'Int!' } } },
+  mutation: {
+    __typename: { __type: 'String!' },
+    increment: { __type: 'Int!', __args: { n: 'Int!' } },
+  },
   subscription: {},
   GreetingsInput: {
     language: { __type: 'String!' },
@@ -351,14 +379,19 @@ export const generatedSchema = {
     scal: { __type: 'ExampleScalar' },
   },
   Human: {
+    __typename: { __type: 'String!' },
     name: { __type: 'String!' },
     father: { __type: 'Human!' },
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
   },
-  OtherHuman: { name: { __type: 'String!' } },
+  OtherHuman: {
+    __typename: { __type: 'String!' },
+    name: { __type: 'String!' },
+  },
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   simpleString: ScalarsEnums['String'];
   stringWithArgs: (args: {
     hello: ScalarsEnums['String'];
@@ -385,18 +418,23 @@ export interface Query {
 }
 
 export interface Mutation {
+  __typename: 'Mutation';
   increment: (args: { n: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface Human {
+  __typename: 'Human';
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface OtherHuman {
+  __typename: 'OtherHuman';
   name: ScalarsEnums['String'];
 }
 
@@ -442,7 +480,7 @@ export const { query, mutation, subscription, resolved, selectFields } = client;
 "
 `;
 
-exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}},\\"number\\":{\\"__type\\":\\"Int!\\"}},\\"mutation\\":{\\"increment\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"n\\":\\"Int!\\"}}},\\"subscription\\":{},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"name\\":{\\"__type\\":\\"String!\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}}},\\"OtherHuman\\":{\\"name\\":{\\"__type\\":\\"String!\\"}}}"`;
+exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}},\\"number\\":{\\"__type\\":\\"Int!\\"}},\\"mutation\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"increment\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"n\\":\\"Int!\\"}}},\\"subscription\\":{},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}}},\\"OtherHuman\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"}}}"`;
 
 exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
 
@@ -467,24 +505,29 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {
+    __typename: { __type: 'String!' },
     helloMutation: { __type: 'String!', __args: { hello: 'String!' } },
   },
   subscription: {},
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
+  __typename: 'Mutation';
   helloMutation: (args: {
     hello: ScalarsEnums['String'];
   }) => ScalarsEnums['String'];
 }
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -529,6 +572,9 @@ export const { query, mutation, subscription, resolved, selectFields } = client;
 exports[`mutation generates mutation: mutation_generatedSchema 1`] = `
 Object {
   "mutation": Object {
+    "__typename": Object {
+      "__type": "String!",
+    },
     "helloMutation": Object {
       "__args": Object {
         "hello": "String!",
@@ -537,6 +583,9 @@ Object {
     },
   },
   "query": Object {
+    "__typename": Object {
+      "__type": "String!",
+    },
     "hello": Object {
       "__type": "String!",
     },
@@ -573,18 +622,25 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
   mutation: {},
-  subscription: { newNotification: { __type: 'String!' } },
+  subscription: {
+    __typename: { __type: 'String!' },
+    newNotification: { __type: 'String!' },
+  },
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   hello: ScalarsEnums['String'];
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
 export interface Subscription {
+  __typename: 'Subscription';
   newNotification: ScalarsEnums['String'];
 }
 
@@ -632,11 +688,17 @@ exports[`subscription generates subscription: subscription_generatedSchema 1`] =
 Object {
   "mutation": Object {},
   "query": Object {
+    "__typename": Object {
+      "__type": "String!",
+    },
     "hello": Object {
       "__type": "String!",
     },
   },
   "subscription": Object {
+    "__typename": Object {
+      "__type": "String!",
+    },
     "newNotification": Object {
       "__type": "String!",
     },

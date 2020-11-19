@@ -329,6 +329,8 @@ export function createClient<
       if (recursionDepth > 0) {
         const allAccessorKeys = Object.keys(accessor);
         return allAccessorKeys.reduce((acum, fieldName) => {
+          if (fieldName === '__typename') return acum;
+
           const fieldValue: unknown = lodashGet(accessor, fieldName);
 
           if (Array.isArray(fieldValue)) {

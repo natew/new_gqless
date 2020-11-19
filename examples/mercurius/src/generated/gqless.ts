@@ -38,6 +38,7 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
 };
 export const generatedSchema = {
   query: {
+    __typename: { __type: 'String!' },
     simpleString: { __type: 'String!' },
     stringWithArgs: { __type: 'String!', __args: { hello: 'String!' } },
     stringNullableWithArgs: {
@@ -60,7 +61,10 @@ export const generatedSchema = {
     },
     number: { __type: 'Int!' },
   },
-  mutation: { increment: { __type: 'Int!', __args: { n: 'Int!' } } },
+  mutation: {
+    __typename: { __type: 'String!' },
+    increment: { __type: 'Int!', __args: { n: 'Int!' } },
+  },
   subscription: {},
   GreetingsInput: {
     language: { __type: 'String!' },
@@ -68,6 +72,7 @@ export const generatedSchema = {
     scal: { __type: 'ExampleScalar' },
   },
   Human: {
+    __typename: { __type: 'String!' },
     name: { __type: 'String!' },
     father: { __type: 'Human!' },
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
@@ -76,6 +81,7 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
+  __typename: 'Query';
   simpleString: ScalarsEnums['String'];
   stringWithArgs: (args: {
     hello: ScalarsEnums['String'];
@@ -100,12 +106,16 @@ export interface Query {
 }
 
 export interface Mutation {
+  __typename: 'Mutation';
   increment: (args: { n: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
 
 export interface Human {
+  __typename: 'Human';
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
