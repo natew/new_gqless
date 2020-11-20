@@ -1,7 +1,7 @@
 import { waitForExpect } from 'test-utils';
 
 import { createInterceptorManager } from '../src/Interceptor';
-import { Scheduler } from '../src/Scheduler';
+import { createScheduler } from '../src/Scheduler';
 import { Selection } from '../src/Selection';
 
 test('scheduler works with globalInterceptor', async () => {
@@ -9,7 +9,7 @@ test('scheduler works with globalInterceptor', async () => {
 
   const resolveAllSelections = jest.fn(async () => {});
 
-  new Scheduler(interceptorManager, resolveAllSelections);
+  createScheduler(interceptorManager, resolveAllSelections);
 
   const selection = new Selection({
     key: 'a',

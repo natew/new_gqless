@@ -6,7 +6,7 @@ import lodashSet from 'lodash/set';
 import { CacheNotFound, createAccessorCache, createCache } from '../Cache';
 import { createInterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
-import { Scheduler } from '../Scheduler';
+import { createScheduler } from '../Scheduler';
 import {
   DeepPartial,
   parseSchemaType,
@@ -58,7 +58,7 @@ export function createClient<
 
   const accessorCache = createAccessorCache();
 
-  new Scheduler(interceptorManager, resolveAllSelections);
+  const scheduler = createScheduler(interceptorManager, resolveAllSelections);
 
   async function resolved<T = unknown>(
     dataFn: () => T,
@@ -435,5 +435,7 @@ export function createClient<
     resolved,
     selectFields,
     cache: clientCache.cache,
+    interceptorManager,
+    scheduler,
   };
 }

@@ -1,17 +1,27 @@
 import { createReactClient } from '../../../';
-import { client, GeneratedSchema } from '../graphql/gqless';
+import { client, GeneratedSchema, selectFields } from '../graphql/gqless';
 
-const { useQuery } = createReactClient<GeneratedSchema>(client);
+const { useTransactionQuery, useQuery } = createReactClient<GeneratedSchema>(
+  client
+);
 
 export default function Index() {
-  const { data } = useQuery((query) => {
-    return query.hello;
+  const query = useQuery();
+  const { data } = useTransactionQuery((query) => {
+    return query.dogs.map((dog) => {
+      return {
+        dogName: dog.name,
+        owner: dog.owner?.__typename ? 'has owner 😁' : 'no owner 😔',
+      };
+    });
   });
 
   return (
-    <>
-      {data}
-      <div>123</div>
-    </>
+    <div style={{ whiteSpace: 'pre-wrap' }}>
+      {JSON.stringify(selectFields(query.dogs, '*', 2))}
+      <br />
+      <br />
+      {JSON.stringify(data, null, 2)}
+    </div>
   );
 }

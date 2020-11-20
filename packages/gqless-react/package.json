@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",
@@ -25,11 +25,14 @@
     }
   },
   "dependencies": {
-    "@dish/gqless": "workspace:^1.0.11"
+    "lodash": "^4.17.20",
+    "lodash-es": "^4.17.15"
   },
   "devDependencies": {
+    "@dish/gqless": "workspace:^1.0.12",
     "@size-limit/preset-small-lib": "^4.8.0",
-    "@types/react": "^16.9.56",
+    "@types/lodash": "^4.14.165",
+    "@types/react": "^16.14.0",
     "@types/react-dom": "^16.9.9",
     "husky": "^4.3.0",
     "react": "^17.0.1",
@@ -41,6 +44,7 @@
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
+    "@dish/gqless": "workspace:^1.0.12",
     "react": ">=16"
   },
   "engines": {

@@ -18,18 +18,45 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { hello: { __type: 'String!' } },
+  query: { __typename: { __type: 'String!' }, dogs: { __type: '[Dog!]!' } },
   mutation: {},
   subscription: {},
+  Dog: {
+    __typename: { __type: 'String!' },
+    name: { __type: 'String!' },
+    owner: { __type: 'Human' },
+  },
+  Human: {
+    __typename: { __type: 'String!' },
+    name: { __type: 'String!' },
+    dogs: { __type: '[Dog!]' },
+  },
 } as const;
 
 export interface Query {
-  hello: ScalarsEnums['String'];
+  __typename: 'Query';
+  dogs: Array<Dog>;
 }
 
-export interface Mutation {}
+export interface Mutation {
+  __typename: 'Mutation';
+}
 
-export interface Subscription {}
+export interface Subscription {
+  __typename: 'Subscription';
+}
+
+export interface Dog {
+  __typename: 'Dog';
+  name: ScalarsEnums['String'];
+  owner: Maybe<Human>;
+}
+
+export interface Human {
+  __typename: 'Human';
+  name: ScalarsEnums['String'];
+  dogs: Maybe<Array<Dog>>;
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -40,7 +67,7 @@ export interface GeneratedSchema {
 export interface ScalarsEnums extends Scalars {}
 
 const queryFetcher: QueryFetcher = async function (query, variables) {
-  const response = await fetch('/api/graphql', {
+  const response = await fetch('http://localhost:4141/api/graphql', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -20,9 +20,21 @@ export type Scalars = {
   Float: number;
 };
 
+export type Dog = {
+  __typename?: 'Dog';
+  name: Scalars['String'];
+  owner?: Maybe<Human>;
+};
+
+export type Human = {
+  __typename?: 'Human';
+  name: Scalars['String'];
+  dogs?: Maybe<Array<Dog>>;
+};
+
 export type Query = {
   __typename?: 'Query';
-  hello: Scalars['String'];
+  dogs: Array<Dog>;
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -134,26 +146,50 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Query: ResolverTypeWrapper<{}>;
+  Dog: ResolverTypeWrapper<Dog>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Human: ResolverTypeWrapper<Human>;
+  Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  Query: {};
+  Dog: Dog;
   String: Scalars['String'];
+  Human: Human;
+  Query: {};
   Boolean: Scalars['Boolean'];
+};
+
+export type DogResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Dog'] = ResolversParentTypes['Dog']
+> = {
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  owner?: Resolver<Maybe<ResolversTypes['Human']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type HumanResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Human'] = ResolversParentTypes['Human']
+> = {
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  dogs?: Resolver<Maybe<Array<ResolversTypes['Dog']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  hello?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  dogs?: Resolver<Array<ResolversTypes['Dog']>, ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
+  Dog?: DogResolvers<ContextType>;
+  Human?: HumanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
 };
 
@@ -182,7 +218,17 @@ type LoaderResolver<TReturn, TObj, TParams, TContext> =
     };
 export interface Loaders<
   TContext = MercuriusContext & { reply: FastifyReply }
-> {}
+> {
+  Dog?: {
+    name?: LoaderResolver<Scalars['String'], Dog, {}, TContext>;
+    owner?: LoaderResolver<Maybe<Human>, Dog, {}, TContext>;
+  };
+
+  Human?: {
+    name?: LoaderResolver<Scalars['String'], Human, {}, TContext>;
+    dogs?: LoaderResolver<Maybe<Array<Dog>>, Human, {}, TContext>;
+  };
+}
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>

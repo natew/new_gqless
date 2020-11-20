@@ -28,8 +28,8 @@
     }
   },
   "dependencies": {
-    "@dish/gqless": "workspace:^1.0.11",
-    "@dish/gqless-cli": "workspace:^0.1.15",
+    "@dish/gqless": "workspace:^1.0.12",
+    "@dish/gqless-cli": "workspace:^0.1.16",
     "fastify": "^3.8.0",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",

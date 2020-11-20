@@ -2,30 +2,52 @@ import debounce from 'lodash/debounce';
 
 import { InterceptorManager } from '../Interceptor';
 
-export class Scheduler {
-  interceptorManager: InterceptorManager;
-  fetchSelections: () => void;
+const createLazyPromise = () => {
+  let resolve: () => void = undefined as any;
+  let reject: (reason: unknown) => void = undefined as any;
+  const promise = new Promise<void>((resolveFn, rejectFn) => {
+    resolve = resolveFn;
+    reject = rejectFn;
+  });
 
-  constructor(
-    interceptorManager: InterceptorManager,
-    resolveAllSelections: () => Promise<void>
-  ) {
-    this.interceptorManager = interceptorManager;
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+};
 
-    this.fetchSelections = debounce(
-      () => {
-        resolveAllSelections().catch(console.error);
-      },
-      10,
-      {
-        maxWait: 1000,
-      }
-    );
+export const createScheduler = (
+  interceptorManager: InterceptorManager,
+  resolveAllSelections: () => Promise<void>
+) => {
+  const scheduler: {
+    resolving: null | Promise<void>;
+  } = {
+    resolving: null,
+  };
 
-    interceptorManager.globalInterceptor.addSelectionListeners.add(
-      (_selection) => {
-        this.fetchSelections();
-      }
-    );
-  }
-}
+  const fetchSelections = debounce(
+    () => {
+      const resolvePromise = createLazyPromise();
+      scheduler.resolving = resolvePromise.promise;
+      resolveAllSelections()
+        .then(resolvePromise.resolve, resolvePromise.reject)
+        .finally(() => {
+          scheduler.resolving = null;
+        });
+    },
+    10,
+    {
+      maxWait: 1000,
+    }
+  );
+
+  interceptorManager.globalInterceptor.addSelectionListeners.add(
+    (_selection) => {
+      fetchSelections();
+    }
+  );
+
+  return scheduler;
+};

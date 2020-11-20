@@ -1,0 +1,29 @@
+{
+  "dogs": [
+    {
+      "name": "a"
+    },
+    {
+      "name": "b"
+    },
+    {
+      "name": "c"
+    },
+    {
+      "name": "d"
+    }
+  ],
+  "humans": [
+    {
+      "name": "g"
+    },
+    {
+      "name": "h"
+    }
+  ],
+  "dogOwners": {
+    "a": "g",
+    "b": "g",
+    "c": "h"
+  }
+}
