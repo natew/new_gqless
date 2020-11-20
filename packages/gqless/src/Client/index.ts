@@ -207,6 +207,7 @@ export function createClient<
             const selection = selectionManager.getSelection({
               key: index,
               prevSelection: selectionsArg,
+              allowCache,
             });
             return createAccessor(schemaType, selection);
           }
@@ -249,6 +250,7 @@ export function createClient<
                 isArray,
                 args: args != null ? args.argValues : undefined,
                 argTypes: args != null ? args.argTypes : undefined,
+                allowCache,
               });
 
               if (scalarsEnumsHash[pureType]) {
@@ -413,6 +415,7 @@ export function createClient<
             const selection = selectionManager.getSelection({
               key,
               type,
+              allowCache,
             });
 
             return createAccessor(value, selection);

@@ -3,3 +3,4 @@ dist
 .nyc_output
 coverage
 .next
+packages/gqless-react/example/db.json
