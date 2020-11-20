@@ -21,7 +21,7 @@ describe('selection creation', () => {
     expect(selectionA.argTypes).toBe(undefined);
     expect(selectionA.selections).toEqual(new Set([selectionA]));
 
-    expect(selectionA.path).toEqual(['a']);
+    expect(selectionA.cachePath).toEqual([]);
     expect(selectionA.pathString).toBe('a');
 
     const selectionB = manager.getSelection({
@@ -35,7 +35,7 @@ describe('selection creation', () => {
     expect(selectionB.isArray).toBe(true);
 
     expect(selectionB.selections).toEqual(new Set([selectionA, selectionB]));
-    expect(selectionB.path).toEqual(['a', 'b']);
+    expect(selectionB.cachePath).toEqual(['b']);
     expect(selectionB.pathString).toBe('a.b');
 
     const selectionC = manager.getSelection({
@@ -58,7 +58,7 @@ describe('selection creation', () => {
       },
     });
 
-    expect(selectionD.path).toEqual(['a', 'b', 0, 'gqlessAlias_0']);
+    expect(selectionD.cachePath).toEqual(['b', 0, 'gqlessAlias_0']);
     expect(selectionD.pathString).toBe('a.b.0.gqlessAlias_0');
     expect(selectionD.alias).toBe('gqlessAlias_0');
 
@@ -73,7 +73,7 @@ describe('selection creation', () => {
       },
     });
 
-    expect(repeatSelectionD.path).toEqual(['a', 'b', 0, 'gqlessAlias_0']);
+    expect(repeatSelectionD.cachePath).toEqual(['b', 0, 'gqlessAlias_0']);
     expect(repeatSelectionD.pathString).toBe('a.b.0.gqlessAlias_0');
     expect(repeatSelectionD.alias).toBe('gqlessAlias_0');
 
@@ -82,7 +82,7 @@ describe('selection creation', () => {
       prevSelection: selectionD,
     });
 
-    expect(selectionE.path).toEqual(['a', 'b', 0, 'gqlessAlias_0', 'e']);
+    expect(selectionE.cachePath).toEqual(['b', 0, 'gqlessAlias_0', 'e']);
     expect(selectionE.pathString).toBe('a.b.0.gqlessAlias_0.e');
 
     const selectionF = manager.getSelection({
@@ -94,7 +94,8 @@ describe('selection creation', () => {
       type: SelectionType.Subscription,
     });
 
-    expect(selectionF.path).toEqual(['f']);
+    expect(selectionF.cachePath).toEqual([]);
+    expect(selectionF.pathString).toBe('f');
 
     expect(
       separateSelectionTypes([

@@ -42,20 +42,18 @@ export const buildQuery = (
   for (const selection of selections) {
     lodashSet(
       selectionTree,
-      Array.from(selection.selectionsWithoutArrayIndex).map(
-        (selectionValue) => {
-          const argsLength = selectionValue.args
-            ? Object.keys(selectionValue.args).length
-            : 0;
+      selection.selectionsWithoutArrayIndex.map((selectionValue) => {
+        const argsLength = selectionValue.args
+          ? Object.keys(selectionValue.args).length
+          : 0;
 
-          const selectionKey = selectionValue.alias
-            ? `${selectionValue.alias}: ${selectionValue.key}`
-            : selectionValue.key;
+        const selectionKey = selectionValue.alias
+          ? `${selectionValue.alias}: ${selectionValue.key}`
+          : selectionValue.key;
 
-          if (selectionValue.args && selectionValue.argTypes && argsLength) {
-            return `${selectionKey}(${Object.entries(
-              selectionValue.args
-            ).reduce((acum, [key, value], index) => {
+        if (selectionValue.args && selectionValue.argTypes && argsLength) {
+          return `${selectionKey}(${Object.entries(selectionValue.args).reduce(
+            (acum, [key, value], index) => {
               const variableMapKey = `${
                 selectionValue.argTypes![key]
               }-${key}-${JSON.stringify(value)}`;
@@ -81,12 +79,13 @@ export const buildQuery = (
               }
 
               return acum;
-            }, '')})`;
-          }
-
-          return selectionKey;
+            },
+            ''
+          )})`;
         }
-      ),
+
+        return selectionKey;
+      }),
       true
     );
   }

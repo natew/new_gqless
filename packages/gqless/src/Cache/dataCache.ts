@@ -9,8 +9,7 @@ export function createCache() {
   const cache: Record<string, unknown> = {};
 
   function getCacheFromSelection(selection: Selection) {
-    const path = selection.path.slice(1);
-    return lodashGet(cache, path, CacheNotFound);
+    return lodashGet(cache, selection.cachePath, CacheNotFound);
   }
 
   function mergeCache(data: unknown) {

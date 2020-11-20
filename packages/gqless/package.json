@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -34,10 +34,10 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.14",
+    "@dish/gqless-cli": "workspace:^0.1.15",
     "@size-limit/preset-small-lib": "^4.8.0",
     "@types/lodash": "^4.14.165",
-    "@types/node": "^14.14.8",
+    "@types/node": "^14.14.9",
     "@types/tap": "^14.10.1",
     "husky": "^4.3.0",
     "mercurius": "^6.4.0",
@@ -49,7 +49,7 @@
     "tsdx": "^0.14.1",
     "tslib": "^2.0.3",
     "tsup": "^3.8.0",
-    "typescript": "^4.0.5"
+    "typescript": "^4.1.2"
   },
   "size-limit": [
     {

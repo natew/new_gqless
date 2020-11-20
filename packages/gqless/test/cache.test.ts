@@ -34,7 +34,7 @@ describe('accessorCache', () => {
     assertIsDefined(selection);
 
     expect(selection.key).toBe('a');
-    expect(selection.path).toEqual(['a']);
+    expect(selection.cachePath).toEqual([]);
     expect(selection.pathString).toBe('a');
 
     const isProxyFromCache = cache.isProxy(obj);

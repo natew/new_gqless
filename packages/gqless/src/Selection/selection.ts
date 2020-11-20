@@ -24,7 +24,7 @@ export class Selection {
   argTypes?: Record<string, string>;
   alias?: string;
 
-  path: (string | number)[] = [];
+  cachePath: (string | number)[] = [];
   pathString: string;
 
   selections = new Set<Selection>();
@@ -56,9 +56,10 @@ export class Selection {
     }
 
     for (const selection of this.selections) {
-      this.path.push(selection.alias || selection.key);
+      this.cachePath.push(selection.alias || selection.key);
     }
-    this.pathString = this.path.join('.');
+    this.pathString = this.cachePath.join('.');
+    this.cachePath.splice(0, 1);
 
     this.selectionsWithoutArrayIndex = Array.from(this.selections).filter(
       (v) => typeof v.key === 'string'
