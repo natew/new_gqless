@@ -3,13 +3,13 @@ import { Selection } from '../Selection';
 export class Interceptor {
   selections = new Set<Selection>();
   listening = true;
-  addSelectionListeners = new Set<(selection: Selection) => void>();
+  selectionAddListeners = new Set<(selection: Selection) => void>();
 
   addSelection(selection: Selection) {
     if (this.listening) {
       this.selections.add(selection);
 
-      for (const listener of this.addSelectionListeners) {
+      for (const listener of this.selectionAddListeners) {
         listener(selection);
       }
     }

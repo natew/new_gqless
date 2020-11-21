@@ -16,7 +16,7 @@ describe('base interceptor', () => {
         Error("Intercept listener didn't work!")
       );
 
-      interceptor.addSelectionListeners.add((selectionArg) => {
+      interceptor.selectionAddListeners.add((selectionArg) => {
         expect(selectionArg).toBe(selectionA);
         clearTimeout(timeout);
         resolve();
@@ -38,7 +38,7 @@ describe('base interceptor', () => {
     const interceptPromiseB = new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(resolve, 500);
 
-      interceptor.addSelectionListeners.add((_selectionArg) => {
+      interceptor.selectionAddListeners.add((_selectionArg) => {
         clearTimeout(timeout);
         reject(Error("It shouldn't have received the selection it!"));
       });

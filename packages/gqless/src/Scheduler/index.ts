@@ -1,41 +1,43 @@
 import debounce from 'lodash/debounce';
 
 import { InterceptorManager } from '../Interceptor';
-
-const createLazyPromise = () => {
-  let resolve: () => void = undefined as any;
-  let reject: (reason: unknown) => void = undefined as any;
-  const promise = new Promise<void>((resolveFn, rejectFn) => {
-    resolve = resolveFn;
-    reject = rejectFn;
-  });
-
-  return {
-    promise,
-    resolve,
-    reject,
-  };
-};
+import { createLazyPromise, LazyPromise } from '../Utils';
 
 export const createScheduler = (
   interceptorManager: InterceptorManager,
   resolveAllSelections: () => Promise<void>
 ) => {
-  const scheduler: {
-    resolving: null | Promise<void>;
-  } = {
-    resolving: null,
+  const resolveListeners = new Set<(promise: Promise<void>) => void>();
+
+  function subscribeResolve(fn: (promise: Promise<void>) => void) {
+    resolveListeners.add(fn);
+
+    return function unsubscribe() {
+      resolveListeners.delete(fn);
+    };
+  }
+
+  const scheduler = {
+    resolving: null as null | Promise<void>,
+    subscribeResolve,
   };
 
+  let resolvingPromise: LazyPromise | null = null;
+
   const fetchSelections = debounce(
-    () => {
-      const resolvePromise = createLazyPromise();
-      scheduler.resolving = resolvePromise.promise;
-      resolveAllSelections()
-        .then(resolvePromise.resolve, resolvePromise.reject)
-        .finally(() => {
+    (lazyPromise: LazyPromise) => {
+      resolvingPromise = null;
+
+      resolveAllSelections().then(
+        () => {
           scheduler.resolving = null;
-        });
+          lazyPromise.resolve();
+        },
+        (err) => {
+          scheduler.resolving = null;
+          lazyPromise.reject(err);
+        }
+      );
     },
     10,
     {
@@ -43,9 +45,20 @@ export const createScheduler = (
     }
   );
 
-  interceptorManager.globalInterceptor.addSelectionListeners.add(
+  interceptorManager.globalInterceptor.selectionAddListeners.add(
     (_selection) => {
-      fetchSelections();
+      let lazyPromise: LazyPromise;
+      if (resolvingPromise === null) {
+        lazyPromise = createLazyPromise();
+        resolvingPromise = lazyPromise;
+        scheduler.resolving = lazyPromise.promise;
+        resolveListeners.forEach((subscription) => {
+          subscription(lazyPromise.promise);
+        });
+      } else {
+        lazyPromise = resolvingPromise;
+      }
+      fetchSelections(lazyPromise);
     }
   );
 

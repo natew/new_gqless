@@ -27,6 +27,11 @@ export interface GraphQLErrorsContainer extends Error {
   errors: readonly GraphQLError[];
 }
 
+export interface ResolveOptions {
+  refetch?: boolean;
+  noCache?: boolean;
+}
+
 export function createClient<
   GeneratedSchema extends {
     query: {};
@@ -62,13 +67,7 @@ export function createClient<
 
   async function resolved<T = unknown>(
     dataFn: () => T,
-    {
-      refetch,
-      noCache,
-    }: {
-      refetch?: boolean;
-      noCache?: boolean;
-    } = {}
+    { refetch, noCache }: ResolveOptions = {}
   ): Promise<T> {
     globalInterceptor.listening = false;
     const interceptor = interceptorManager.createInterceptor();
