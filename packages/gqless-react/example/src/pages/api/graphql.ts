@@ -8,7 +8,7 @@ import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
 
 import { writeGenerate } from '@dish/gqless-cli';
 
-import { Human } from '../../graphql/mercurius';
+import type { Human } from '../../graphql/mercurius';
 
 const app = Fastify();
 
@@ -115,6 +115,7 @@ app.register(mercurius, {
 
 codegenMercurius(app, {
   targetPath: './src/graphql/mercurius.ts',
+  silent: true,
 }).catch(console.error);
 
 const ready = new Promise<void>(async (resolve) => {
@@ -151,6 +152,7 @@ const ready = new Promise<void>(async (resolve) => {
 
 const GraphQLRoute: NextApiHandler = async (req, res) => {
   await ready;
+
   const response = await app.inject({
     method: req.method as any,
     headers: req.headers,

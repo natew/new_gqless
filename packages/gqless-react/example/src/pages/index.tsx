@@ -30,16 +30,27 @@ const Comp = graphql(() => {
     });
   });
 
-  const [n, inc] = useReducer((state: number) => {
-    return ++state;
-  }, 1);
+  const [n, dispatch] = useReducer(
+    (state: number, action: 'add' | 'substact') => {
+      return action === 'add' ? ++state : --state;
+    },
+    1
+  );
 
   return (
     <div style={{ whiteSpace: 'pre-wrap' }}>
       {queryFromHook.__typename}
       <br />
       <br />
-      <button onClick={inc}>inc</button>
+      <p>
+        {
+          //@ts-expect-error
+          performance.memory.totalJSHeapSize / 1024 / 1024
+        }
+      </p>
+      <label>Depth: {n}</label>
+      <button onClick={() => dispatch('add')}>add</button>
+      <button onClick={() => dispatch('substact')}>substract</button>
 
       {!defaultSuspense && state.isLoading
         ? 'LOADING NO SUSPENSE'
