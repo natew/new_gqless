@@ -246,7 +246,6 @@ export function createClient<
               const selection = selectionManager.getSelection({
                 key,
                 prevSelection: selectionsArg,
-                isArray,
                 args: args != null ? args.argValues : undefined,
                 argTypes: args != null ? args.argTypes : undefined,
                 allowCache,

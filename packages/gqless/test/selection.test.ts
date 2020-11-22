@@ -17,11 +17,10 @@ describe('selection creation', () => {
 
     expect(selectionA.key).toBe('a'), expect(selectionA.alias).toBe(undefined);
     expect(selectionA.type).toBe(SelectionType.Mutation);
-    expect(selectionA.isArray).toBe(false);
 
     expect(selectionA.args).toBe(undefined);
     expect(selectionA.argTypes).toBe(undefined);
-    expect(selectionA.selections).toEqual(new Set([selectionA]));
+    expect(selectionA.noIndexSelections).toEqual([selectionA]);
 
     expect(selectionA.cachePath).toEqual([]);
     expect(selectionA.pathString).toBe('a');
@@ -29,15 +28,13 @@ describe('selection creation', () => {
     const selectionB = manager.getSelection({
       key: 'b',
       prevSelection: selectionA,
-      isArray: true,
       allowCache,
     });
 
     expect(selectionB.key).toBe('b');
     expect(selectionB.type).toBe(SelectionType.Mutation);
-    expect(selectionB.isArray).toBe(true);
 
-    expect(selectionB.selections).toEqual(new Set([selectionA, selectionB]));
+    expect(selectionB.noIndexSelections).toEqual([selectionA, selectionB]);
     expect(selectionB.cachePath).toEqual(['b']);
     expect(selectionB.pathString).toBe('a.b');
 
@@ -47,9 +44,7 @@ describe('selection creation', () => {
       allowCache,
     });
 
-    expect(selectionC.selectionsWithoutArrayIndex).toEqual(
-      Array.from(selectionB.selections)
-    );
+    expect(selectionC.noIndexSelections).toEqual(selectionB.noIndexSelections);
 
     const selectionD = manager.getSelection({
       key: 'd',

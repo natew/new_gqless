@@ -64,7 +64,6 @@ export class SelectionManager {
     prevSelection,
     args,
     argTypes,
-    isArray,
     type,
     allowCache,
   }: SelectionConstructorArgs & { allowCache: boolean }) {
@@ -92,7 +91,6 @@ export class SelectionManager {
         args,
         argTypes,
         alias,
-        isArray,
         type,
       });
       if (allowCache && cacheKey) this.selectionCache.set(cacheKey, selection);

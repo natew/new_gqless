@@ -7,7 +7,6 @@ export enum SelectionType {
 export type SelectionConstructorArgs = {
   key: string | number;
   prevSelection?: Selection;
-  isArray?: boolean;
   type?: SelectionType;
   alias?: string;
   args?: Record<string, unknown>;
@@ -17,52 +16,44 @@ export type SelectionConstructorArgs = {
 export class Selection {
   key: string | number;
 
-  isArray: boolean;
   type: SelectionType;
 
-  args?: Record<string, unknown>;
-  argTypes?: Record<string, string>;
+  args?: Readonly<Record<string, unknown>>;
+  argTypes?: Readonly<Record<string, string>>;
   alias?: string;
 
-  cachePath: (string | number)[] = [];
+  cachePath: readonly (string | number)[] = [];
   pathString: string;
 
-  selections = new Set<Selection>();
-  selectionsWithoutArrayIndex: Selection[];
+  noIndexSelections: readonly Selection[];
 
   constructor({
     key,
     prevSelection,
     args,
     argTypes,
-    isArray = false,
     type,
     alias,
   }: SelectionConstructorArgs) {
     this.key = key;
     this.args = args;
     this.argTypes = argTypes;
-    this.isArray = isArray;
     this.type = type || prevSelection?.type || SelectionType.Query;
     this.alias = alias;
 
-    if (prevSelection) {
-      for (const selection of prevSelection.selections) {
-        this.selections.add(selection);
-      }
-      this.selections.add(this);
-    } else {
-      this.selections.add(this);
-    }
+    const pathKey = alias || key;
 
-    for (const selection of this.selections) {
-      this.cachePath.push(selection.alias || selection.key);
-    }
-    this.pathString = this.cachePath.join('.');
-    this.cachePath.splice(0, 1);
+    this.cachePath = prevSelection ? [...prevSelection.cachePath, pathKey] : [];
 
-    this.selectionsWithoutArrayIndex = Array.from(this.selections).filter(
-      (v) => typeof v.key === 'string'
-    );
+    this.pathString = prevSelection
+      ? prevSelection.pathString + '.' + pathKey
+      : pathKey.toString();
+
+    const prevIndexSelections = prevSelection?.noIndexSelections || [];
+
+    this.noIndexSelections =
+      typeof key === 'string'
+        ? [...prevIndexSelections, this]
+        : prevIndexSelections;
   }
 }
