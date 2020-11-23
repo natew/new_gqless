@@ -39,7 +39,7 @@ export const buildQuery = (
   const variableTypes: Record<string, string> = {};
   const variablesMapKeyValue: Record<string, unknown> = {};
 
-  for (const selection of Array.from(selections)) {
+  for (const selection of selections) {
     lodashSet(
       selectionTree,
       selection.noIndexSelections.map((selectionValue) => {
