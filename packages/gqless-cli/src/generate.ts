@@ -252,12 +252,13 @@ export async function generate(
               },
               ''
             );
-            const connector = onlyNullableArgs ? '?:' : ':';
+            const argsConnector = onlyNullableArgs ? '?:' : ':';
             acum += `
-            ${fieldKey}: (args${connector} {${argTypes}}) => ${typeToReturn}`;
+            ${fieldKey}: (args${argsConnector} {${argTypes}}) => ${typeToReturn}`;
           } else {
+            const connector = fieldValueProps.isNullable ? '?:' : ':';
             acum += `
-            ${fieldKey}: ${typeToReturn}`;
+            ${fieldKey}${connector} ${typeToReturn}`;
           }
 
           return acum;

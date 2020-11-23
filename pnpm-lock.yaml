@@ -35,7 +35,7 @@ importers:
       typescript: 4.1.2
     specifiers:
       '@dish/gqless': 'workspace:^1.0.14'
-      '@dish/gqless-cli': 'workspace:^0.1.17'
+      '@dish/gqless-cli': 'workspace:^0.1.19'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
       '@types/randomstring': ^1.1.6
@@ -77,7 +77,7 @@ importers:
       tsup: 3.8.0_typescript@4.1.2
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless-cli': 'workspace:^0.1.18'
+      '@dish/gqless-cli': 'workspace:^0.1.19'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.9
@@ -207,7 +207,7 @@ importers:
       typescript: 4.1.2
       wait-on: 5.2.0
     specifiers:
-      '@dish/gqless-cli': 'workspace:^0.1.18'
+      '@dish/gqless-cli': 'workspace:^0.1.19'
       '@dish/gqless-react': 'workspace:^0.1.2'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.9

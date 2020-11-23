@@ -403,8 +403,8 @@ export interface Query {
   stringNullableWithArgsArray: (args: {
     hello: Array<Maybe<ScalarsEnums['String']>>;
   }) => Maybe<ScalarsEnums['String']>;
-  object: Maybe<Human>;
-  objectArray: Maybe<Array<Maybe<Human>>>;
+  object?: Maybe<Human>;
+  objectArray?: Maybe<Array<Maybe<Human>>>;
   objectWithArgs: (args: { who: ScalarsEnums['String'] }) => Human;
   arrayString: Array<ScalarsEnums['String']>;
   arrayObjectArgs: (args?: {
