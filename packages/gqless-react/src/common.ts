@@ -1,13 +1,43 @@
-import { useEffect, useLayoutEffect } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useRef,
+} from 'react';
 
 export const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-import { useReducer } from 'react';
-
 const updateReducer = (num: number): number => (num + 1) % 1_000_000;
 
-export const useUpdate = () => {
+export const useBatchUpdate = () => {
+  const isMounted = useRef(true);
+
+  const isRendering = useRef(true);
+  isRendering.current = true;
+
   const [, update] = useReducer(updateReducer, 0);
-  return update as () => void;
+
+  useIsomorphicLayoutEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, [isMounted]);
+
+  useEffect(() => {
+    isRendering.current = false;
+  });
+
+  return useCallback(() => {
+    if (!isMounted.current) return;
+
+    if (isRendering.current) {
+      setTimeout(() => {
+        update();
+      }, 0);
+    } else {
+      update();
+    }
+  }, [update, isRendering, isMounted]);
 };

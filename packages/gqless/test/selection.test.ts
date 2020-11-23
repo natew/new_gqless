@@ -22,7 +22,7 @@ describe('selection creation', () => {
     expect(selectionA.argTypes).toBe(undefined);
     expect(selectionA.noIndexSelections).toEqual([selectionA]);
 
-    expect(selectionA.cachePath).toEqual([]);
+    expect(selectionA.cachePath).toEqual(['a']);
     expect(selectionA.pathString).toBe('a');
 
     const selectionB = manager.getSelection({
@@ -35,7 +35,7 @@ describe('selection creation', () => {
     expect(selectionB.type).toBe(SelectionType.Mutation);
 
     expect(selectionB.noIndexSelections).toEqual([selectionA, selectionB]);
-    expect(selectionB.cachePath).toEqual(['b']);
+    expect(selectionB.cachePath).toEqual(['a', 'b']);
     expect(selectionB.pathString).toBe('a.b');
 
     const selectionC = manager.getSelection({
@@ -58,7 +58,7 @@ describe('selection creation', () => {
       allowCache,
     });
 
-    expect(selectionD.cachePath).toEqual(['b', 0, 'gqlessAlias_0']);
+    expect(selectionD.cachePath).toEqual(['a', 'b', 0, 'gqlessAlias_0']);
     expect(selectionD.pathString).toBe('a.b.0.gqlessAlias_0');
     expect(selectionD.alias).toBe('gqlessAlias_0');
 
@@ -74,7 +74,7 @@ describe('selection creation', () => {
       allowCache,
     });
 
-    expect(repeatSelectionD.cachePath).toEqual(['b', 0, 'gqlessAlias_0']);
+    expect(repeatSelectionD.cachePath).toEqual(['a', 'b', 0, 'gqlessAlias_0']);
     expect(repeatSelectionD.pathString).toBe('a.b.0.gqlessAlias_0');
     expect(repeatSelectionD.alias).toBe('gqlessAlias_0');
 
@@ -84,7 +84,7 @@ describe('selection creation', () => {
       allowCache,
     });
 
-    expect(selectionE.cachePath).toEqual(['b', 0, 'gqlessAlias_0', 'e']);
+    expect(selectionE.cachePath).toEqual(['a', 'b', 0, 'gqlessAlias_0', 'e']);
     expect(selectionE.pathString).toBe('a.b.0.gqlessAlias_0.e');
 
     const selectionF = manager.getSelection({
@@ -98,7 +98,7 @@ describe('selection creation', () => {
       allowCache,
     });
 
-    expect(selectionF.cachePath).toEqual([]);
+    expect(selectionF.cachePath).toEqual(['f']);
     expect(selectionF.pathString).toBe('f');
 
     expect(

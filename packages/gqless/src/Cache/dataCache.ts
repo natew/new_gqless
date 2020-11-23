@@ -12,8 +12,11 @@ export function createCache() {
     return lodashGet(cache, selection.cachePath, CacheNotFound);
   }
 
-  function mergeCache(data: unknown) {
-    lodashMerge(cache, data);
+  function mergeCache(
+    data: unknown,
+    prefix: 'query' | 'mutation' | 'subscription'
+  ) {
+    lodashMerge(cache, { [prefix]: data });
   }
 
   return { cache, getCacheFromSelection, mergeCache };

@@ -34,7 +34,7 @@ describe('accessorCache', () => {
     assertIsDefined(selection);
 
     expect(selection.key).toBe('a');
-    expect(selection.cachePath).toEqual([]);
+    expect(selection.cachePath).toEqual(['a']);
     expect(selection.pathString).toBe('a');
 
     const isProxyFromCache = cache.isProxy(obj);
@@ -60,9 +60,12 @@ describe('dataCache', () => {
 
     expect(dataEmpty).toBe(CacheNotFound);
 
-    cache.mergeCache({
-      a: 1,
-    });
+    cache.mergeCache(
+      {
+        a: 1,
+      },
+      'query'
+    );
 
     const data = cache.getCacheFromSelection(selection);
 

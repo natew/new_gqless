@@ -6,7 +6,7 @@ export class Interceptor {
   selectionAddListeners = new Set<(selection: Selection) => void>();
 
   addSelection(selection: Selection) {
-    if (this.listening) {
+    if (this.listening && !this.selections.has(selection)) {
       this.selections.add(selection);
 
       for (const listener of this.selectionAddListeners) {

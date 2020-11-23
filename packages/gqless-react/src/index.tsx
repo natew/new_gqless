@@ -1,4 +1,4 @@
-import {
+import React, {
   Dispatch,
   ReactElement,
   useCallback,
@@ -7,7 +7,7 @@ import {
   useRef,
 } from 'react';
 
-import { useUpdate } from './common';
+import { useBatchUpdate } from './common';
 
 import type { GraphQLError } from 'graphql';
 import type {
@@ -87,7 +87,8 @@ export function createReactClient<
       displayName: string;
     } = function WithGraphQL(props) {
       let fetchingPromise = useRef<Promise<void>>();
-      const forceUpdate = useUpdate();
+
+      const forceUpdate = useBatchUpdate();
 
       const unsubscribe = scheduler.subscribeResolve((promise) => {
         fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -107,16 +108,24 @@ export function createReactClient<
         forceUpdate();
       });
 
-      let returnValue: R;
+      useEffect(() => {
+        return unsubscribe;
+      });
 
-      try {
-        returnValue = component(props);
-      } finally {
-        unsubscribe();
-      }
+      const returnValue: R = component(props);
 
       if (suspense && fetchingPromise.current) {
-        throw fetchingPromise.current;
+        const Suspend = () => {
+          if (!fetchingPromise.current) return null;
+
+          throw fetchingPromise.current;
+        };
+        return (
+          <>
+            {returnValue}
+            <Suspend />
+          </>
+        ) as R;
       }
       return returnValue;
     };
@@ -133,7 +142,7 @@ export function createReactClient<
     suspense?: boolean;
   } = {}) {
     const fetchingPromise = useRef<Promise<void>>();
-    const forceUpdate = useUpdate();
+    const forceUpdate = useBatchUpdate();
 
     const unsubscribe = scheduler.subscribeResolve((promise) => {
       fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -153,7 +162,7 @@ export function createReactClient<
     });
 
     useEffect(() => {
-      unsubscribe();
+      return unsubscribe;
     });
 
     if (suspense && fetchingPromise.current) {

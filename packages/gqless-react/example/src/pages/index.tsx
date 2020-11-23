@@ -42,12 +42,6 @@ const Comp = graphql(() => {
       {queryFromHook.__typename}
       <br />
       <br />
-      <p>
-        {
-          //@ts-expect-error
-          performance.memory.totalJSHeapSize / 1024 / 1024
-        }
-      </p>
       <label>Depth: {n}</label>
       <button onClick={() => dispatch('add')}>add</button>
       <button onClick={() => dispatch('substact')}>substract</button>

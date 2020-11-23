@@ -98,7 +98,15 @@ test('scheduler resolve subscriptions', async () => {
 
   expect(fetchedSelections.has(selectionB)).toBeTruthy();
 
-  interceptorManager.globalInterceptor.addSelection(selectionB);
+  const selectionC = new Selection({
+    key: 'c',
+  });
+  const selectionD = new Selection({
+    key: 'd',
+  });
+
+  interceptorManager.globalInterceptor.addSelection(selectionC);
+  interceptorManager.globalInterceptor.addSelection(selectionD);
 
   expect(scheduler.resolving).toBeTruthy();
   try {

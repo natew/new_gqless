@@ -49,13 +49,13 @@ export interface Subscription {
 export interface Dog {
   __typename: 'Dog';
   name: ScalarsEnums['String'];
-  owner: Maybe<Human>;
+  owner?: Maybe<Human>;
 }
 
 export interface Human {
   __typename: 'Human';
   name: ScalarsEnums['String'];
-  dogs: Maybe<Array<Dog>>;
+  dogs?: Maybe<Array<Dog>>;
 }
 
 export interface GeneratedSchema {

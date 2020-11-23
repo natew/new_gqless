@@ -334,7 +334,7 @@ export async function generate(
 
   export const client = createClient<GeneratedSchema>(generatedSchema, scalarsEnumsHash, queryFetcher)
 
-  export const { query, mutation, subscription, resolved, selectFields } = client;
+  export const { query, mutation, subscription, resolved, refetch, selectFields } = client;
   `,
     Object.assign({}, await prettierConfig, {
       parser: 'typescript',

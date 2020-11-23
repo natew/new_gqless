@@ -43,7 +43,9 @@ export class Selection {
 
     const pathKey = alias || key;
 
-    this.cachePath = prevSelection ? [...prevSelection.cachePath, pathKey] : [];
+    this.cachePath = prevSelection
+      ? [...prevSelection.cachePath, pathKey]
+      : [pathKey];
 
     this.pathString = prevSelection
       ? prevSelection.pathString + '.' + pathKey

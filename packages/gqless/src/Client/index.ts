@@ -8,7 +8,6 @@ import { createInterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { createScheduler } from '../Scheduler';
 import {
-  DeepPartial,
   parseSchemaType,
   QueryFetcher,
   ScalarsEnumsHash,
@@ -120,6 +119,29 @@ export function createClient<
     }
   }
 
+  function refetch<T = undefined | void>(refetchFn: () => T) {
+    const prevAllowCache = allowCache;
+    allowCache = false;
+    const refetchValue = refetchFn();
+    allowCache = prevAllowCache;
+
+    return (
+      scheduler.resolving?.then(() => {
+        const prevAllowCache = allowCache;
+        allowCache = true;
+        const refetchValue = refetchFn();
+        allowCache = prevAllowCache;
+        return refetchValue;
+      }) ||
+      (() => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Warning: No selections made!');
+        }
+        return Promise.resolve(refetchValue);
+      })()
+    );
+  }
+
   async function buildAndFetchSelections(
     selections: Selection[],
     cache: typeof clientCache,
@@ -135,7 +157,7 @@ export function createClient<
       const { data, errors } = await queryFetcher(query, variables);
 
       if (data) {
-        cache.mergeCache(data);
+        cache.mergeCache(data, type);
       }
 
       if (errors) {
@@ -298,25 +320,15 @@ export function createClient<
 
   function selectFields<A extends object | null | undefined>(
     accessor: A,
-    fields?: '*',
-    recursionDepth?: number
-  ): A;
-  function selectFields<A extends object | null | undefined>(
-    accessor: A,
-    fields: Array<string | number>,
-    recursionDepth?: number
-  ): DeepPartial<A>;
-  function selectFields<A extends object>(
-    accessor: A | null | undefined,
     fields: '*' | Array<string | number> = '*',
     recursionDepth = 1
-  ) {
-    if (accessor == null) return accessor;
+  ): A {
+    if (accessor == null) return accessor as A;
 
     if (Array.isArray(accessor)) {
       return accessor.map((value) =>
         selectFields(value, fields as any, recursionDepth)
-      );
+      ) as A;
     }
 
     if (!accessorCache.isProxy(accessor)) return accessor;
@@ -325,7 +337,7 @@ export function createClient<
       return {} as A;
     }
 
-    if (fields === '*') {
+    if (typeof fields === 'string') {
       if (recursionDepth > 0) {
         const allAccessorKeys = Object.keys(accessor);
         return allAccessorKeys.reduce((acum, fieldName) => {
@@ -351,9 +363,9 @@ export function createClient<
             lodashSet(acum, fieldName, fieldValue);
           }
           return acum;
-        }, {} as A);
+        }, {} as NonNullable<A>);
       } else {
-        return null;
+        return null as A;
       }
     }
 
@@ -381,7 +393,7 @@ export function createClient<
       }
 
       return acum;
-    }, {} as A);
+    }, {} as NonNullable<A>);
   }
 
   function createSchemaAccesor() {
@@ -438,5 +450,6 @@ export function createClient<
     cache: clientCache.cache,
     interceptorManager,
     scheduler,
+    refetch,
   };
 }
