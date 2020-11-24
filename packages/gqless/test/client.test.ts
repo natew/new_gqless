@@ -699,7 +699,7 @@ describe('error handling', () => {
       throw Error("shouldn't reach here");
     } catch (err) {
       expect(err).toStrictEqual(
-        Object.assign(new gqlessError('expected network error'), {
+        new gqlessError('expected network error', {
           networkError: Error('expected network error'),
         })
       );

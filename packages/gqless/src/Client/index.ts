@@ -110,12 +110,7 @@ export function createClient<
         }
 
         if (!(err instanceof gqlessError)) {
-          const newError = Object.assign<gqlessError, Partial<gqlessError>>(
-            new gqlessError(err.message),
-            {
-              networkError: err,
-            }
-          );
+          const newError = new gqlessError(err.message, { networkError: err });
 
           /* istanbul ignore else */
           if (Error.captureStackTrace!) {
@@ -180,17 +175,12 @@ export function createClient<
 
       if (errors?.length) {
         if (errors.length > 1) {
-          const err: gqlessError = Object.assign<
-            gqlessError,
-            Partial<gqlessError>
-          >(
-            new gqlessError(
-              `GraphQL Errors${
-                process.env.NODE_ENV === 'production'
-                  ? ''
-                  : ', please check .graphQLErrors property'
-              }`
-            ),
+          const err = new gqlessError(
+            `GraphQL Errors${
+              process.env.NODE_ENV === 'production'
+                ? ''
+                : ', please check .graphQLErrors property'
+            }`,
             {
               graphQLErrors: errors,
             }
@@ -198,10 +188,7 @@ export function createClient<
 
           throw err;
         } else {
-          const error: gqlessError = Object.assign<
-            gqlessError,
-            Partial<gqlessError>
-          >(new gqlessError(errors[0].message), {
+          const error = new gqlessError(errors[0].message, {
             graphQLErrors: errors,
           });
 
