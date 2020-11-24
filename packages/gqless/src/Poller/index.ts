@@ -1,9 +1,10 @@
 import { createClient } from '../Client';
+import { gqlessError } from '../Error';
 
 type EventType<D> =
   | { type: 'fetching' }
   | { type: 'data'; data: D }
-  | { type: 'error'; error: unknown };
+  | { type: 'error'; error: gqlessError };
 
 export class Poller<D> {
   private __data: D | undefined;
@@ -44,13 +45,15 @@ export class Poller<D> {
           .refetch(
             typeof this.pollFn === 'object' ? this.pollFn.current : this.pollFn
           )
-          .then((data) => (this.data = data))
-          .catch((error) => {
-            this.sendEventToSubscribers({
-              type: 'error',
-              error,
-            });
-          })
+          .then(
+            (data) => (this.data = data),
+            (err) => {
+              this.sendEventToSubscribers({
+                type: 'error',
+                error: gqlessError.create(err),
+              });
+            }
+          )
           .finally(() => {
             this.__isFetching = false;
           });
