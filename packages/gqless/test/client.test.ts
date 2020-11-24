@@ -5,7 +5,13 @@ import { createTestApp, gql, waitForExpect } from 'test-utils';
 
 import { generate } from '@dish/gqless-cli';
 
-import { createClient, DeepPartial, QueryFetcher, Schema } from '../src';
+import {
+  createClient,
+  DeepPartial,
+  QueryFetcher,
+  Schema,
+  gqlessError,
+} from '../src';
 
 type Maybe<T> = T | null;
 type Human = {
@@ -582,23 +588,57 @@ describe('error handling', () => {
       });
   });
 
-  test('resolved multiple throws', async () => {
+  test('resolved multiple throws, with shorter error for production', async () => {
     const { query, resolved } = await createTestClient();
 
-    await resolved(() => {
-      query.throw;
-      query.throw2;
-    })
-      .then(() => {
-        throw Error("Shouldn't reach here");
-      })
-      .catch((err) => {
-        if (!(err instanceof Error)) throw Error('Incompatible error type');
+    const prevProcessEnv = process.env.NODE_ENV;
 
-        expect(err).toEqual(
-          Object.assign(
-            Error('Errors in GraphQL query, check .errors property'),
-            {
+    try {
+      await resolved(() => {
+        query.throw;
+        query.throw2;
+      })
+        .then(() => {
+          throw Error("Shouldn't reach here");
+        })
+        .catch((err) => {
+          if (!(err instanceof Error)) throw Error('Incompatible error type');
+
+          expect(err).toEqual(
+            Object.assign(
+              Error('GraphQL Errors, please check .graphQLErrors property'),
+              {
+                errors: [
+                  {
+                    message: 'expected error',
+                    locations: [{ line: 1, column: 7 }],
+                    path: ['throw'],
+                  },
+                  {
+                    message: 'expected error 2',
+                    locations: [{ line: 1, column: 13 }],
+                    path: ['throw2'],
+                  },
+                ],
+              }
+            )
+          );
+        });
+
+      process.env.NODE_ENV = 'production';
+
+      await resolved(() => {
+        query.throw;
+        query.throw2;
+      })
+        .then(() => {
+          throw Error("Shouldn't reach here");
+        })
+        .catch((err) => {
+          if (!(err instanceof Error)) throw Error('Incompatible error type');
+
+          expect(err).toEqual(
+            Object.assign(Error('GraphQL Errors'), {
               errors: [
                 {
                   message: 'expected error',
@@ -611,10 +651,12 @@ describe('error handling', () => {
                   path: ['throw2'],
                 },
               ],
-            }
-          )
-        );
-      });
+            })
+          );
+        });
+    } finally {
+      process.env.NODE_ENV = prevProcessEnv;
+    }
   });
 
   test('scheduler logs to console', async () => {
@@ -643,6 +685,38 @@ describe('error handling', () => {
       );
     } finally {
       logErrorSpy.mockRestore();
+    }
+  });
+
+  test('network error', async () => {
+    const { query, resolved } = await createTestClient(undefined, () => {
+      throw Error('expected network error');
+    });
+
+    try {
+      await resolved(() => query.hello);
+
+      throw Error("shouldn't reach here");
+    } catch (err) {
+      expect(err).toStrictEqual(
+        Object.assign(new gqlessError('expected network error'), {
+          networkError: Error('expected network error'),
+        })
+      );
+    }
+  });
+
+  test('not expect network error type', async () => {
+    const { query, resolved } = await createTestClient(undefined, () => {
+      throw 12345;
+    });
+
+    try {
+      await resolved(() => query.hello);
+
+      throw Error("shouldn't reach here");
+    } catch (err) {
+      expect(err).toBe(12345);
     }
   });
 });

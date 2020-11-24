@@ -12,18 +12,12 @@ export const useIsomorphicLayoutEffect =
 const updateReducer = (num: number): number => (num + 1) % 1_000_000;
 
 export const useBatchUpdate = () => {
-  const isMounted = useRef(true);
+  const isMounted = useIsMounted();
 
   const isRendering = useRef(true);
   isRendering.current = true;
 
   const [, update] = useReducer(updateReducer, 0);
-
-  useIsomorphicLayoutEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, [isMounted]);
 
   useEffect(() => {
     isRendering.current = false;
@@ -40,4 +34,16 @@ export const useBatchUpdate = () => {
       update();
     }
   }, [update, isRendering, isMounted]);
+};
+
+export const useIsMounted = () => {
+  const isMounted = useRef(true);
+
+  useIsomorphicLayoutEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  return isMounted;
 };

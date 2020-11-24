@@ -4,6 +4,7 @@ import lodashGet from 'lodash/get';
 import lodashSet from 'lodash/set';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../Cache';
+import { gqlessError } from '../Error';
 import { createInterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { createScheduler } from '../Scheduler';
@@ -102,11 +103,26 @@ export function createClient<
 
       return dataFn();
     } catch (err) {
-      /* istanbul ignore else */
       if (err instanceof Error) {
         /* istanbul ignore else */
         if (Error.captureStackTrace!) {
           Error.captureStackTrace(err, resolved);
+        }
+
+        if (!(err instanceof gqlessError)) {
+          const newError = Object.assign<gqlessError, Partial<gqlessError>>(
+            new gqlessError(err.message),
+            {
+              networkError: err,
+            }
+          );
+
+          /* istanbul ignore else */
+          if (Error.captureStackTrace!) {
+            Error.captureStackTrace(newError, resolved);
+          }
+
+          throw newError;
         }
       }
       throw err;
@@ -119,27 +135,33 @@ export function createClient<
     }
   }
 
-  function refetch<T = undefined | void>(refetchFn: () => T) {
-    const prevAllowCache = allowCache;
-    allowCache = false;
-    const refetchValue = refetchFn();
-    allowCache = prevAllowCache;
+  async function refetch<T = undefined | void>(refetchFn: () => T) {
+    const interceptor = interceptorManager.createInterceptor();
 
-    return (
-      scheduler.resolving?.then(() => {
-        const prevAllowCache = allowCache;
-        allowCache = true;
-        const refetchValue = refetchFn();
-        allowCache = prevAllowCache;
-        return refetchValue;
-      }) ||
-      (() => {
+    const prevIgnoreCache = allowCache;
+    allowCache = false;
+
+    try {
+      const data = refetchFn();
+
+      if (interceptor.selections.size === 0) {
         if (process.env.NODE_ENV !== 'production') {
           console.warn('Warning: No selections made!');
         }
-        return Promise.resolve(refetchValue);
-      })()
-    );
+        return data;
+      }
+
+      allowCache = prevIgnoreCache;
+
+      await resolveSelections(interceptor.selections, clientCache);
+
+      allowCache = true;
+
+      return refetchFn();
+    } finally {
+      interceptorManager.removeInterceptor(interceptor);
+      allowCache = prevIgnoreCache;
+    }
   }
 
   async function buildAndFetchSelections(
@@ -156,25 +178,39 @@ export function createClient<
 
       const { data, errors } = await queryFetcher(query, variables);
 
-      if (data) {
-        cache.mergeCache(data, type);
-      }
-
-      if (errors) {
+      if (errors?.length) {
         if (errors.length > 1) {
-          const err: GraphQLErrorsContainer = Object.assign(
-            Error(`Errors in GraphQL ${type}, check .errors property`),
+          const err: gqlessError = Object.assign<
+            gqlessError,
+            Partial<gqlessError>
+          >(
+            new gqlessError(
+              `GraphQL Errors${
+                process.env.NODE_ENV === 'production'
+                  ? ''
+                  : ', please check .graphQLErrors property'
+              }`
+            ),
             {
-              errors,
+              graphQLErrors: errors,
             }
           );
 
           throw err;
         } else {
-          const error = Object.assign(Error(), errors[0]);
+          const error: gqlessError = Object.assign<
+            gqlessError,
+            Partial<gqlessError>
+          >(new gqlessError(errors[0].message), {
+            graphQLErrors: errors,
+          });
 
           throw error;
         }
+      }
+
+      if (data) {
+        cache.mergeCache(data, type);
       }
     } finally {
       interceptorManager.removeSelections(selections);
