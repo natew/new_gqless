@@ -234,18 +234,22 @@ export function createClient<
     ]);
   }
 
+  const proxySymbolArray = [ProxySymbol];
+
   function createArrayAccessor(
     schemaType: Schema[string],
-    selectionsArg: Selection
+    selectionArg: Selection
   ) {
-    const arrayCacheValue = clientCache.getCacheFromSelection(selectionsArg);
+    const arrayCacheValue = clientCache.getCacheFromSelection(selectionArg);
     if (allowCache && arrayCacheValue === null) return null;
 
-    return new Proxy(
+    const proxyValue: unknown[] =
       arrayCacheValue === CacheNotFound || !Array.isArray(arrayCacheValue)
-        ? [ProxySymbol]
-        : (arrayCacheValue as unknown[]),
-      {
+        ? proxySymbolArray
+        : arrayCacheValue;
+
+    return accessorCache.getArrayAccessor(selectionArg, proxyValue, () => {
+      return new Proxy(proxyValue, {
         get(target, key: string, receiver) {
           const index = parseInt(key);
 
@@ -263,7 +267,7 @@ export function createClient<
 
             const selection = selectionManager.getSelection({
               key: index,
-              prevSelection: selectionsArg,
+              prevSelection: selectionArg,
               allowCache,
             });
             return createAccessor(schemaType, selection);
@@ -271,18 +275,15 @@ export function createClient<
 
           return Reflect.get(target, key, receiver);
         },
-      }
-    );
+      });
+    });
   }
 
-  function createAccessor(
-    schemaType: Schema[string],
-    selectionsArg: Selection
-  ) {
-    const cacheValue = clientCache.getCacheFromSelection(selectionsArg);
+  function createAccessor(schemaType: Schema[string], selectionArg: Selection) {
+    const cacheValue = clientCache.getCacheFromSelection(selectionArg);
     if (allowCache && cacheValue === null) return null;
 
-    return accessorCache.getAccessor(selectionsArg, () => {
+    return accessorCache.getAccessor(selectionArg, () => {
       return new Proxy(
         fromPairs(
           Object.keys(schemaType).map((key) => {
@@ -303,7 +304,7 @@ export function createClient<
             }): unknown => {
               const selection = selectionManager.getSelection({
                 key,
-                prevSelection: selectionsArg,
+                prevSelection: selectionArg,
                 args: args != null ? args.argValues : undefined,
                 argTypes: args != null ? args.argTypes : undefined,
                 allowCache,
@@ -363,7 +364,7 @@ export function createClient<
 
     if (Array.isArray(accessor)) {
       return accessor.map((value) =>
-        selectFields(value, fields as any, recursionDepth)
+        selectFields(value, fields, recursionDepth)
       ) as A;
     }
 
@@ -487,5 +488,6 @@ export function createClient<
     interceptorManager,
     scheduler,
     refetch,
+    accessorCache,
   };
 }
