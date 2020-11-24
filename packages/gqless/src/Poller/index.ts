@@ -94,11 +94,13 @@ export class Poller<D> {
   }
 
   set pollInterval(v: number) {
-    const didChange = this.__pollInterval !== v;
-    this.__pollInterval = v;
-    if (didChange && this.__isPolling) {
-      this.stop();
-      this.start();
+    if (this.__pollInterval !== v) {
+      this.__pollInterval = v;
+
+      if (this.__isPolling) {
+        this.stop();
+        this.start();
+      }
     }
   }
 
@@ -106,6 +108,3 @@ export class Poller<D> {
     return this.__pollInterval;
   }
 }
-
-//@ts-expect-error
-const asd = new Poller();
