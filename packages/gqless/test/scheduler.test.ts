@@ -93,7 +93,8 @@ test('scheduler resolve subscriptions', async () => {
 
   expect(fetchCalls).toBe(1);
   expect(scheduler.resolving).toBeTruthy();
-  await scheduler.resolving;
+  await scheduler.resolving!.promise;
+
   expect(fetchCalls).toBe(2);
 
   expect(fetchedSelections.has(selectionB)).toBeTruthy();
@@ -110,7 +111,7 @@ test('scheduler resolve subscriptions', async () => {
 
   expect(scheduler.resolving).toBeTruthy();
   try {
-    await scheduler.resolving;
+    await scheduler.resolving!.promise;
 
     throw Error("Shouldn't reach this");
   } catch (err) {

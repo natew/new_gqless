@@ -718,7 +718,7 @@ describe('refetch function', () => {
 
     expect(scheduler.resolving).toBeTruthy();
 
-    await scheduler.resolving;
+    await scheduler.resolving!.promise;
 
     const a2 = query.hello;
 

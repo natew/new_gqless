@@ -10,18 +10,18 @@ export class gqlessError extends Error {
     {
       networkError,
       graphQLErrors,
-      otherReason,
+      otherError,
     }: {
       networkError?: gqlessError['networkError'];
       graphQLErrors?: gqlessError['graphQLErrors'];
-      otherReason?: gqlessError['otherError'];
+      otherError?: gqlessError['otherError'];
     } = {}
   ) {
     super(message);
 
-    this.networkError = networkError;
-    this.graphQLErrors = graphQLErrors;
-    this.otherError = otherReason;
+    if (networkError) this.networkError = networkError;
+    if (graphQLErrors) this.graphQLErrors = graphQLErrors;
+    if (otherError !== undefined) this.otherError = otherError;
   }
 
   toJSON() {
@@ -41,7 +41,7 @@ export class gqlessError extends Error {
     }
 
     return new gqlessError('Unexpected error type', {
-      otherReason: error,
+      otherError: error,
     });
   }
 }

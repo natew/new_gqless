@@ -1,24 +1,25 @@
 import { GraphQLError } from 'graphql';
 import { gqlessError, Poller } from '../src';
 import { createLazyPromise } from '../src/Utils';
-import { createTestClient } from './utils';
+import { createTestClient, TestClientConfig } from './utils';
 
 describe('poller', () => {
   test('works', async () => {
-    const client = await createTestClient();
+    const config: TestClientConfig = {};
+    const client = await createTestClient(undefined, undefined, config);
     const { query } = client;
 
     let n = -1;
 
     const poller = new Poller(
       () => {
-        if (n < 3) {
+        if (n < 4) {
           return query.nFetchCalls;
         }
 
         query.throw;
 
-        return query.nFetchCalls;
+        return n;
       },
       50,
       client
@@ -47,9 +48,15 @@ describe('poller', () => {
       }
     });
 
+    poller.data = undefined;
+
     try {
+      poller.pollInterval = 50;
+      poller.pollInterval = 60;
+      expect(poller.pollInterval).toBe(60);
       poller.start();
 
+      poller.pollInterval = 50;
       expect(poller.pollInterval).toBe(50);
 
       expect(poller.isPolling).toBe(true);
@@ -85,12 +92,21 @@ describe('poller', () => {
       await dataPromise.promise;
 
       expect(n).toBe(3);
+      config.artificialDelay = 100;
 
       expect(poller.data).toBe(n);
 
-      try {
-        await fetchPromise.promise;
+      await fetchPromise.promise;
 
+      await dataPromise.promise;
+
+      expect(n).toBe(4);
+      expect(poller.data).toBe(n);
+
+      await fetchPromise.promise;
+
+      const spy = jest.spyOn(console, 'error').mockImplementation();
+      try {
         await dataPromise.promise;
 
         throw Error("shouldn't reach here");
@@ -100,12 +116,70 @@ describe('poller', () => {
             graphQLErrors: [new GraphQLError('expected error')],
           })
         );
+        expect(spy).toBeCalledTimes(1);
+      } finally {
+        spy.mockRestore();
       }
 
       poller.stop();
 
       expect(poller.isPolling).toBe(false);
     } finally {
+      unsubscribe();
+    }
+  });
+
+  test('with object poll function', async () => {
+    const client = await createTestClient(undefined, undefined);
+    const { query } = client;
+
+    let n = -1;
+
+    const poller = new Poller(
+      {
+        current: () => {
+          return query.nFetchCalls;
+        },
+      },
+      50,
+      client
+    );
+
+    let fetchPromise = createLazyPromise();
+    let dataPromise = createLazyPromise();
+
+    const unsubscribe = poller.subscribe((event) => {
+      switch (event.type) {
+        case 'fetching': {
+          fetchPromise.resolve();
+          fetchPromise = createLazyPromise();
+          break;
+        }
+        case 'data': {
+          n = event.data;
+          dataPromise.resolve();
+          dataPromise = createLazyPromise();
+          break;
+        }
+        case 'error': {
+          dataPromise.reject(event.error);
+          break;
+        }
+      }
+    });
+
+    try {
+      poller.start();
+
+      await fetchPromise.promise;
+
+      expect(n).toBe(-1);
+
+      await dataPromise.promise;
+
+      expect(n).toBe(1);
+    } finally {
+      poller.stop();
       unsubscribe();
     }
   });

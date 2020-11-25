@@ -18,7 +18,7 @@ export const createScheduler = (
   }
 
   const scheduler = {
-    resolving: null as null | Promise<void>,
+    resolving: null as null | LazyPromise,
     subscribeResolve,
   };
 
@@ -51,7 +51,7 @@ export const createScheduler = (
       if (resolvingPromise === null) {
         lazyPromise = createLazyPromise();
         resolvingPromise = lazyPromise;
-        scheduler.resolving = lazyPromise.promise;
+        scheduler.resolving = lazyPromise;
         resolveListeners.forEach((subscription) => {
           subscription(lazyPromise.promise);
         });

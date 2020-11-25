@@ -37,6 +37,7 @@ export class Poller<D> {
     this.interval = setInterval(() => {
       if (!this.__isFetching) {
         this.__isFetching = true;
+
         this.sendEventToSubscribers({
           type: 'fetching',
         });
@@ -46,17 +47,18 @@ export class Poller<D> {
             typeof this.pollFn === 'object' ? this.pollFn.current : this.pollFn
           )
           .then(
-            (data) => (this.data = data),
+            (data) => {
+              this.__isFetching = false;
+              this.data = data;
+            },
             (err) => {
+              this.__isFetching = false;
               this.sendEventToSubscribers({
                 type: 'error',
                 error: gqlessError.create(err),
               });
             }
-          )
-          .finally(() => {
-            this.__isFetching = false;
-          });
+          );
       }
     }, this.__pollInterval) as any;
   }
@@ -85,7 +87,7 @@ export class Poller<D> {
 
   set data(data: D | undefined) {
     this.__data = data;
-    if (data) {
+    if (data !== undefined) {
       this.sendEventToSubscribers({
         type: 'data',
         data,

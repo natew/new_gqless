@@ -52,11 +52,15 @@ export function createClient<
 
   let allowCache = true;
 
-  function resolveAllSelections() {
-    return resolveSelections(globalInterceptor.selections).catch((err) => {
-      // TODO: Improve error handling customization
-      console.error(err);
-    });
+  async function resolveAllSelections() {
+    const resolvingPromise = scheduler.resolving!;
+
+    try {
+      await resolveSelections(globalInterceptor.selections);
+    } catch (err) {
+      resolvingPromise.promise.catch(console.error);
+      resolvingPromise.reject(err);
+    }
   }
 
   const selectionManager = new SelectionManager();
@@ -131,15 +135,19 @@ export function createClient<
   }
 
   async function refetch<T = undefined | void>(refetchFn: () => T) {
-    const interceptor = interceptorManager.createInterceptor();
+    const startSelectionsSize =
+      interceptorManager.globalInterceptor.selections.size;
 
     const prevIgnoreCache = allowCache;
-    allowCache = false;
 
     try {
+      allowCache = false;
       const data = refetchFn();
 
-      if (interceptor.selections.size === 0) {
+      if (
+        interceptorManager.globalInterceptor.selections.size ===
+        startSelectionsSize
+      ) {
         if (process.env.NODE_ENV !== 'production') {
           console.warn('Warning: No selections made!');
         }
@@ -148,13 +156,12 @@ export function createClient<
 
       allowCache = prevIgnoreCache;
 
-      await resolveSelections(interceptor.selections, clientCache);
+      await scheduler.resolving!.promise;
 
       allowCache = true;
 
       return refetchFn();
     } finally {
-      interceptorManager.removeInterceptor(interceptor);
       allowCache = prevIgnoreCache;
     }
   }

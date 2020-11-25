@@ -12,9 +12,14 @@ export type Human = {
   nullFather?: Maybe<Human>;
   sons: Human[];
 };
+
+export interface TestClientConfig {
+  artificialDelay?: number;
+}
 export const createTestClient = async (
   addedToGeneratedSchema?: DeepPartial<Schema>,
-  queryFetcher?: QueryFetcher
+  queryFetcher?: QueryFetcher,
+  config?: TestClientConfig
 ) => {
   const createHuman = (name?: string) => {
     return {
@@ -96,8 +101,14 @@ export const createTestClient = async (
         },
       },
     },
-    context() {
+    async context() {
       nFetchCalls++;
+
+      if (config?.artificialDelay) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, config.artificialDelay)
+        );
+      }
       return {};
     },
     subscription: true,
