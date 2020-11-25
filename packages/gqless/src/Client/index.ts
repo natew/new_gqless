@@ -417,7 +417,7 @@ export function createClient<
             return selectFields(value, '*', recursionDepth);
           })
         );
-      } else if (accessorCache.isProxy(fieldValue)) {
+      } else if (isProxyLike(fieldValue)) {
         lodashSet(
           acum,
           fieldName,
