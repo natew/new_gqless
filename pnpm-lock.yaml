@@ -34,8 +34,8 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.14'
-      '@dish/gqless-cli': 'workspace:^0.1.19'
+      '@dish/gqless': 'workspace:^1.0.15'
+      '@dish/gqless-cli': 'workspace:^0.1.20'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
       '@types/randomstring': ^1.1.6
@@ -77,7 +77,7 @@ importers:
       tsup: 3.8.0_typescript@4.1.2
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless-cli': 'workspace:^0.1.19'
+      '@dish/gqless-cli': 'workspace:^0.1.20'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.9
@@ -124,7 +124,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.14'
+      '@dish/gqless': 'workspace:^1.0.15'
       '@graphql-codegen/core': ^1.17.8
       '@graphql-codegen/typescript': ^1.17.11
       '@graphql-tools/delegate': ^7.0.5
@@ -170,7 +170,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.14'
+      '@dish/gqless': 'workspace:^1.0.15'
       '@size-limit/preset-small-lib': ^4.9.0
       '@testing-library/react': ^11.2.2
       '@testing-library/react-hooks': ^3.4.2
@@ -198,7 +198,7 @@ importers:
       lodash: 4.17.20
       mercurius: 6.4.0
       mercurius-codegen: 1.1.4_295da868926add62dc89af97d49884d6
-      next: 10.0.2_c3eb1f092c5b2b789fc020efea0b6454
+      next: 10.0.3_c3eb1f092c5b2b789fc020efea0b6454
       node-json-db: 1.1.0
       react: 17.0.1
       react-dom: 17.0.1_react@17.0.1
@@ -213,8 +213,8 @@ importers:
       typescript: 4.1.2
       wait-on: 5.2.0
     specifiers:
-      '@dish/gqless-cli': 'workspace:^0.1.19'
-      '@dish/gqless-react': 'workspace:^0.1.2'
+      '@dish/gqless-cli': 'workspace:^0.1.20'
+      '@dish/gqless-react': 'workspace:^0.1.3'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.9
       '@types/react': ^17.0.0
@@ -225,7 +225,7 @@ importers:
       lodash: ^4.17.20
       mercurius: ^6.4.0
       mercurius-codegen: ^1.1.4
-      next: ^10.0.2
+      next: ^10.0.3
       node-json-db: ^1.1.0
       open-cli: ^6.0.1
       react: ^17.0.1
@@ -1774,15 +1774,15 @@ packages:
       node: '>= 10.14.2'
     resolution:
       integrity: sha512-fC6QCp7Sc5sX6g8Tvbmj4XUTbyrik0akgRy03yjXbQaBWWNWGE7SGtJk98m0N8nzegD/7SggrUlivxo5ax4KWQ==
-  /@next/env/10.0.2:
+  /@next/env/10.0.3:
     dev: false
     resolution:
-      integrity: sha512-1fMsLplRXJjSmOfdaeP91fbTgnsbmZSvX6BjeKXSksccg5JT9W1XkOCerTrbQLpUNZIi0sVfwBrHrwJRMCqGBA==
-  /@next/polyfill-module/10.0.2:
+      integrity: sha512-xjJt2VXoSxAydskmt77nJuEtRL782E4ltaj5JtMzJ8YkNUMMu3d5ktpCR+Q3INKHF/RY6zHJ9QzyE3/s1ikbNg==
+  /@next/polyfill-module/10.0.3:
     dev: false
     resolution:
-      integrity: sha512-lDfVgKvfKz0AhKDT50fho6PtaVswq5xn4+rtvQ7IRyyvcfYswRBbd8f4N2Wb04u8GYnEOj3fSJeM3EM8U4IGzA==
-  /@next/react-dev-overlay/10.0.2_9bc0526c8b535b2dad29bb0e3840dff1:
+      integrity: sha512-JaiycQZZbqViaMZgRGYcPIdCPDz+qRnqEGxbhQlrxyPaBaOtsrAEkGf1SS2wJZKa/ncxqWHMfSvizDcGcz/ygQ==
+  /@next/react-dev-overlay/10.0.3_9bc0526c8b535b2dad29bb0e3840dff1:
     dependencies:
       '@babel/code-frame': 7.10.4
       ally.js: 1.4.1
@@ -1803,8 +1803,8 @@ packages:
       react-dom: ^16.9.0 || ^17
       webpack: ^4 || ^5
     resolution:
-      integrity: sha512-9DcSaZwdINOoyzggPoBl6n0YROa7zUU9okUB5VjbB8pc34TPcqdl0lP6UBZybk5IQE8OeOZOYjYzx2q3YtQCMg==
-  /@next/react-refresh-utils/10.0.2_66609d456e1c4fc52398fef065f8d988:
+      integrity: sha512-ykiKeUhTsMRoyyYnx4jM8xeOPfKGqQ7xgx2dNXOu4tbPpdivzjJp2+K6+xnqhTmZ7uxfFBV+b1OE1ZzA8qyX5Q==
+  /@next/react-refresh-utils/10.0.3_66609d456e1c4fc52398fef065f8d988:
     dependencies:
       react-refresh: 0.8.3
       webpack: 4.44.1
@@ -1813,7 +1813,7 @@ packages:
       react-refresh: 0.8.3
       webpack: ^4 || ^5
     resolution:
-      integrity: sha512-ILc5/BipD7+GBLmtfnQDMG71KLx0fEpVI5kJw8jN9SoeygMrb4auZhCl7gA6QP3oynocYouJ8piLj1Ol80ZvVw==
+      integrity: sha512-XtzzPX2R4+MIyu1waEQUo2tiNwWVEkmObA6pboRCDTPOs4Ri8ckaIE08lN5A5opyF6GVN+IEq/J8KQrgsePsZQ==
   /@nodelib/fs.scandir/2.1.3:
     dependencies:
       '@nodelib/fs.stat': 2.0.3
@@ -2587,7 +2587,6 @@ packages:
     resolution:
       integrity: sha1-w7M6te42DYbg5ijwRorn7yfWVN8=
   /ansi-regex/3.0.0:
-    dev: true
     engines:
       node: '>=4'
     resolution:
@@ -7916,7 +7915,6 @@ packages:
       big.js: 5.2.2
       emojis-list: 3.0.0
       json5: 1.0.1
-    dev: true
     engines:
       node: '>=4.0.0'
     resolution:
@@ -8499,15 +8497,7 @@ packages:
       react-dom: '*'
     resolution:
       integrity: sha512-uM/9NGK9/E9/sTpbIZ/bQ9xOLOIHZwrrb/CRlbDHBU/GFS7Gshl24v/WJhwsVViWkpOXUmiZ66XO7fSB4Wd92Q==
-  /nanoid/3.1.17:
-    dev: false
-    engines:
-      node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1
-    hasBin: true
-    resolution:
-      integrity: sha512-5mmlQz73ohlISpARejqTwgYzh92wwBccatETsLOI+VKkY6Lx/Dj3wvG7tCoKjX+eEaZWn0gB7Xkfl5JatHQTeA==
   /nanoid/3.1.18:
-    dev: true
     engines:
       node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1
     hasBin: true
@@ -8562,15 +8552,15 @@ packages:
     dev: false
     resolution:
       integrity: sha1-yobR/ogoFpsBICCOPchCS524NCw=
-  /next/10.0.2_c3eb1f092c5b2b789fc020efea0b6454:
+  /next/10.0.3_c3eb1f092c5b2b789fc020efea0b6454:
     dependencies:
       '@ampproject/toolbox-optimizer': 2.7.0-alpha.1
       '@babel/runtime': 7.12.5
       '@hapi/accept': 5.0.1
-      '@next/env': 10.0.2
-      '@next/polyfill-module': 10.0.2
-      '@next/react-dev-overlay': 10.0.2_9bc0526c8b535b2dad29bb0e3840dff1
-      '@next/react-refresh-utils': 10.0.2_66609d456e1c4fc52398fef065f8d988
+      '@next/env': 10.0.3
+      '@next/polyfill-module': 10.0.3
+      '@next/react-dev-overlay': 10.0.3_9bc0526c8b535b2dad29bb0e3840dff1
+      '@next/react-refresh-utils': 10.0.3_66609d456e1c4fc52398fef065f8d988
       ast-types: 0.13.2
       babel-plugin-transform-define: 2.0.0
       babel-plugin-transform-react-remove-prop-types: 0.4.24
@@ -8621,7 +8611,7 @@ packages:
       react-dom: ^16.6.0 || ^17
       typescript: '*'
     resolution:
-      integrity: sha512-nb/E1BiOwdmU3dYKjC/O78dS/DOOQ27H+vKeIN9zQumWIbRWZlN8TQazjVjPFyzx70+mcmxbDki6CVMeMuyJmA==
+      integrity: sha512-QYCfjZgowjaLUFvyV8959SmkUZU/edFgHeiXNtWDv7kffo/oTm891p0KZAkk5cMIHcsDX3g3UuQdw/zmui783g==
   /nice-try/1.0.5:
     dev: true
     resolution:
@@ -9923,7 +9913,7 @@ packages:
     dependencies:
       colorette: 1.2.1
       line-column: 1.0.2
-      nanoid: 3.1.17
+      nanoid: 3.1.18
       source-map: 0.6.1
     dev: false
     engines:
@@ -11682,7 +11672,6 @@ packages:
     dependencies:
       is-fullwidth-code-point: 2.0.0
       strip-ansi: 4.0.0
-    dev: true
     engines:
       node: '>=4'
     resolution:
@@ -11749,7 +11738,6 @@ packages:
   /strip-ansi/4.0.0:
     dependencies:
       ansi-regex: 3.0.0
-    dev: true
     engines:
       node: '>=4'
     resolution:
@@ -13137,7 +13125,7 @@ packages:
       eslint-scope: 4.0.3
       json-parse-better-errors: 1.0.2
       loader-runner: 2.4.0
-      loader-utils: 1.2.3
+      loader-utils: 1.4.0
       memory-fs: 0.4.1
       micromatch: 3.1.10
       mkdirp: 0.5.5
@@ -13246,7 +13234,7 @@ packages:
       integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==
   /wide-align/1.1.3:
     dependencies:
-      string-width: 1.0.2
+      string-width: 2.1.1
     dev: false
     optional: true
     resolution:
