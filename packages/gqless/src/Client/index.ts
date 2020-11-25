@@ -349,6 +349,10 @@ export function createClient<
     });
   }
 
+  function isProxyLike(v: any): v is object {
+    return typeof v === 'object' && v !== null;
+  }
+
   function selectFields<A extends object | null | undefined>(
     accessor: A,
     fields: '*' | Array<string | number> = '*',
@@ -362,7 +366,7 @@ export function createClient<
       ) as A;
     }
 
-    if (!accessorCache.isProxy(accessor)) return accessor;
+    if (!isProxyLike(accessor)) return accessor;
 
     if (fields.length === 0) {
       return {} as A;
@@ -384,7 +388,7 @@ export function createClient<
                 return selectFields(value, '*', recursionDepth - 1);
               })
             );
-          } else if (accessorCache.isProxy(fieldValue)) {
+          } else if (isProxyLike(fieldValue)) {
             lodashSet(
               acum,
               fieldName,
