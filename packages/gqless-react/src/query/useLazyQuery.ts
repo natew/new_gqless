@@ -3,7 +3,7 @@ import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useIsMounted } from '../common';
+import { useBatchDispatch } from '../common';
 
 export interface UseLazyQueryOptions extends ResolveOptions {}
 
@@ -67,23 +67,21 @@ export function createUseLazyQuery<
     fn: (query: typeof clientQuery) => A,
     { noCache, refetch = true }: UseLazyQueryOptions = {}
   ) {
-    const [state, dispatch] = useReducer(
+    const [state, dispatchReducer] = useReducer(
       UseLazyQueryReducer,
       undefined,
       InitUseLazyQueryReducer
     ) as [UseLazyQueryState<A>, Dispatch<UseLazyQueryReducerAction<A>>];
+    const dispatch = useBatchDispatch(dispatchReducer);
 
     const fnRef = useRef(fn);
     fnRef.current = fn;
 
-    const isMounted = useIsMounted();
-
     const queryFn = useCallback(
       (fnArg?: typeof fn) => {
-        if (isMounted.current)
-          dispatch({
-            type: 'loading',
-          });
+        dispatch({
+          type: 'loading',
+        });
 
         return resolved<A>(
           (fnArg ? () => fnArg(clientQuery) : false) ||
@@ -94,21 +92,20 @@ export function createUseLazyQuery<
           }
         ).then(
           (data) => {
-            if (isMounted.current)
-              dispatch({
-                type: 'success',
-                data,
-              });
+            dispatch({
+              type: 'success',
+              data,
+            });
             return data;
           },
           (err) => {
-            if (isMounted.current)
-              dispatch({
-                type: 'failure',
-                error: gqlessError.create(err),
-              });
+            const error = gqlessError.create(err);
+            dispatch({
+              type: 'failure',
+              error,
+            });
 
-            throw err;
+            throw error;
           }
         );
       },

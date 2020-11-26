@@ -15,7 +15,7 @@ import {
 } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useIsMounted, useLazyRef } from '../common';
+import { useBatchDispatch, useLazyRef } from '../common';
 
 function initSelectionsState() {
   return new Set<Selection>();
@@ -109,13 +109,13 @@ export function createUseRefetch(
       innerState.current.watching = false;
     }, [innerState]);
 
-    const isMounted = useIsMounted();
     const [selections] = useState(initSelectionsState);
-    const [reducerState, dispatch] = useReducer(
+    const [reducerState, dispatchReducer] = useReducer(
       UseRefetchReducer,
       undefined,
       InitUseRefetchReducer
     );
+    const dispatch = useBatchDispatch(dispatchReducer);
 
     const interceptor = interceptorManager.createInterceptor();
 
@@ -139,26 +139,25 @@ export function createUseRefetch(
         return;
       }
 
-      if (isMounted.current && optsRef.current.notifyOnNetworkStatusChange)
+      if (optsRef.current.notifyOnNetworkStatusChange)
         dispatch({
           type: 'loading',
         });
 
       try {
         await buildAndFetchSelections(selectionsToRefetch, 'query');
-        if (isMounted.current)
-          dispatch({
-            type: 'done',
-          });
+        dispatch({
+          type: 'done',
+        });
       } catch (err) {
-        if (isMounted.current)
-          dispatch({
-            type: 'error',
-            error: gqlessError.create(err),
-          });
-        throw err;
+        const error = gqlessError.create(err);
+        dispatch({
+          type: 'error',
+          error,
+        });
+        throw error;
       }
-    }, [selections, dispatch, isMounted, optsRef]);
+    }, [selections, dispatch, optsRef]);
 
     const state: UseRefetchState = useMemo(
       () =>

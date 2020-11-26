@@ -1,11 +1,11 @@
-import { Dispatch, useCallback, useReducer, useRef } from 'react';
+import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
 import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useIsMounted } from '../common';
+import { useBatchDispatch } from '../common';
 
-export interface UseMutationOptions extends ResolveOptions {}
+export interface UseMutationOptions extends Pick<ResolveOptions, 'noCache'> {}
 
 export interface UseMutationState<A> {
   data: A | undefined;
@@ -65,54 +65,55 @@ export function createUseMutation<
 
   return function useMutation<A>(
     fn: (mutation: typeof clientMutation) => A,
-    { noCache, refetch = true }: UseMutationOptions = {}
+    opts: UseMutationOptions = {}
   ) {
-    const [state, dispatch] = useReducer(
+    const optsRef = useRef(opts);
+    optsRef.current = opts;
+
+    const [state, dispatchReducer] = useReducer(
       UseMutationReducer,
       undefined,
       InitUseMutationReducer
     ) as [UseMutationState<A>, Dispatch<UseMutationReducerAction<A>>];
-
-    const isMounted = useIsMounted();
+    const dispatch = useBatchDispatch(dispatchReducer);
 
     const fnRef = useRef(fn);
     fnRef.current = fn;
 
     const mutate = useCallback(
       (fnArg?: typeof fn) => {
-        if (isMounted.current) dispatch({ type: 'loading' });
+        dispatch({ type: 'loading' });
 
         return resolved<A>(
           (fnArg ? () => fnArg(clientMutation) : false) ||
             (() => fnRef.current(clientMutation)),
           {
-            noCache,
-            refetch,
+            noCache: optsRef.current.noCache,
+            refetch: true,
           }
         ).then(
           (data) => {
-            if (isMounted.current)
-              dispatch({
-                type: 'success',
-                data,
-              });
+            dispatch({
+              type: 'success',
+              data,
+            });
 
             return data;
           },
-          (err) => {
-            if (isMounted.current)
-              dispatch({
-                type: 'failure',
-                error: gqlessError.create(err),
-              });
+          (err: unknown) => {
+            const error = gqlessError.create(err);
+            dispatch({
+              type: 'failure',
+              error,
+            });
 
-            throw err;
+            throw error;
           }
         );
       },
-      [refetch, noCache, fnRef, dispatch]
+      [optsRef, fnRef, dispatch]
     );
 
-    return [mutate, state] as const;
+    return useMemo(() => [mutate, state] as const, [mutate, state]);
   };
 }

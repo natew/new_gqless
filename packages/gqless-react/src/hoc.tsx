@@ -3,7 +3,7 @@ import React, { ReactElement, useEffect, useRef } from 'react';
 import { createClient } from '@dish/gqless';
 
 import { CreateReactClientOptions } from './client';
-import { useBatchUpdate } from './common';
+import { useForceUpdate } from './common';
 
 export interface GraphQLHOCOptions {
   suspense?: boolean;
@@ -23,7 +23,7 @@ export function createGraphqlHOC(
     } = function WithGraphQL(props) {
       let fetchingPromise = useRef<Promise<void> | null>(null);
 
-      const forceUpdate = useBatchUpdate();
+      const forceUpdate = useForceUpdate();
 
       const unsubscribe = scheduler.subscribeResolve((promise) => {
         fetchingPromise.current = new Promise<void>((resolve, reject) => {

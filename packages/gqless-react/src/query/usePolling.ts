@@ -3,7 +3,7 @@ import { Dispatch, useEffect, useMemo, useReducer, useRef } from 'react';
 import { createClient, gqlessError, Poller } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useIsMounted } from '../common';
+import { useBatchDispatch } from '../common';
 
 export interface UsePollingState<A> {
   data: A | undefined;
@@ -73,13 +73,12 @@ export function createUsePolling(
     const fnRef = useRef(fn);
     fnRef.current = fn;
 
-    const [state, dispatch] = useReducer(
+    const [state, dispatchReducer] = useReducer(
       UsePollingReducer,
       undefined,
       InitUsePollingReducer
     ) as [UsePollingState<D>, Dispatch<UsePollingReducerAction<D>>];
-
-    const isMounted = useIsMounted();
+    const dispatch = useBatchDispatch(dispatchReducer);
 
     const poller = useMemo(() => {
       return new Poller(fnRef, pollInterval, client);
@@ -87,8 +86,6 @@ export function createUsePolling(
 
     useEffect(() => {
       return poller.subscribe((event) => {
-        if (!isMounted.current) return;
-
         switch (event.type) {
           case 'fetching': {
             if (optsRef.current.notifyOnNetworkStatusChange) {

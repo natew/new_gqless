@@ -7,34 +7,18 @@ import {
   useRef,
 } from 'react';
 
-export const useIsomorphicLayoutEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+export const IS_BROWSER = typeof window !== 'undefined';
+
+export const useIsomorphicLayoutEffect = IS_BROWSER
+  ? useLayoutEffect
+  : useEffect;
 
 const updateReducer = (num: number): number => (num + 1) % 1_000_000;
 
-export const useBatchUpdate = () => {
-  const isMounted = useIsMounted();
-
-  const isRendering = useRef(true);
-  isRendering.current = true;
-
+export const useForceUpdate = () => {
   const [, update] = useReducer(updateReducer, 0);
 
-  useEffect(() => {
-    isRendering.current = false;
-  });
-
-  return useCallback(() => {
-    if (!isMounted.current) return;
-
-    if (isRendering.current) {
-      setTimeout(() => {
-        if (isMounted.current) update();
-      }, 0);
-    } else {
-      update();
-    }
-  }, [update, isRendering, isMounted]);
+  return useBatchDispatch(update);
 };
 
 export const useIsMounted = () => {
@@ -57,4 +41,49 @@ export const useLazyRef = <T>(initialValFunc: () => T) => {
     ref.current = initialValFunc();
   }
   return ref;
+};
+
+export const useIsFirstMount = () => {
+  const isFirstMount = useRef(true);
+
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+    }
+  }, [isFirstMount]);
+
+  return isFirstMount;
+};
+
+export const useIsRendering = () => {
+  const isRendering = useRef(true);
+  isRendering.current = true;
+
+  useEffect(() => {
+    isRendering.current = false;
+  });
+
+  return isRendering;
+};
+
+export const useBatchDispatch = <F extends (...args: any[]) => void>(
+  dispatchFn: F
+) => {
+  const isRendering = useIsRendering();
+  const isMounted = useIsMounted();
+
+  return useCallback(
+    (...args: any[]) => {
+      if (!isMounted.current) return;
+
+      if (isRendering.current) {
+        setTimeout(() => {
+          if (isMounted.current) dispatchFn(...args);
+        }, 0);
+      } else {
+        dispatchFn(...args);
+      }
+    },
+    [dispatchFn, isRendering, isMounted]
+  ) as F;
 };
