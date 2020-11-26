@@ -5,12 +5,6 @@ import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 import { CreateReactClientOptions } from '../client';
 import { useIsMounted, useIsomorphicLayoutEffect } from '../common';
 
-export interface UseTransactionQueryOptions extends ResolveOptions {
-  skip?: boolean;
-  pollInterval?: number;
-  notifyOnNetworkStatusChange?: boolean;
-}
-
 export interface UseTransactionQueryState<A> {
   data: A | undefined;
   error?: gqlessError;
@@ -73,6 +67,12 @@ function InitUseTransactionQueryReducer<A>({
   };
 }
 
+export interface UseTransactionQueryOptions extends ResolveOptions {
+  skip?: boolean;
+  pollInterval?: number;
+  notifyOnNetworkStatusChange?: boolean;
+}
+
 export function createUseTransactionQuery<
   GeneratedSchema extends {
     query: object;
@@ -87,13 +87,11 @@ export function createUseTransactionQuery<
     fn: (query: typeof clientQuery) => A,
     opts: UseTransactionQueryOptions = {}
   ) {
-    const {
-      noCache,
-      refetch,
-      skip,
-      pollInterval = 0,
-      notifyOnNetworkStatusChange,
-    } = opts;
+    const optsRef = useRef(opts);
+    optsRef.current = opts;
+
+    const { skip, noCache, refetch, pollInterval = 0 } = opts;
+
     const [state, dispatch] = useReducer(
       UseTransactionQueryReducer,
       opts,
@@ -151,7 +149,7 @@ export function createUseTransactionQuery<
 
         isFetching.current = true;
 
-        if (notifyOnNetworkStatusChange && isMounted.current)
+        if (isMounted.current && optsRef.current.notifyOnNetworkStatusChange)
           dispatch({
             type: 'loading',
           });
@@ -183,14 +181,7 @@ export function createUseTransactionQuery<
       return () => {
         clearInterval(interval);
       };
-    }, [
-      pollInterval,
-      skip,
-      noCache,
-      notifyOnNetworkStatusChange,
-      fnRef,
-      isMounted,
-    ]);
+    }, [pollInterval, skip, noCache, optsRef, fnRef, isMounted]);
 
     return state;
   };

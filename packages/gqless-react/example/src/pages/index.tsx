@@ -15,6 +15,7 @@ const {
   useQuery,
   graphql,
   state,
+  useRefetch,
 } = createReactClient<GeneratedSchema>(client, {
   defaultSuspense,
 });
@@ -37,9 +38,14 @@ const Comp = graphql(() => {
     1
   );
 
+  const typename = queryFromHook.__typename;
+
+  const refetch = useRefetch();
+
   return (
     <div style={{ whiteSpace: 'pre-wrap' }}>
-      {queryFromHook.__typename}
+      <p>Time: {query.time}</p>
+      {typename}
       <br />
       <br />
       <label>Depth: {n}</label>
@@ -52,6 +58,15 @@ const Comp = graphql(() => {
       <br />
       <br />
       {JSON.stringify(data, null, 2)}
+
+      <br />
+      <button
+        onClick={() => {
+          refetch().catch(console.error);
+        }}
+      >
+        Refetch everything
+      </button>
     </div>
   );
 });

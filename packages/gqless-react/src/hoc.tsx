@@ -5,19 +5,23 @@ import { createClient } from '@dish/gqless';
 import { CreateReactClientOptions } from './client';
 import { useBatchUpdate } from './common';
 
+export interface GraphQLHOCOptions {
+  suspense?: boolean;
+}
+
 export function createGraphqlHOC(
   { scheduler }: ReturnType<typeof createClient>,
   { defaultSuspense }: CreateReactClientOptions
 ) {
   return function graphql<R extends ReactElement<any, any> | null, P = unknown>(
     component: (props: P) => R,
-    { suspense = defaultSuspense }: { suspense?: boolean } = {}
+    { suspense = defaultSuspense }: GraphQLHOCOptions = {}
   ) {
     const withGraphQL: {
       (props: P): R;
       displayName: string;
     } = function WithGraphQL(props) {
-      let fetchingPromise = useRef<Promise<void>>();
+      let fetchingPromise = useRef<Promise<void> | null>(null);
 
       const forceUpdate = useBatchUpdate();
 
@@ -25,12 +29,12 @@ export function createGraphqlHOC(
         fetchingPromise.current = new Promise<void>((resolve, reject) => {
           promise.then(
             () => {
-              fetchingPromise.current = undefined;
+              fetchingPromise.current = null;
               forceUpdate();
               resolve();
             },
             (err) => {
-              fetchingPromise.current = undefined;
+              fetchingPromise.current = null;
               reject(err);
             }
           );

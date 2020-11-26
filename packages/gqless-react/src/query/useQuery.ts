@@ -5,6 +5,10 @@ import { createClient } from '@dish/gqless';
 import { CreateReactClientOptions } from '../client';
 import { useBatchUpdate } from '../common';
 
+export interface UseQueryOptions {
+  suspense?: boolean;
+}
+
 export function createUseQuery<
   GeneratedSchema extends {
     query: object;
@@ -19,22 +23,20 @@ export function createUseQuery<
 
   return function useQuery({
     suspense = defaultSuspense,
-  }: {
-    suspense?: boolean;
-  } = {}) {
-    const fetchingPromise = useRef<Promise<void>>();
+  }: UseQueryOptions = {}) {
+    const fetchingPromise = useRef<Promise<void> | null>(null);
     const forceUpdate = useBatchUpdate();
 
     const unsubscribe = scheduler.subscribeResolve((promise) => {
       fetchingPromise.current = new Promise<void>((resolve, reject) => {
         promise.then(
           () => {
-            fetchingPromise.current = undefined;
+            fetchingPromise.current = null;
             forceUpdate();
             resolve();
           },
           (err) => {
-            fetchingPromise.current = undefined;
+            fetchingPromise.current = null;
             reject(err);
           }
         );

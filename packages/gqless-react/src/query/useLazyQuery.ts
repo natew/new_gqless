@@ -1,4 +1,4 @@
-import { Dispatch, useCallback, useReducer, useRef } from 'react';
+import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
 import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
@@ -115,6 +115,6 @@ export function createUseLazyQuery<
       [refetch, noCache, fnRef, dispatch]
     );
 
-    return [queryFn, state] as const;
+    return useMemo(() => [queryFn, state] as const, [queryFn, state]);
   };
 }

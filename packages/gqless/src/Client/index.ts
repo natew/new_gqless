@@ -168,8 +168,8 @@ export function createClient<
 
   async function buildAndFetchSelections(
     selections: Selection[],
-    cache: typeof clientCache,
-    type: 'query' | 'mutation' | 'subscription'
+    type: 'query' | 'mutation' | 'subscription',
+    cache: typeof clientCache = clientCache
   ) {
     if (selections.length === 0) return;
 
@@ -222,9 +222,9 @@ export function createClient<
     } = separateSelectionTypes(selections);
 
     await Promise.all([
-      buildAndFetchSelections(querySelections, cache, 'query'),
-      buildAndFetchSelections(mutationSelections, cache, 'mutation'),
-      buildAndFetchSelections(subscriptionSelections, cache, 'subscription'),
+      buildAndFetchSelections(querySelections, 'query', cache),
+      buildAndFetchSelections(mutationSelections, 'mutation', cache),
+      buildAndFetchSelections(subscriptionSelections, 'subscription', cache),
     ]);
   }
 
@@ -487,5 +487,6 @@ export function createClient<
     scheduler,
     refetch,
     accessorCache,
+    buildAndFetchSelections,
   };
 }

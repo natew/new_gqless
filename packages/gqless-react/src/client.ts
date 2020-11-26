@@ -5,6 +5,7 @@ import { createUseMutation } from './mutation/useMutation';
 import { createUseLazyQuery } from './query/useLazyQuery';
 import { createUsePolling } from './query/usePolling';
 import { createUseQuery } from './query/useQuery';
+import { createUseRefetch } from './query/useRefetch';
 import { createUseTransactionQuery } from './query/useTransactionQuery';
 
 export interface CreateReactClientOptions {
@@ -37,6 +38,7 @@ export function createReactClient<
 
   return {
     useQuery: createUseQuery<GeneratedSchema>(client, opts),
+    useRefetch: createUseRefetch(client, opts),
     useLazyQuery: createUseLazyQuery<GeneratedSchema>(client, opts),
     useTransactionQuery: createUseTransactionQuery<GeneratedSchema>(
       client,

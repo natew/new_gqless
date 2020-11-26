@@ -5,6 +5,7 @@ import { Dog, query } from '../graphql/gqless';
 const DogComp = ({ dog }: { dog: Dog }) => {
   return (
     <li>
+      <p>{new Date().toISOString()}</p>
       <p>{dog.name}</p>
       <p>Owner: {dog.owner?.name ? dog.owner.name : 'No owner 😔'}</p>
       <button

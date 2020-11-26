@@ -26,7 +26,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.20",
-    "lodash-es": "^4.17.15"
+    "lodash-es": "^4.17.15",
+    "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
     "@dish/gqless": "workspace:^1.0.17",

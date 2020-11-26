@@ -5,13 +5,6 @@ import { createClient, gqlessError, Poller } from '@dish/gqless';
 import { CreateReactClientOptions } from '../client';
 import { useIsMounted } from '../common';
 
-export interface UsePollingOptions {
-  pollInterval: number;
-  onError?: (err: gqlessError) => void;
-  notifyOnNetworkStatusChange?: boolean;
-  pause?: boolean;
-}
-
 export interface UsePollingState<A> {
   data: A | undefined;
   error?: gqlessError;
@@ -59,11 +52,20 @@ function InitUsePollingReducer<A>(): UsePollingState<A> {
   };
 }
 
+export interface UsePollingOptions {
+  pollInterval: number;
+  onError?: (err: gqlessError) => void;
+  notifyOnNetworkStatusChange?: boolean;
+  pause?: boolean;
+}
+
 export function createUsePolling(
   client: ReturnType<typeof createClient>,
   _opts: CreateReactClientOptions
 ) {
   return function usePolling<D>(fn: () => D, opts: UsePollingOptions) {
+    opts.notifyOnNetworkStatusChange ??= true;
+
     const optsRef = useRef(opts);
     optsRef.current = opts;
     const { pollInterval, pause } = opts;

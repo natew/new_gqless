@@ -63,12 +63,18 @@ const schema = gql`
   }
   type Query {
     dogs: [Dog!]!
+    time: String!
   }
 `;
 
 const resolvers: IResolvers = {
-  async dogs() {
-    return db.getData('/dogs');
+  Query: {
+    async dogs() {
+      return db.getData('/dogs');
+    },
+    time() {
+      return new Date().toISOString();
+    },
   },
 };
 const loaders: MercuriusLoaders = {

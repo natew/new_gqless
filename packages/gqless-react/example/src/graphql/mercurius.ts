@@ -35,6 +35,7 @@ export type Human = {
 export type Query = {
   __typename?: 'Query';
   dogs: Array<Dog>;
+  time: Scalars['String'];
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -185,6 +186,7 @@ export type QueryResolvers<
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
   dogs?: Resolver<Array<ResolversTypes['Dog']>, ParentType, ContextType>;
+  time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {

@@ -18,7 +18,11 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { __typename: { __type: 'String!' }, dogs: { __type: '[Dog!]!' } },
+  query: {
+    __typename: { __type: 'String!' },
+    dogs: { __type: '[Dog!]!' },
+    time: { __type: 'String!' },
+  },
   mutation: {},
   subscription: {},
   Dog: {
@@ -36,6 +40,7 @@ export const generatedSchema = {
 export interface Query {
   __typename: 'Query';
   dogs: Array<Dog>;
+  time: ScalarsEnums['String'];
 }
 
 export interface Mutation {
