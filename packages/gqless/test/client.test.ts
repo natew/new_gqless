@@ -2,7 +2,7 @@ import '../src/Client';
 
 import { waitForExpect } from 'test-utils';
 
-import { gqlessError } from '../src';
+import { gqlessError, Selection } from '../src';
 import { createTestClient } from './utils';
 
 describe('core', () => {
@@ -32,6 +32,60 @@ describe('core', () => {
     }).then((value) => {
       expect(value).toBe('hello world');
     });
+  });
+
+  test('resolved with onCacheData', async () => {
+    const { query, resolved } = await createTestClient();
+
+    expect(typeof query).toBe('object');
+
+    await resolved(() => {
+      return query.hello;
+    }).then((value) => {
+      expect(value).toBe('hello world');
+    });
+
+    const onCacheData = jest
+      .fn()
+      .mockImplementation((data: string): boolean => {
+        expect(data).toBe('hello world');
+
+        return true;
+      });
+    await resolved(
+      () => {
+        return query.hello;
+      },
+      {
+        refetch: true,
+        onCacheData,
+      }
+    ).then((value) => {
+      expect(value).toBe('hello world');
+    });
+
+    expect(onCacheData).toBeCalledTimes(1);
+
+    const onCacheData2 = jest
+      .fn()
+      .mockImplementation((data: string): boolean => {
+        expect(data).toBe('hello world');
+
+        return false;
+      });
+    await resolved(
+      () => {
+        return query.hello;
+      },
+      {
+        refetch: true,
+        onCacheData: onCacheData2,
+      }
+    ).then((value) => {
+      expect(value).toBe('hello world');
+    });
+
+    expect(onCacheData2).toBeCalledTimes(1);
   });
 });
 
@@ -763,5 +817,28 @@ describe('refetch function', () => {
       process.env.NODE_ENV = prevEnv;
       spy.mockRestore();
     }
+  });
+});
+
+describe('buildAndFetchSelections', () => {
+  test('works with included cache', async () => {
+    const { buildAndFetchSelections, cache } = await createTestClient();
+
+    const QuerySelection = new Selection({
+      key: 'query',
+    });
+
+    const HelloSelection = new Selection({
+      key: 'hello',
+      prevSelection: QuerySelection,
+    });
+
+    await buildAndFetchSelections([HelloSelection], 'query');
+
+    expect(cache).toStrictEqual({
+      query: {
+        hello: 'hello world',
+      },
+    });
   });
 });
