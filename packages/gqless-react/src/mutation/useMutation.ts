@@ -5,7 +5,8 @@ import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 import { CreateReactClientOptions } from '../client';
 import { useBatchDispatch } from '../common';
 
-export interface UseMutationOptions extends Pick<ResolveOptions, 'noCache'> {}
+export interface UseMutationOptions<A>
+  extends Pick<ResolveOptions<A>, 'noCache'> {}
 
 export interface UseMutationState<A> {
   data: A | undefined;
@@ -65,8 +66,10 @@ export function createUseMutation<
 
   return function useMutation<A>(
     fn: (mutation: typeof clientMutation) => A,
-    opts: UseMutationOptions = {}
+    mutationOptions?: UseMutationOptions<A>
   ) {
+    const opts = Object.assign({}, mutationOptions);
+
     const optsRef = useRef(opts);
     optsRef.current = opts;
 

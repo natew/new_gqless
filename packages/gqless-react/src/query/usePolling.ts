@@ -63,7 +63,11 @@ export function createUsePolling(
   client: ReturnType<typeof createClient>,
   _opts: CreateReactClientOptions
 ) {
-  return function usePolling<D>(fn: () => D, opts: UsePollingOptions) {
+  return function usePolling<D>(
+    fn: () => D,
+    pollingOptions: UsePollingOptions
+  ) {
+    const opts = Object.assign({}, pollingOptions);
     opts.notifyOnNetworkStatusChange ??= true;
 
     const optsRef = useRef(opts);

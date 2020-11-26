@@ -1,3 +1,4 @@
+import { ResolveOptions } from '@dish/gqless';
 import {
   MutableRefObject,
   useCallback,
@@ -87,3 +88,37 @@ export const useBatchDispatch = <F extends (...args: any[]) => void>(
     [dispatchFn, isRendering, isMounted]
   ) as F;
 };
+
+export type FetchPolicy =
+  | 'cache-and-network'
+  | 'cache-first'
+  | 'network-only'
+  | 'no-cache';
+
+const noCacheResolveOptions: ResolveOptions<unknown> = {
+  noCache: true,
+};
+
+const refetchResolveOptions: ResolveOptions<unknown> = {
+  refetch: true,
+};
+
+const emptyResolveOptions: ResolveOptions<unknown> = {};
+
+export function fetchPolicyDefaultResolveOptions(
+  fetchPolicy: FetchPolicy | undefined
+): ResolveOptions<unknown> {
+  switch (fetchPolicy) {
+    case 'no-cache': {
+      return noCacheResolveOptions;
+    }
+    case 'cache-and-network':
+    case 'network-only': {
+      return refetchResolveOptions;
+    }
+    case 'cache-first':
+    default: {
+      return emptyResolveOptions;
+    }
+  }
+}

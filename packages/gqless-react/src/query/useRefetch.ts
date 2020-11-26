@@ -91,7 +91,8 @@ export function createUseRefetch(
     };
   }
 
-  return function useRefetch(opts: UseRefetchOptions = {}) {
+  return function useRefetch(refetchOptions: UseRefetchOptions) {
+    const opts = Object.assign({}, refetchOptions);
     opts.notifyOnNetworkStatusChange ??= true;
     opts.startWatching ??= true;
 

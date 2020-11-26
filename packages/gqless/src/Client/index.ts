@@ -27,9 +27,23 @@ export interface GraphQLErrorsContainer extends Error {
   errors: readonly GraphQLError[];
 }
 
-export interface ResolveOptions {
+export interface ResolveOptions<TData> {
+  /**
+   * Set to `true` to refetch the data requirements
+   */
   refetch?: boolean;
+  /**
+   * Ignore the client cache
+   */
   noCache?: boolean;
+  /**
+   * Middleware function that is called if valid cache is found
+   * for all the data requirements, it should return `true` if the
+   * the resolution and fetch should continue, and `false`
+   * if you wish to stop the resolution, resolving the promise
+   * with the existing cache data.
+   */
+  onCacheData?: (data: TData) => boolean;
 }
 
 export function createClient<
@@ -69,22 +83,28 @@ export function createClient<
 
   const scheduler = createScheduler(interceptorManager, resolveAllSelections);
 
+  let foundValidCache = true;
   async function resolved<T = unknown>(
     dataFn: () => T,
-    { refetch, noCache }: ResolveOptions = {}
+    { refetch, noCache, onCacheData }: ResolveOptions<T> = {}
   ): Promise<T> {
     globalInterceptor.listening = false;
     const interceptor = interceptorManager.createInterceptor();
+
+    const prevValidCache = foundValidCache;
+    foundValidCache = true;
 
     const prevIgnoreCache = allowCache;
     if (refetch) {
       allowCache = false;
     }
+
     const globalCache = clientCache;
     let tempCache: typeof clientCache | undefined;
     if (noCache) {
       clientCache = tempCache = createCache();
     }
+
     try {
       const data = dataFn();
 
@@ -92,6 +112,13 @@ export function createClient<
         return data;
       }
 
+      if (foundValidCache && onCacheData) {
+        const shouldContinue = onCacheData(data);
+
+        if (!shouldContinue) return data;
+      }
+
+      foundValidCache = prevValidCache;
       allowCache = prevIgnoreCache;
       clientCache = globalCache;
       globalInterceptor.listening = true;
@@ -130,6 +157,7 @@ export function createClient<
 
       allowCache = prevIgnoreCache;
       clientCache = globalCache;
+      foundValidCache = prevValidCache;
       globalInterceptor.listening = true;
     }
   }
@@ -311,6 +339,7 @@ export function createClient<
                   // If cache was not found, add the selections to the queue
                   interceptorManager.addSelection(selection);
 
+                  foundValidCache = false;
                   return null;
                 }
 

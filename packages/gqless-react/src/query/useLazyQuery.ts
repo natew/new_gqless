@@ -5,7 +5,7 @@ import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 import { CreateReactClientOptions } from '../client';
 import { useBatchDispatch } from '../common';
 
-export interface UseLazyQueryOptions extends ResolveOptions {}
+export interface UseLazyQueryOptions<A> extends ResolveOptions<A> {}
 
 export interface UseLazyQueryState<A> {
   data: A | undefined;
@@ -65,7 +65,7 @@ export function createUseLazyQuery<
 
   return function useLazyQuery<A>(
     fn: (query: typeof clientQuery) => A,
-    { noCache, refetch = true }: UseLazyQueryOptions = {}
+    { noCache, refetch = true }: UseLazyQueryOptions<A> = {}
   ) {
     const [state, dispatchReducer] = useReducer(
       UseLazyQueryReducer,

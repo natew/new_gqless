@@ -10,7 +10,13 @@ import {
 import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { IS_BROWSER, useBatchDispatch, useIsFirstMount } from '../common';
+import {
+  FetchPolicy,
+  fetchPolicyDefaultResolveOptions,
+  IS_BROWSER,
+  useBatchDispatch,
+  useIsFirstMount,
+} from '../common';
 
 export interface UseTransactionQueryState<A> {
   data: A | undefined;
@@ -20,6 +26,7 @@ export interface UseTransactionQueryState<A> {
 }
 
 type UseTransactionQueryReducerAction<A> =
+  | { type: 'cache-found'; data: A }
   | { type: 'success'; data: A }
   | { type: 'failure'; error: gqlessError }
   | { type: 'loading' }
@@ -44,6 +51,13 @@ function UseTransactionQueryReducer<A>(
       return {
         data: action.data,
         isLoading: false,
+        called: true,
+      };
+    }
+    case 'cache-found': {
+      return {
+        data: action.data,
+        isLoading: state.isLoading,
         called: true,
       };
     }
@@ -73,39 +87,13 @@ function InitUseTransactionQueryReducer<
   TVariables extends Record<string, unknown> | undefined
 >({
   skip,
-  fetchPolicy,
 }: UseTransactionQueryOptions<TVariables>): UseTransactionQueryState<TData> {
-  let willFetchOnStart: boolean;
-  switch (fetchPolicy) {
-    case 'network-only':
-    case 'no-cache': {
-      willFetchOnStart = true;
-      break;
-    }
-
-    case 'cache-only': {
-      willFetchOnStart = false;
-      break;
-    }
-
-    default: {
-      willFetchOnStart = true;
-      break;
-    }
-  }
   return {
     data: undefined,
-    isLoading: skip ? false : willFetchOnStart,
+    isLoading: skip ? false : true,
     called: false,
   };
 }
-
-type FetchPolicy =
-  | 'cache-and-network'
-  | 'cache-first'
-  | 'cache-only'
-  | 'network-only'
-  | 'no-cache';
 
 export type UseTransactionQueryOptions<
   Variables extends Record<string, unknown> | undefined
@@ -123,7 +111,10 @@ export function createUseTransactionQuery<
     mutation: object;
     subscription: object;
   }
->(client: ReturnType<typeof createClient>, _opts: CreateReactClientOptions) {
+>(
+  client: ReturnType<typeof createClient>,
+  clientOpts: CreateReactClientOptions
+) {
   const { resolved } = client;
   const clientQuery: GeneratedSchema['query'] = client.query;
 
@@ -132,8 +123,12 @@ export function createUseTransactionQuery<
     TVariables extends Record<string, unknown> | undefined = undefined
   >(
     fn: (query: typeof clientQuery, variables: TVariables) => TData,
-    opts: UseTransactionQueryOptions<TVariables> = {}
+    queryOptions?: UseTransactionQueryOptions<TVariables>
   ) {
+    const opts = Object.assign({}, queryOptions);
+
+    opts.fetchPolicy ??= clientOpts.defaultFetchPolicy || 'cache-first';
+
     opts.notifyOnNetworkStatusChange ??= true;
 
     const optsRef = useRef(opts);
@@ -141,37 +136,9 @@ export function createUseTransactionQuery<
 
     const { skip, pollInterval = 0, fetchPolicy, variables } = opts;
 
-    const resolveOptions = useMemo<ResolveOptions>(() => {
-      switch (fetchPolicy) {
-        case 'no-cache': {
-          return {
-            noCache: true,
-          };
-        }
-        case 'network-only': {
-          return {
-            refetch: true,
-          };
-        }
-        case 'cache-and-network': {
-          // TODO
-          return {};
-        }
-        case 'cache-first': {
-          // TODO
-          return {};
-        }
-        case 'cache-only': {
-          // TODO
-          return {};
-        }
-
-        default: {
-          // TODO
-          return {};
-        }
-      }
-    }, []);
+    const resolveOptions = useMemo<ResolveOptions<TData>>(() => {
+      return fetchPolicyDefaultResolveOptions(fetchPolicy);
+    }, [fetchPolicy]);
 
     const [state, dispatchReducer] = useReducer(
       UseTransactionQueryReducer,
@@ -194,7 +161,10 @@ export function createUseTransactionQuery<
     const isFirstMount = useIsFirstMount();
 
     const queryCallback = useCallback(
-      (resolveOpts: ResolveOptions = resolveOptions) => {
+      (
+        resolveOpts: ResolveOptions<TData> = resolveOptions,
+        fetchPolicyArg: FetchPolicy | undefined = fetchPolicy
+      ) => {
         if (skip)
           return dispatch({
             type: 'done',
@@ -209,7 +179,26 @@ export function createUseTransactionQuery<
 
         resolved<TData>(
           () => fnRef.current(clientQuery, optsRef.current.variables!),
-          resolveOpts
+          {
+            ...resolveOpts,
+            onCacheData(data): boolean {
+              switch (fetchPolicyArg) {
+                case 'cache-and-network': {
+                  dispatch({
+                    type: 'cache-found',
+                    data,
+                  });
+                  stateRef.current.data = data;
+                  return true;
+                }
+                case 'cache-first': {
+                  return false;
+                }
+                default:
+                  return true;
+              }
+            },
+          }
         ).then(
           (data) => {
             isFetching.current = false;
@@ -232,7 +221,7 @@ export function createUseTransactionQuery<
           }
         );
       },
-      [stateRef, skip, resolveOptions, fnRef, dispatch]
+      [fetchPolicy, skip, stateRef, resolveOptions, fnRef, dispatch]
     );
 
     if (IS_BROWSER && isFirstMount.current) {

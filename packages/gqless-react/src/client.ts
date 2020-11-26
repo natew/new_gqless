@@ -1,4 +1,5 @@
 import { createClient } from '@dish/gqless';
+import { FetchPolicy } from './common';
 
 import { createGraphqlHOC } from './hoc';
 import { createUseMutation } from './mutation/useMutation';
@@ -10,6 +11,7 @@ import { createUseTransactionQuery } from './query/useTransactionQuery';
 
 export interface CreateReactClientOptions {
   defaultSuspense?: boolean;
+  defaultFetchPolicy?: FetchPolicy;
 }
 
 export function createReactClient<
