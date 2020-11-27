@@ -52,7 +52,7 @@ export class Poller<D> {
           .then(
             (data) => {
               this.__isFetching = false;
-              this.data = data;
+              this.setData(data);
             },
             (err) => {
               this.__isFetching = false;
@@ -84,18 +84,17 @@ export class Poller<D> {
     return this.__isPolling;
   }
 
-  get data() {
+  get data(): D | undefined {
     return this.__data;
   }
 
-  set data(data: D | undefined) {
+  private setData(data: D) {
     this.__data = data;
-    if (data !== undefined) {
-      this.sendEventToSubscribers({
-        type: 'data',
-        data,
-      });
-    }
+
+    this.sendEventToSubscribers({
+      type: 'data',
+      data,
+    });
   }
 
   set pollInterval(v: number) {

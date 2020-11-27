@@ -48,8 +48,6 @@ describe('poller', () => {
       }
     });
 
-    poller.data = undefined;
-
     try {
       poller.pollInterval = 50;
       poller.pollInterval = 60;

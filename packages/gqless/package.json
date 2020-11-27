@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -48,7 +48,7 @@
     "test-utils": "workspace:^0.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.0.3",
-    "tsup": "^3.8.0",
+    "tsup": "^3.10.1",
     "typescript": "^4.1.2"
   },
   "size-limit": [

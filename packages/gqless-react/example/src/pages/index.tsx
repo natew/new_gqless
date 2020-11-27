@@ -20,7 +20,7 @@ const {
   defaultSuspense,
 });
 
-const Comp = graphql(() => {
+const Comp = function Asd() {
   const queryFromHook = useQuery();
   const { data } = useTransactionQuery((query) => {
     return query.dogs.map((dog) => {
@@ -69,7 +69,7 @@ const Comp = graphql(() => {
       </button>
     </div>
   );
-});
+};
 
 export default function Index() {
   return (

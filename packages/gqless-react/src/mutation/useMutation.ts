@@ -3,7 +3,7 @@ import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useBatchDispatch } from '../common';
+import { useDeferDispatch } from '../common';
 
 export interface UseMutationOptions<A>
   extends Pick<ResolveOptions<A>, 'noCache'> {}
@@ -78,7 +78,7 @@ export function createUseMutation<
       undefined,
       InitUseMutationReducer
     ) as [UseMutationState<A>, Dispatch<UseMutationReducerAction<A>>];
-    const dispatch = useBatchDispatch(dispatchReducer);
+    const dispatch = useDeferDispatch(dispatchReducer);
 
     const fnRef = useRef(fn);
     fnRef.current = fn;

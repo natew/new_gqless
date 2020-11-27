@@ -3,7 +3,6 @@ import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useBatchDispatch } from '../common';
 
 export interface UseLazyQueryOptions<A> extends ResolveOptions<A> {}
 
@@ -67,12 +66,11 @@ export function createUseLazyQuery<
     fn: (query: typeof clientQuery) => A,
     { noCache, refetch = true }: UseLazyQueryOptions<A> = {}
   ) {
-    const [state, dispatchReducer] = useReducer(
+    const [state, dispatch] = useReducer(
       UseLazyQueryReducer,
       undefined,
       InitUseLazyQueryReducer
     ) as [UseLazyQueryState<A>, Dispatch<UseLazyQueryReducerAction<A>>];
-    const dispatch = useBatchDispatch(dispatchReducer);
 
     const fnRef = useRef(fn);
     fnRef.current = fn;

@@ -3,7 +3,6 @@ import { Dispatch, useEffect, useMemo, useReducer, useRef } from 'react';
 import { createClient, gqlessError, Poller } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useBatchDispatch } from '../common';
 
 export interface UsePollingState<A> {
   data: A | undefined;
@@ -77,22 +76,23 @@ export function createUsePolling(
     const fnRef = useRef(fn);
     fnRef.current = fn;
 
-    const [state, dispatchReducer] = useReducer(
+    const [state, dispatch] = useReducer(
       UsePollingReducer,
       undefined,
       InitUsePollingReducer
     ) as [UsePollingState<D>, Dispatch<UsePollingReducerAction<D>>];
-    const dispatch = useBatchDispatch(dispatchReducer);
 
     const poller = useMemo(() => {
       return new Poller(fnRef, pollInterval, client);
     }, [fnRef]);
 
     useEffect(() => {
-      return poller.subscribe((event) => {
+      let isMounted = true;
+
+      const unsubscribe = poller.subscribe((event) => {
         switch (event.type) {
           case 'fetching': {
-            if (optsRef.current.notifyOnNetworkStatusChange) {
+            if (isMounted && optsRef.current.notifyOnNetworkStatusChange) {
               dispatch({
                 type: 'loading',
               });
@@ -100,19 +100,21 @@ export function createUsePolling(
             break;
           }
           case 'data': {
-            dispatch({
-              type: 'success',
-              data: event.data,
-            });
+            if (isMounted)
+              dispatch({
+                type: 'success',
+                data: event.data,
+              });
             break;
           }
           case 'error': {
             const error = gqlessError.create(event.error);
 
-            dispatch({
-              type: 'failure',
-              error,
-            });
+            if (isMounted)
+              dispatch({
+                type: 'failure',
+                error,
+              });
 
             if (optsRef.current.onError) {
               optsRef.current.onError(error);
@@ -121,6 +123,11 @@ export function createUsePolling(
           }
         }
       });
+
+      return () => {
+        isMounted = false;
+        unsubscribe();
+      };
     }, [poller, dispatch, optsRef]);
 
     useEffect(() => {

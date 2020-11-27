@@ -19,19 +19,7 @@ const updateReducer = (num: number): number => (num + 1) % 1_000_000;
 export const useForceUpdate = () => {
   const [, update] = useReducer(updateReducer, 0);
 
-  return useBatchDispatch(update);
-};
-
-export const useIsMounted = () => {
-  const isMounted = useRef(true);
-
-  useIsomorphicLayoutEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  return isMounted;
+  return update;
 };
 
 const InitSymbol: any = Symbol();
@@ -67,25 +55,31 @@ export const useIsRendering = () => {
   return isRendering;
 };
 
-export const useBatchDispatch = <F extends (...args: any[]) => void>(
+export const useDeferDispatch = <F extends (...args: any[]) => void>(
   dispatchFn: F
 ) => {
   const isRendering = useIsRendering();
-  const isMounted = useIsMounted();
+
+  const pendingDispatch = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (pendingDispatch.current) {
+      pendingDispatch.current();
+      pendingDispatch.current = null;
+    }
+  });
 
   return useCallback(
     (...args: any[]) => {
-      if (!isMounted.current) return;
-
       if (isRendering.current) {
-        setTimeout(() => {
-          if (isMounted.current) dispatchFn(...args);
-        }, 0);
+        pendingDispatch.current = () => {
+          dispatchFn(...args);
+        };
       } else {
         dispatchFn(...args);
       }
     },
-    [dispatchFn, isRendering, isMounted]
+    [dispatchFn, isRendering, pendingDispatch]
   ) as F;
 };
 

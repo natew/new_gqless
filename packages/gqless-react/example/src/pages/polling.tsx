@@ -16,6 +16,7 @@ const DogComp = ({ dog }: { dog: Dog }) => {
     },
     {
       pollInterval: 1000,
+      skip: false,
     }
   );
   return (
@@ -39,7 +40,7 @@ const DogComp = ({ dog }: { dog: Dog }) => {
   );
 };
 
-const Dogs = graphql(() => {
+const Dogs = graphql(function Dogs() {
   const dogs = query.dogs;
 
   usePolling(

@@ -34,7 +34,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.19'
+      '@dish/gqless': 'workspace:^1.0.20'
       '@dish/gqless-cli': 'workspace:^0.1.22'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
@@ -74,7 +74,7 @@ importers:
       test-utils: 'link:../test-utils'
       tsdx: 0.14.1_@types+node@14.14.10
       tslib: 2.0.3
-      tsup: 3.8.0_typescript@4.1.2
+      tsup: 3.10.1_typescript@4.1.2
       typescript: 4.1.2
     specifiers:
       '@dish/gqless-cli': 'workspace:^0.1.22'
@@ -95,7 +95,7 @@ importers:
       test-utils: 'workspace:^0.1.0'
       tsdx: ^0.14.1
       tslib: ^2.0.3
-      tsup: ^3.8.0
+      tsup: ^3.10.1
       typescript: ^4.1.2
   packages/gqless-cli:
     dependencies:
@@ -124,7 +124,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.19'
+      '@dish/gqless': 'workspace:^1.0.20'
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.18.1
       '@graphql-tools/delegate': ^7.0.5
@@ -171,7 +171,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.19'
+      '@dish/gqless': 'workspace:^1.0.20'
       '@size-limit/preset-small-lib': ^4.9.0
       '@testing-library/react': ^11.2.2
       '@testing-library/react-hooks': ^3.4.2
@@ -216,7 +216,7 @@ importers:
       wait-on: 5.2.0
     specifiers:
       '@dish/gqless-cli': 'workspace:^0.1.22'
-      '@dish/gqless-react': 'workspace:^0.1.4'
+      '@dish/gqless-react': 'workspace:^0.1.5'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
       '@types/react': ^17.0.0
@@ -5041,12 +5041,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-NJ6Yn3FuDinBaBRWl/q5X/s4koRHBrgKAu+yGI6JCBeiu3qrcbJhwT2GeR/EXVfylRk8dpQVJoLEFhK+Mu31NA==
-  /esbuild/0.6.34:
+  /esbuild/0.8.16:
     dev: true
     hasBin: true
     requiresBuild: true
     resolution:
-      integrity: sha512-InRdL/Q96pUucPqovJzvuLhquZr6jOn81FDVwFjCKz1rYKIm9OdOC+7Fs4vr6x48vKBl5LzKgtjU39BUpO636A==
+      integrity: sha512-HMvPNxDIhEGO/YUh8oO8oxQ1g+ttWz2anUF7NJmQglj2XfJS8zd8mP0Sb2y+jE1SVk3UjD/rYhdsEOFULN9/xw==
   /escalade/3.1.1:
     engines:
       node: '>=6'
@@ -6613,6 +6613,14 @@ packages:
       node: '>=0.8.0'
     resolution:
       integrity: sha1-E7TTyxK++hVIKib+Gy665kAHHks=
+  /import-cwd/3.0.0:
+    dependencies:
+      import-from: 3.0.0
+    dev: true
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-4pnzH16plW+hgvRECbDWpQl3cqtvSofHWh44met7ESfZ8UZOWWddm8hEyDTqREJ9RbYHY8gi8DqmaelApoOGMg==
   /import-fresh/2.0.0:
     dependencies:
       caller-path: 2.0.0
@@ -6634,7 +6642,6 @@ packages:
   /import-from/3.0.0:
     dependencies:
       resolve-from: 5.0.0
-    dev: false
     engines:
       node: '>=8'
     resolution:
@@ -9632,6 +9639,15 @@ packages:
       node: '>=6.9.0'
     resolution:
       integrity: sha512-IYY2bEDD7g1XM1IDEsUT4//iEYCxAmP5oDSFMVU/JVvT7gh+l4fmjciLqGgwjdWpQIdb0Che2VX00QObS5+cTg==
+  /postcss-load-config/3.0.0:
+    dependencies:
+      cosmiconfig: 7.0.0
+      import-cwd: 3.0.0
+    dev: true
+    engines:
+      node: '>= 10'
+    resolution:
+      integrity: sha512-lErrN8imuEF1cSiHBV8MiR7HeuzlDpCGNtaMyYHlOBuJHHOGw6S4xOMZp8BbXPr7AGQp14L6PZDlIOpfFJ6f7w==
   /postcss-merge-longhand/4.0.11:
     dependencies:
       css-color-names: 0.0.4
@@ -12691,14 +12707,15 @@ packages:
   /tslib/2.0.3:
     resolution:
       integrity: sha512-uZtkfKblCEQtZKBF6EBXVZeQNl82yqtDQdv+eck8u7tdPxjLu2/lp5/uPW+um2tpuxINHWy3GhiccY7QgEaVHQ==
-  /tsup/3.8.0_typescript@4.1.2:
+  /tsup/3.10.1_typescript@4.1.2:
     dependencies:
       cac: 6.6.1
       chalk: 4.1.0
       chokidar: 3.4.3
-      esbuild: 0.6.34
+      esbuild: 0.8.16
       globby: 11.0.1
       joycon: 2.2.5
+      postcss-load-config: 3.0.0
       resolve-from: 5.0.0
       rollup: 2.33.3
       rollup-plugin-dts: 1.4.14_rollup@2.33.3+typescript@4.1.2
@@ -12708,7 +12725,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-N8gzqfDF8511oIJPYR8r+Xyc1LU4n8BrocqWx4W/CaGwUZYqudiW38cwsdRkbzIdM6+zXEVxNUFpLZvtyeHSEw==
+      integrity: sha512-UkbzohJlK7kKtjH1DQdujMTEwZt1SArLCR2xujejk6qMmiblQMtoby9WL5QzhUztPTy9aNNGDRSu4PX7PdbceA==
   /tsutils/3.17.1_typescript@4.1.2:
     dependencies:
       tslib: 1.14.1

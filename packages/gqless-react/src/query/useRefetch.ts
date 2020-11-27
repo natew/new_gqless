@@ -15,7 +15,7 @@ import {
 } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useBatchDispatch, useLazyRef } from '../common';
+import { useLazyRef } from '../common';
 
 function initSelectionsState() {
   return new Set<Selection>();
@@ -91,7 +91,7 @@ export function createUseRefetch(
     };
   }
 
-  return function useRefetch(refetchOptions: UseRefetchOptions) {
+  return function useRefetch(refetchOptions?: UseRefetchOptions) {
     const opts = Object.assign({}, refetchOptions);
     opts.notifyOnNetworkStatusChange ??= true;
     opts.startWatching ??= true;
@@ -111,12 +111,11 @@ export function createUseRefetch(
     }, [innerState]);
 
     const [selections] = useState(initSelectionsState);
-    const [reducerState, dispatchReducer] = useReducer(
+    const [reducerState, dispatch] = useReducer(
       UseRefetchReducer,
       undefined,
       InitUseRefetchReducer
     );
-    const dispatch = useBatchDispatch(dispatchReducer);
 
     const interceptor = interceptorManager.createInterceptor();
 

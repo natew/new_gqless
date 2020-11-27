@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { createClient } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useForceUpdate } from '../common';
+import { useDeferDispatch, useForceUpdate } from '../common';
 
 export interface UseQueryOptions {
   suspense?: boolean;
@@ -25,7 +25,7 @@ export function createUseQuery<
     suspense = defaultSuspense,
   }: UseQueryOptions = {}) {
     const fetchingPromise = useRef<Promise<void> | null>(null);
-    const forceUpdate = useForceUpdate();
+    const forceUpdate = useDeferDispatch(useForceUpdate());
 
     const unsubscribe = scheduler.subscribeResolve((promise) => {
       fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -45,7 +45,7 @@ export function createUseQuery<
     });
 
     useEffect(() => {
-      return unsubscribe;
+      unsubscribe();
     });
 
     if (suspense && fetchingPromise.current) {

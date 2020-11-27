@@ -14,7 +14,7 @@ import {
   FetchPolicy,
   fetchPolicyDefaultResolveOptions,
   IS_BROWSER,
-  useBatchDispatch,
+  useDeferDispatch,
   useIsFirstMount,
 } from '../common';
 
@@ -148,7 +148,7 @@ export function createUseTransactionQuery<
       UseTransactionQueryState<TData>,
       Dispatch<UseTransactionQueryReducerAction<TData>>
     ];
-    const dispatch = useBatchDispatch(dispatchReducer);
+    const dispatch = useDeferDispatch(dispatchReducer);
 
     const stateRef = useRef(state);
     stateRef.current = state;
@@ -241,12 +241,14 @@ export function createUseTransactionQuery<
     useEffect(() => {
       if (skip || pollInterval <= 0) return;
 
+      let isMounted = true;
+
       const interval = setInterval(() => {
         if (isFetching.current) return;
 
         isFetching.current = true;
 
-        if (optsRef.current.notifyOnNetworkStatusChange)
+        if (isMounted && optsRef.current.notifyOnNetworkStatusChange)
           dispatch({
             type: 'loading',
           });
@@ -260,23 +262,26 @@ export function createUseTransactionQuery<
         ).then(
           (data) => {
             isFetching.current = false;
-            dispatch({
-              type: 'success',
-              data,
-            });
+            if (isMounted)
+              dispatch({
+                type: 'success',
+                data,
+              });
           },
           (err) => {
             isFetching.current = false;
 
-            dispatch({
-              type: 'failure',
-              error: gqlessError.create(err),
-            });
+            if (isMounted)
+              dispatch({
+                type: 'failure',
+                error: gqlessError.create(err),
+              });
           }
         );
       }, pollInterval);
 
       return () => {
+        isMounted = false;
         clearInterval(interval);
       };
     }, [
