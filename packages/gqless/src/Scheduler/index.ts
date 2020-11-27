@@ -24,26 +24,20 @@ export const createScheduler = (
 
   let resolvingPromise: LazyPromise | null = null;
 
-  const fetchSelections = debounce(
-    (lazyPromise: LazyPromise) => {
-      resolvingPromise = null;
+  const fetchSelections = debounce((lazyPromise: LazyPromise) => {
+    resolvingPromise = null;
 
-      resolveAllSelections().then(
-        () => {
-          scheduler.resolving = null;
-          lazyPromise.resolve();
-        },
-        (err) => {
-          scheduler.resolving = null;
-          lazyPromise.reject(err);
-        }
-      );
-    },
-    10,
-    {
-      maxWait: 1000,
-    }
-  );
+    resolveAllSelections().then(
+      () => {
+        scheduler.resolving = null;
+        lazyPromise.resolve();
+      },
+      (err) => {
+        scheduler.resolving = null;
+        lazyPromise.reject(err);
+      }
+    );
+  }, 10);
 
   interceptorManager.globalInterceptor.selectionAddListeners.add(
     (_selection) => {
