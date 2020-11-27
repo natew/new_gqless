@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -37,7 +37,7 @@
     "@dish/gqless-cli": "workspace:^0.1.22",
     "@size-limit/preset-small-lib": "^4.9.0",
     "@types/lodash": "^4.14.165",
-    "@types/node": "^14.14.9",
+    "@types/node": "^14.14.10",
     "@types/tap": "^14.10.1",
     "husky": "^4.3.0",
     "mercurius": "^6.4.0",
