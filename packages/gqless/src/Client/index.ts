@@ -64,7 +64,10 @@ export function createClient<
   const client: GeneratedSchema = createSchemaAccesor();
   let clientCache = createCache();
 
-  let allowCache = true;
+  const innerState = {
+    allowCache: true,
+    foundValidCache: true,
+  };
 
   async function resolveAllSelections() {
     const resolvingPromise = scheduler.resolving!;
@@ -83,7 +86,6 @@ export function createClient<
 
   const scheduler = createScheduler(interceptorManager, resolveAllSelections);
 
-  let foundValidCache = true;
   async function resolved<T = unknown>(
     dataFn: () => T,
     { refetch, noCache, onCacheData }: ResolveOptions<T> = {}
@@ -91,12 +93,12 @@ export function createClient<
     globalInterceptor.listening = false;
     const interceptor = interceptorManager.createInterceptor();
 
-    const prevValidCache = foundValidCache;
-    foundValidCache = true;
+    const prevValidCache = innerState.foundValidCache;
+    innerState.foundValidCache = true;
 
-    const prevIgnoreCache = allowCache;
+    let prevIgnoreCache = innerState.allowCache;
     if (refetch) {
-      allowCache = false;
+      innerState.allowCache = false;
     }
 
     const globalCache = clientCache;
@@ -112,20 +114,24 @@ export function createClient<
         return data;
       }
 
-      if (foundValidCache && onCacheData) {
+      interceptor.listening = false;
+
+      if (innerState.foundValidCache && onCacheData) {
         const shouldContinue = onCacheData(data);
 
         if (!shouldContinue) return data;
       }
 
-      foundValidCache = prevValidCache;
-      allowCache = prevIgnoreCache;
+      innerState.foundValidCache = prevValidCache;
+      innerState.allowCache = prevIgnoreCache;
+
       clientCache = globalCache;
       globalInterceptor.listening = true;
 
       await resolveSelections(interceptor.selections, tempCache || clientCache);
 
-      allowCache = true;
+      prevIgnoreCache = innerState.allowCache;
+      innerState.allowCache = true;
       globalInterceptor.listening = false;
 
       if (tempCache) {
@@ -155,9 +161,9 @@ export function createClient<
     } finally {
       interceptorManager.removeInterceptor(interceptor);
 
-      allowCache = prevIgnoreCache;
+      innerState.allowCache = prevIgnoreCache;
       clientCache = globalCache;
-      foundValidCache = prevValidCache;
+      innerState.foundValidCache = prevValidCache;
       globalInterceptor.listening = true;
     }
   }
@@ -166,11 +172,14 @@ export function createClient<
     const startSelectionsSize =
       interceptorManager.globalInterceptor.selections.size;
 
-    const prevIgnoreCache = allowCache;
+    let prevIgnoreCache = innerState.allowCache;
 
     try {
-      allowCache = false;
+      innerState.allowCache = false;
+
       const data = refetchFn();
+
+      innerState.allowCache = prevIgnoreCache;
 
       if (
         interceptorManager.globalInterceptor.selections.size ===
@@ -182,15 +191,14 @@ export function createClient<
         return data;
       }
 
-      allowCache = prevIgnoreCache;
-
       await scheduler.resolving!.promise;
 
-      allowCache = true;
+      prevIgnoreCache = innerState.allowCache;
+      innerState.allowCache = true;
 
       return refetchFn();
     } finally {
-      allowCache = prevIgnoreCache;
+      innerState.allowCache = prevIgnoreCache;
     }
   }
 
@@ -263,7 +271,7 @@ export function createClient<
     selectionArg: Selection
   ) {
     const arrayCacheValue = clientCache.getCacheFromSelection(selectionArg);
-    if (allowCache && arrayCacheValue === null) return null;
+    if (innerState.allowCache && arrayCacheValue === null) return null;
 
     const proxyValue: unknown[] =
       arrayCacheValue === CacheNotFound || !Array.isArray(arrayCacheValue)
@@ -277,7 +285,7 @@ export function createClient<
 
           if (Number.isInteger(index)) {
             if (
-              allowCache &&
+              innerState.allowCache &&
               arrayCacheValue !== CacheNotFound &&
               arrayCacheValue[index] == null
             ) {
@@ -290,7 +298,6 @@ export function createClient<
             const selection = selectionManager.getSelection({
               key: index,
               prevSelection: selectionArg,
-              allowCache,
             });
             return createAccessor(schemaType, selection);
           }
@@ -303,7 +310,7 @@ export function createClient<
 
   function createAccessor(schemaType: Schema[string], selectionArg: Selection) {
     const cacheValue = clientCache.getCacheFromSelection(selectionArg);
-    if (allowCache && cacheValue === null) return null;
+    if (innerState.allowCache && cacheValue === null) return null;
 
     return accessorCache.getAccessor(selectionArg, () => {
       return new Proxy(
@@ -329,7 +336,6 @@ export function createClient<
                 prevSelection: selectionArg,
                 args: args != null ? args.argValues : undefined,
                 argTypes: args != null ? args.argTypes : undefined,
-                allowCache,
               });
 
               if (scalarsEnumsHash[pureType]) {
@@ -339,11 +345,11 @@ export function createClient<
                   // If cache was not found, add the selections to the queue
                   interceptorManager.addSelection(selection);
 
-                  foundValidCache = false;
+                  innerState.foundValidCache = false;
                   return null;
                 }
 
-                if (!allowCache) {
+                if (!innerState.allowCache) {
                   // Or if you are making the network fetch always
                   interceptorManager.addSelection(selection);
                 }
@@ -489,7 +495,6 @@ export function createClient<
             const selection = selectionManager.getSelection({
               key,
               type,
-              allowCache,
             });
 
             return createAccessor(value, selection);

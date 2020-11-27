@@ -8,11 +8,9 @@ describe('selection creation', () => {
   const manager = new SelectionManager();
 
   test('selection with manager and separating types', () => {
-    const allowCache = true;
     const selectionA = manager.getSelection({
       key: 'a',
       type: SelectionType.Mutation,
-      allowCache,
     });
 
     expect(selectionA.key).toBe('a'), expect(selectionA.alias).toBe(undefined);
@@ -28,7 +26,6 @@ describe('selection creation', () => {
     const selectionB = manager.getSelection({
       key: 'b',
       prevSelection: selectionA,
-      allowCache,
     });
 
     expect(selectionB.key).toBe('b');
@@ -41,7 +38,6 @@ describe('selection creation', () => {
     const selectionC = manager.getSelection({
       key: 0,
       prevSelection: selectionB,
-      allowCache,
     });
 
     expect(selectionC.noIndexSelections).toEqual(selectionB.noIndexSelections);
@@ -55,7 +51,6 @@ describe('selection creation', () => {
       argTypes: {
         a: 'Int!',
       },
-      allowCache,
     });
 
     expect(selectionD.cachePath).toEqual(['a', 'b', 0, 'gqlessAlias_0']);
@@ -71,7 +66,6 @@ describe('selection creation', () => {
       argTypes: {
         a: 'Int!',
       },
-      allowCache,
     });
 
     expect(repeatSelectionD.cachePath).toEqual(['a', 'b', 0, 'gqlessAlias_0']);
@@ -81,7 +75,6 @@ describe('selection creation', () => {
     const selectionE = manager.getSelection({
       key: 'e',
       prevSelection: selectionD,
-      allowCache,
     });
 
     expect(selectionE.cachePath).toEqual(['a', 'b', 0, 'gqlessAlias_0', 'e']);
@@ -89,13 +82,11 @@ describe('selection creation', () => {
 
     const selectionF = manager.getSelection({
       key: 'f',
-      allowCache,
     });
 
     const selectionG = manager.getSelection({
       key: 'g',
       type: SelectionType.Subscription,
-      allowCache,
     });
 
     expect(selectionF.cachePath).toEqual(['f']);
@@ -126,21 +117,5 @@ describe('selection creation', () => {
       ],
       subscriptionSelections: [selectionG],
     });
-  });
-
-  test('selections with manager ignoring cache', () => {
-    const z1 = manager.getSelection({
-      key: 'zz',
-      allowCache: false,
-    });
-
-    const z2 = manager.getSelection({
-      key: 'zz',
-      allowCache: true,
-    });
-
-    expect(z1).not.toBe(z2);
-
-    expect(z1).toStrictEqual(z2);
   });
 });

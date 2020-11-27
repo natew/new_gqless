@@ -43,8 +43,11 @@ export class Poller<D> {
         });
 
         this.client
-          .refetch(
-            typeof this.pollFn === 'object' ? this.pollFn.current : this.pollFn
+          .resolved(
+            typeof this.pollFn === 'object' ? this.pollFn.current : this.pollFn,
+            {
+              refetch: true,
+            }
           )
           .then(
             (data) => {
@@ -60,7 +63,7 @@ export class Poller<D> {
             }
           );
       }
-    }, this.__pollInterval) as any;
+    }, this.__pollInterval);
   }
 
   stop() {

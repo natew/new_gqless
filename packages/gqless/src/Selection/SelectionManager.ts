@@ -65,24 +65,19 @@ export class SelectionManager {
     args,
     argTypes,
     type,
-    allowCache,
-  }: SelectionConstructorArgs & { allowCache: boolean }) {
+  }: SelectionConstructorArgs) {
     let alias: string | undefined;
-    let cacheKey: string | undefined;
+    let cacheKey = key.toString();
     if (args && argTypes) {
       alias = this.getVariableAlias(key, args, argTypes);
       cacheKey = alias;
     }
 
     if (prevSelection) {
-      cacheKey =
-        prevSelection.pathString +
-        '.' +
-        (cacheKey = cacheKey || key.toString());
+      cacheKey = prevSelection.pathString + '.' + cacheKey;
     }
 
-    let selection =
-      allowCache && cacheKey ? this.selectionCache.get(cacheKey) : null;
+    let selection = this.selectionCache.get(cacheKey);
 
     if (selection == null) {
       selection = new Selection({
@@ -93,7 +88,7 @@ export class SelectionManager {
         alias,
         type,
       });
-      if (allowCache && cacheKey) this.selectionCache.set(cacheKey, selection);
+      this.selectionCache.set(cacheKey, selection);
     }
 
     return selection;

@@ -9,6 +9,7 @@ export const {
   state,
   graphql,
   useRefetch,
+  usePolling,
 } = createReactClient<GeneratedSchema>(client, {
   defaultSuspense,
 });

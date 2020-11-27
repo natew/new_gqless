@@ -68,7 +68,7 @@ export function createUsePolling(
     pollingOptions: UsePollingOptions
   ) {
     const opts = Object.assign({}, pollingOptions);
-    opts.notifyOnNetworkStatusChange ??= true;
+    opts.notifyOnNetworkStatusChange ??= false;
 
     const optsRef = useRef(opts);
     optsRef.current = opts;

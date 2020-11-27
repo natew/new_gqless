@@ -105,7 +105,6 @@ describe('poller', () => {
 
       await fetchPromise.promise;
 
-      const spy = jest.spyOn(console, 'error').mockImplementation();
       try {
         await dataPromise.promise;
 
@@ -116,9 +115,6 @@ describe('poller', () => {
             graphQLErrors: [new GraphQLError('expected error')],
           })
         );
-        expect(spy).toBeCalledTimes(1);
-      } finally {
-        spy.mockRestore();
       }
 
       poller.stop();

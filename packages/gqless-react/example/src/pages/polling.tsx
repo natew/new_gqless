@@ -1,10 +1,26 @@
-import { refetch, graphql } from '../components/client';
+import {
+  refetch,
+  graphql,
+  usePolling,
+  useTransactionQuery,
+} from '../components/client';
 import { Suspense } from '../components/Suspense';
 import { Dog, query } from '../graphql/gqless';
 
 const DogComp = ({ dog }: { dog: Dog }) => {
+  const { data: transactionData } = useTransactionQuery(
+    () => {
+      return {
+        name: dog.name,
+      };
+    },
+    {
+      pollInterval: 1000,
+    }
+  );
   return (
     <li>
+      <p>Transaction Name {transactionData?.name}</p>
       <p>{new Date().toISOString()}</p>
       <p>{dog.name}</p>
       <p>Owner: {dog.owner?.name ? dog.owner.name : 'No owner 😔'}</p>
@@ -25,6 +41,19 @@ const DogComp = ({ dog }: { dog: Dog }) => {
 
 const Dogs = graphql(() => {
   const dogs = query.dogs;
+
+  usePolling(
+    () => {
+      dogs.forEach((dog) => {
+        dog.name;
+      });
+    },
+    {
+      pollInterval: 2000,
+      notifyOnNetworkStatusChange: false,
+    }
+  );
+
   return (
     <ul>
       {dogs.map((dog, index) => {
