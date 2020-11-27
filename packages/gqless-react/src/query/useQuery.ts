@@ -9,11 +9,13 @@ export interface UseQueryOptions {
   suspense?: boolean;
 }
 
+export interface UseQuery<GeneratedSchema extends { query: object }> {
+  (options?: UseQueryOptions): GeneratedSchema['query'];
+}
+
 export function createUseQuery<
   GeneratedSchema extends {
     query: object;
-    mutation: object;
-    subscription: object;
   }
 >(client: ReturnType<typeof createClient>, opts: CreateReactClientOptions) {
   const { defaultSuspense } = opts;
@@ -21,9 +23,9 @@ export function createUseQuery<
 
   const clientQuery: GeneratedSchema['query'] = client.query;
 
-  return function useQuery({
+  const useQuery: UseQuery<GeneratedSchema> = function useQuery({
     suspense = defaultSuspense,
-  }: UseQueryOptions = {}) {
+  } = {}) {
     const fetchingPromise = useRef<Promise<void> | null>(null);
     const forceUpdate = useDeferDispatch(useForceUpdate());
 
@@ -54,4 +56,6 @@ export function createUseQuery<
 
     return clientQuery;
   };
+
+  return useQuery;
 }

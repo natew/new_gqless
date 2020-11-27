@@ -18,26 +18,26 @@ import {
   useIsFirstMount,
 } from '../common';
 
-export interface UseTransactionQueryState<A> {
-  data: A | undefined;
+export interface UseTransactionQueryState<TData> {
+  data: TData | undefined;
   error?: gqlessError;
   isLoading: boolean;
   called: boolean;
 }
 
-type UseTransactionQueryReducerAction<A> =
-  | { type: 'cache-found'; data: A }
-  | { type: 'success'; data: A }
+type UseTransactionQueryReducerAction<TData> =
+  | { type: 'cache-found'; data: TData }
+  | { type: 'success'; data: TData }
   | { type: 'failure'; error: gqlessError }
   | { type: 'loading' }
   | {
       type: 'done';
     };
 
-function UseTransactionQueryReducer<A>(
-  state: UseTransactionQueryState<A>,
-  action: UseTransactionQueryReducerAction<A>
-): UseTransactionQueryState<A> {
+function UseTransactionQueryReducer<TData>(
+  state: UseTransactionQueryState<TData>,
+  action: UseTransactionQueryReducerAction<TData>
+): UseTransactionQueryState<TData> {
   switch (action.type) {
     case 'loading': {
       if (state.isLoading) return state;
@@ -95,21 +95,30 @@ function InitUseTransactionQueryReducer<
   };
 }
 
-export type UseTransactionQueryOptions<
+export interface UseTransactionQueryOptions<
   Variables extends Record<string, unknown> | undefined
-> = {
+> {
   fetchPolicy?: FetchPolicy;
   skip?: boolean;
   pollInterval?: number;
   notifyOnNetworkStatusChange?: boolean;
   variables?: Variables;
-};
+}
+
+export interface UseTransactionQuery<
+  GeneratedSchema extends {
+    query: object;
+  }
+> {
+  <TData, TVariables extends Record<string, unknown> | undefined = undefined>(
+    fn: (query: GeneratedSchema['query'], variables: TVariables) => TData,
+    options?: UseTransactionQueryOptions<TVariables>
+  ): UseTransactionQueryState<TData>;
+}
 
 export function createUseTransactionQuery<
   GeneratedSchema extends {
     query: object;
-    mutation: object;
-    subscription: object;
   }
 >(
   client: ReturnType<typeof createClient>,
@@ -118,7 +127,7 @@ export function createUseTransactionQuery<
   const { resolved } = client;
   const clientQuery: GeneratedSchema['query'] = client.query;
 
-  return function useTransactionQuery<
+  const useTransactionQuery: UseTransactionQuery<GeneratedSchema> = function useTransactionQuery<
     TData,
     TVariables extends Record<string, unknown> | undefined = undefined
   >(
@@ -296,4 +305,6 @@ export function createUseTransactionQuery<
 
     return state;
   };
+
+  return useTransactionQuery;
 }

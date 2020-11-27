@@ -4,21 +4,21 @@ import { createClient, gqlessError, Poller } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
 
-export interface UsePollingState<A> {
-  data: A | undefined;
+export interface UsePollingState<TData> {
+  data: TData | undefined;
   error?: gqlessError;
   isLoading: boolean;
 }
 
-type UsePollingReducerAction<A> =
-  | { type: 'success'; data: A }
+type UsePollingReducerAction<TData> =
+  | { type: 'success'; data: TData }
   | { type: 'failure'; error: gqlessError }
   | { type: 'loading' };
 
-function UsePollingReducer<A>(
-  state: UsePollingState<A>,
-  action: UsePollingReducerAction<A>
-): UsePollingState<A> {
+function UsePollingReducer<TData>(
+  state: UsePollingState<TData>,
+  action: UsePollingReducerAction<TData>
+): UsePollingState<TData> {
   switch (action.type) {
     case 'loading': {
       if (state.isLoading) return state;
@@ -44,7 +44,7 @@ function UsePollingReducer<A>(
   }
 }
 
-function InitUsePollingReducer<A>(): UsePollingState<A> {
+function InitUsePollingReducer<TData>(): UsePollingState<TData> {
   return {
     data: undefined,
     isLoading: false,
@@ -58,11 +58,15 @@ export interface UsePollingOptions {
   pause?: boolean;
 }
 
+export interface UsePolling {
+  <TData>(fn: () => TData, options: UsePollingOptions): UsePollingState<TData>;
+}
+
 export function createUsePolling(
   client: ReturnType<typeof createClient>,
   _opts: CreateReactClientOptions
 ) {
-  return function usePolling<D>(
+  const usePolling: UsePolling = function usePolling<D>(
     fn: () => D,
     pollingOptions: UsePollingOptions
   ) {
@@ -144,4 +148,6 @@ export function createUsePolling(
 
     return state;
   };
+
+  return usePolling;
 }

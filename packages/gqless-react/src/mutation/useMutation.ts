@@ -5,24 +5,24 @@ import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 import { CreateReactClientOptions } from '../client';
 import { useDeferDispatch } from '../common';
 
-export interface UseMutationOptions<A>
-  extends Pick<ResolveOptions<A>, 'noCache'> {}
+export interface UseMutationOptions<TData>
+  extends Pick<ResolveOptions<TData>, 'noCache'> {}
 
-export interface UseMutationState<A> {
-  data: A | undefined;
+export interface UseMutationState<TData> {
+  data: TData | undefined;
   error?: gqlessError;
   isLoading: boolean;
 }
 
-type UseMutationReducerAction<A> =
-  | { type: 'success'; data: A }
+type UseMutationReducerAction<TData> =
+  | { type: 'success'; data: TData }
   | { type: 'failure'; error: gqlessError }
   | { type: 'loading' };
 
-function UseMutationReducer<A>(
-  state: UseMutationState<A>,
-  action: UseMutationReducerAction<A>
-): UseMutationState<A> {
+function UseMutationReducer<TData>(
+  state: UseMutationState<TData>,
+  action: UseMutationReducerAction<TData>
+): UseMutationState<TData> {
   switch (action.type) {
     case 'loading': {
       if (state.isLoading) return state;
@@ -47,26 +47,40 @@ function UseMutationReducer<A>(
   }
 }
 
-function InitUseMutationReducer<A>(): UseMutationState<A> {
+function InitUseMutationReducer<TData>(): UseMutationState<TData> {
   return {
     data: undefined,
     isLoading: false,
   };
 }
 
+export interface UseMutation<
+  GeneratedSchema extends {
+    mutation: object;
+  }
+> {
+  <TData = unknown>(
+    fn?: (query: GeneratedSchema['mutation']) => TData,
+    options?: UseMutationOptions<TData>
+  ): readonly [
+    (
+      fnArg?: ((query: GeneratedSchema['mutation']) => TData) | undefined
+    ) => Promise<TData>,
+    UseMutationState<TData>
+  ];
+}
+
 export function createUseMutation<
   GeneratedSchema extends {
-    query: object;
     mutation: object;
-    subscription: object;
   }
 >(client: ReturnType<typeof createClient>, _opts: CreateReactClientOptions) {
   const { resolved } = client;
   const clientMutation: GeneratedSchema['mutation'] = client.mutation;
 
-  return function useMutation<A>(
-    fn: (mutation: typeof clientMutation) => A,
-    mutationOptions?: UseMutationOptions<A>
+  const useMutation: UseMutation<GeneratedSchema> = function useMutation<TData>(
+    fn?: (mutation: typeof clientMutation) => TData,
+    mutationOptions?: UseMutationOptions<TData>
   ) {
     const opts = Object.assign({}, mutationOptions);
 
@@ -77,7 +91,7 @@ export function createUseMutation<
       UseMutationReducer,
       undefined,
       InitUseMutationReducer
-    ) as [UseMutationState<A>, Dispatch<UseMutationReducerAction<A>>];
+    ) as [UseMutationState<TData>, Dispatch<UseMutationReducerAction<TData>>];
     const dispatch = useDeferDispatch(dispatchReducer);
 
     const fnRef = useRef(fn);
@@ -87,14 +101,22 @@ export function createUseMutation<
       (fnArg?: typeof fn) => {
         dispatch({ type: 'loading' });
 
-        return resolved<A>(
-          (fnArg ? () => fnArg(clientMutation) : false) ||
-            (() => fnRef.current(clientMutation)),
-          {
-            noCache: optsRef.current.noCache,
-            refetch: true,
-          }
-        ).then(
+        const refFn = fnRef.current;
+
+        const functionResolve = fnArg
+          ? () => fnArg(clientMutation)
+          : refFn
+          ? () => refFn(clientMutation)
+          : (() => {
+              throw new gqlessError(
+                'You have to specify a function to be resolved'
+              );
+            })();
+
+        return resolved<TData>(functionResolve, {
+          noCache: optsRef.current.noCache,
+          refetch: true,
+        }).then(
           (data) => {
             dispatch({
               type: 'success',
@@ -119,4 +141,6 @@ export function createUseMutation<
 
     return useMemo(() => [mutate, state] as const, [mutate, state]);
   };
+
+  return useMutation;
 }

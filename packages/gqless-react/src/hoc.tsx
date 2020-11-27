@@ -9,11 +9,21 @@ export interface GraphQLHOCOptions {
   suspense?: boolean;
 }
 
+export interface GraphQLHOC {
+  <R extends ReactElement<any, any> | null, P = unknown>(
+    component: (props: P) => R,
+    options?: GraphQLHOCOptions
+  ): (props: P) => R;
+}
+
 export function createGraphqlHOC(
   { scheduler }: ReturnType<typeof createClient>,
   { defaultSuspense }: CreateReactClientOptions
 ) {
-  return function graphql<R extends ReactElement<any, any> | null, P = unknown>(
+  const graphql: GraphQLHOC = function graphql<
+    R extends ReactElement<any, any> | null,
+    P = unknown
+  >(
     component: (props: P) => R,
     { suspense = defaultSuspense }: GraphQLHOCOptions = {}
   ) {
@@ -70,4 +80,6 @@ export function createGraphqlHOC(
 
     return withGraphQL;
   };
+
+  return graphql;
 }

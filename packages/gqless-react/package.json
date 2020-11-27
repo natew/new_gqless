@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless-react",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",
@@ -12,9 +12,9 @@
   ],
   "scripts": {
     "analyze": "size-limit --why",
-    "build": "tsdx build",
+    "build": "rimraf node_modules/.cache && tsdx build",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
     "start": "tsdx watch",
     "test": "tsdx test"
@@ -42,6 +42,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-test-renderer": "^17.0.1",
+    "rimraf": "^3.0.2",
     "size-limit": "^4.9.0",
     "test-utils": "workspace:^0.1.0",
     "tsdx": "^0.14.1",

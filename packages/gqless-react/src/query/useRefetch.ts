@@ -79,6 +79,10 @@ export interface UseRefetchOptions {
   startWatching?: boolean;
 }
 
+export interface UseRefetch {
+  (refetchOptions?: UseRefetchOptions): (() => Promise<void>) & UseRefetchState;
+}
+
 export function createUseRefetch(
   client: ReturnType<typeof createClient>,
   _opts: CreateReactClientOptions
@@ -91,7 +95,7 @@ export function createUseRefetch(
     };
   }
 
-  return function useRefetch(refetchOptions?: UseRefetchOptions) {
+  const useRefetch: UseRefetch = function useRefetch(refetchOptions) {
     const opts = Object.assign({}, refetchOptions);
     opts.notifyOnNetworkStatusChange ??= true;
     opts.startWatching ??= true;
@@ -173,4 +177,6 @@ export function createUseRefetch(
       state,
     ]);
   };
+
+  return useRefetch;
 }
