@@ -20,6 +20,7 @@ import {
   SelectionType,
   separateSelectionTypes,
 } from '../Selection';
+import { isInteger } from '../Utils';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
@@ -281,9 +282,13 @@ export function createClient<
     return accessorCache.getArrayAccessor(selectionArg, proxyValue, () => {
       return new Proxy(proxyValue, {
         get(target, key: string, receiver) {
-          const index = parseInt(key);
+          let index: number | undefined;
 
-          if (Number.isInteger(index)) {
+          try {
+            index = parseInt(key);
+          } catch (err) {}
+
+          if (isInteger(index)) {
             if (
               innerState.allowCache &&
               arrayCacheValue !== CacheNotFound &&

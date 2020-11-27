@@ -14,3 +14,7 @@ export const createLazyPromise = () => {
 };
 
 export type LazyPromise = ReturnType<typeof createLazyPromise>;
+
+export function isInteger(v: any): v is number {
+  return Number.isInteger(v);
+}
