@@ -5,6 +5,7 @@ import lodashSet from 'lodash/set';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../Cache';
 import { gqlessError } from '../Error';
+import { EventHandler, FetchEventData } from '../Events';
 import { createInterceptorManager } from '../Interceptor';
 import { buildQuery } from '../QueryBuilder';
 import { createScheduler } from '../Scheduler';
@@ -20,7 +21,7 @@ import {
   SelectionType,
   separateSelectionTypes,
 } from '../Selection';
-import { isInteger } from '../Utils';
+import { createLazyPromise, isInteger, LazyPromise } from '../Utils';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
@@ -141,24 +142,14 @@ export function createClient<
 
       return dataFn();
     } catch (err) {
-      if (err instanceof Error) {
-        /* istanbul ignore else */
-        if (Error.captureStackTrace!) {
-          Error.captureStackTrace(err, resolved);
-        }
+      const error = gqlessError.create(err);
 
-        if (!(err instanceof gqlessError)) {
-          const newError = new gqlessError(err.message, { networkError: err });
-
-          /* istanbul ignore else */
-          if (Error.captureStackTrace!) {
-            Error.captureStackTrace(newError, resolved);
-          }
-
-          throw newError;
-        }
+      /* istanbul ignore else */
+      if (Error.captureStackTrace!) {
+        Error.captureStackTrace(err, resolved);
       }
-      throw err;
+
+      throw error;
     } finally {
       interceptorManager.removeInterceptor(interceptor);
 
@@ -203,6 +194,8 @@ export function createClient<
     }
   }
 
+  const eventHandler = new EventHandler();
+
   async function buildAndFetchSelections(
     selections: Selection[],
     type: 'query' | 'mutation' | 'subscription',
@@ -210,12 +203,22 @@ export function createClient<
   ) {
     if (selections.length === 0) return;
 
-    try {
-      const { query, variables } = buildQuery(selections, {
-        type,
-      });
+    const { query, variables } = buildQuery(selections, {
+      type,
+    });
 
-      const { data, errors } = await queryFetcher(query, variables);
+    let loggingPromise: LazyPromise<FetchEventData> | undefined;
+
+    if (eventHandler.hasFetchSubscribers) {
+      loggingPromise = createLazyPromise<FetchEventData>();
+
+      eventHandler.sendFetchPromise(loggingPromise.promise);
+    }
+
+    try {
+      const executionResult = await queryFetcher(query, variables);
+
+      const { data, errors } = executionResult;
 
       if (errors?.length) {
         if (errors.length > 1) {
@@ -243,6 +246,26 @@ export function createClient<
       if (data) {
         cache.mergeCache(data, type);
       }
+
+      loggingPromise?.resolve({
+        executionResult,
+        query,
+        variables,
+        cacheSnapshot: cache.cache,
+        selections,
+        type,
+      });
+    } catch (err) {
+      const error = gqlessError.create(err);
+      loggingPromise?.resolve({
+        error,
+        query,
+        variables,
+        cacheSnapshot: cache.cache,
+        selections,
+        type,
+      });
+      throw error;
     } finally {
       interceptorManager.removeSelections(selections);
     }
@@ -258,11 +281,15 @@ export function createClient<
       subscriptionSelections,
     } = separateSelectionTypes(selections);
 
-    await Promise.all([
-      buildAndFetchSelections(querySelections, 'query', cache),
-      buildAndFetchSelections(mutationSelections, 'mutation', cache),
-      buildAndFetchSelections(subscriptionSelections, 'subscription', cache),
-    ]);
+    try {
+      await Promise.all([
+        buildAndFetchSelections(querySelections, 'query', cache),
+        buildAndFetchSelections(mutationSelections, 'mutation', cache),
+        buildAndFetchSelections(subscriptionSelections, 'subscription', cache),
+      ]);
+    } catch (err) {
+      throw gqlessError.create(err);
+    }
   }
 
   const proxySymbolArray = [ProxySymbol];
@@ -527,5 +554,6 @@ export function createClient<
     refetch,
     accessorCache,
     buildAndFetchSelections,
+    eventHandler,
   };
 }

@@ -5,8 +5,10 @@ import { Selection } from '../Selection';
 
 export const CacheNotFound = Symbol('Not Found');
 
+export type CacheType = Record<string, unknown>;
+
 export function createCache() {
-  const cache: Record<string, unknown> = {};
+  const cache: CacheType = {};
 
   function getCacheFromSelection(selection: Selection) {
     return lodashGet(cache, selection.cachePath, CacheNotFound);

@@ -608,11 +608,7 @@ describe('error handling', () => {
 
       throw Error("shouldn't reach here");
     } catch (err) {
-      expect(err).toStrictEqual(
-        new gqlessError('expected network error', {
-          networkError: Error('expected network error'),
-        })
-      );
+      expect(err.message).toBe('expected network error');
     }
   });
 
@@ -626,7 +622,7 @@ describe('error handling', () => {
 
       throw Error("shouldn't reach here");
     } catch (err) {
-      expect(err).toBe(12345);
+      expect(err).toStrictEqual(gqlessError.create(12345));
     }
   });
 });
