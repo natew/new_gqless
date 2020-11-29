@@ -4,12 +4,12 @@ importers:
       nodemon: 2.0.6
     devDependencies:
       husky: 4.3.0
-      prettier: 2.2.0
-      pretty-quick: 3.1.0_prettier@2.2.0
+      prettier: 2.2.1
+      pretty-quick: 3.1.0_prettier@2.2.1
     specifiers:
       husky: ^4.3.0
       nodemon: ^2.0.6
-      prettier: ^2.2.0
+      prettier: ^2.2.1
       pretty-quick: ^3.1.0
   examples/mercurius:
     dependencies:
@@ -34,7 +34,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.21'
+      '@dish/gqless': 'workspace:^1.0.23'
       '@dish/gqless-cli': 'workspace:^0.1.22'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
@@ -101,7 +101,7 @@ importers:
     dependencies:
       '@graphql-codegen/core': 1.17.9_graphql@15.4.0
       '@graphql-codegen/typescript': 1.18.1_graphql@15.4.0
-      '@graphql-tools/delegate': 7.0.5_graphql@15.4.0
+      '@graphql-tools/delegate': 7.0.6_graphql@15.4.0
       '@graphql-tools/wrap': 7.0.1_graphql@15.4.0
       commander: 6.2.0
       cross-fetch: 3.0.6
@@ -109,7 +109,7 @@ importers:
       lodash: 4.17.20
       lodash-es: 4.17.15
       mkdirp: 1.0.4
-      prettier: 2.2.0
+      prettier: 2.2.1
       regenerator-runtime: 0.13.7
     devDependencies:
       '@dish/gqless': 'link:../gqless'
@@ -124,10 +124,10 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.21'
+      '@dish/gqless': 'workspace:^1.0.23'
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.18.1
-      '@graphql-tools/delegate': ^7.0.5
+      '@graphql-tools/delegate': ^7.0.6
       '@graphql-tools/wrap': ^7.0.1
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
@@ -139,7 +139,7 @@ importers:
       lodash: ^4.17.20
       lodash-es: ^4.17.15
       mkdirp: ^1.0.4
-      prettier: ^2.2.0
+      prettier: ^2.2.1
       regenerator-runtime: ^0.13.7
       size-limit: ^4.9.0
       test-utils: 'workspace:^0.1.0'
@@ -162,7 +162,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.22'
+      '@dish/gqless': 'workspace:^1.0.23'
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/prettier': ^2.1.5
       husky: ^4.3.0
@@ -198,7 +198,7 @@ importers:
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^1.0.21'
+      '@dish/gqless': 'workspace:^1.0.23'
       '@size-limit/preset-small-lib': ^4.9.0
       '@testing-library/react': ^11.2.2
       '@testing-library/react-hooks': ^3.4.2
@@ -245,7 +245,7 @@ importers:
       wait-on: 5.2.0
     specifiers:
       '@dish/gqless-cli': 'workspace:^0.1.22'
-      '@dish/gqless-logger': 'workspace:^0.1.0'
+      '@dish/gqless-logger': 'workspace:^0.1.1'
       '@dish/gqless-react': 'workspace:^0.1.6'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
@@ -1552,6 +1552,21 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-wkB/L9cRxlPB4m9k9WQJZYPbnRxfEu2bkxvI9pVGHMsmoQxMZiM2GkhCBHDTBYJb7cxCS6Wv3LJb1w0iEqw24w==
+  /@graphql-tools/delegate/7.0.6_graphql@15.4.0:
+    dependencies:
+      '@ardatan/aggregate-error': 0.0.6
+      '@graphql-tools/batch-execute': 7.0.0_graphql@15.4.0
+      '@graphql-tools/schema': 7.0.0_graphql@15.4.0
+      '@graphql-tools/utils': 7.0.2_graphql@15.4.0
+      dataloader: 2.0.0
+      graphql: 15.4.0
+      is-promise: 4.0.0
+      tslib: 2.0.3
+    dev: false
+    peerDependencies:
+      graphql: ^14.0.0 || ^15.0.0
+    resolution:
+      integrity: sha512-KqhES4UFOyEhNkvcyv12y9mklKX3eMa43xS6VbdiXlTqsXdzJ7BaXHFDZPhiMhFIEs070HQE38CGG12SREfTXg==
   /@graphql-tools/load-files/6.2.4_graphql@15.4.0:
     dependencies:
       fs-extra: 9.0.1
@@ -10110,13 +10125,13 @@ packages:
     resolution:
       integrity: sha512-s7PoyDv/II1ObgQunCbB9PdLmUcBZcnWOcxDh7O0N/UwDEsHyqkW+Qh28jW+mVuCdx7gLB0BotYI1Y6uI9iyew==
   /prettier/2.2.0:
+    dev: false
     engines:
       node: '>=10.13.0'
     hasBin: true
     resolution:
       integrity: sha512-yYerpkvseM4iKD/BXLYUkQV5aKt4tQPqaGW6EsZjzyu0r7sVZZNPJW4Y8MyKmicp6t42XUPcBVA+H6sB3gqndw==
   /prettier/2.2.1:
-    dev: false
     engines:
       node: '>=10.13.0'
     hasBin: true
@@ -10144,7 +10159,7 @@ packages:
       node: '>= 10'
     resolution:
       integrity: sha512-7AeGuCYNGmycyQbCqd/3PWH4eOoX/OiCa0uphp57NVTeAGdJGaAliecxwBDHYQCIvrW7aDBZCYeNTP/WX69mkg==
-  /pretty-quick/3.1.0_prettier@2.2.0:
+  /pretty-quick/3.1.0_prettier@2.2.1:
     dependencies:
       chalk: 3.0.0
       execa: 4.1.0
@@ -10152,7 +10167,7 @@ packages:
       ignore: 5.1.8
       mri: 1.1.6
       multimatch: 4.0.0
-      prettier: 2.2.0
+      prettier: 2.2.1
     dev: true
     engines:
       node: '>=10.13'

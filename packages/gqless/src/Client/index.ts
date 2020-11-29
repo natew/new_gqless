@@ -92,13 +92,10 @@ export function createClient<
     dataFn: () => T,
     { refetch, noCache, onCacheData }: ResolveOptions<T> = {}
   ): Promise<T> {
-    globalInterceptor.listening = false;
-    const interceptor = interceptorManager.createInterceptor();
-
-    const prevValidCache = innerState.foundValidCache;
+    const prevFoundValidCache = innerState.foundValidCache;
     innerState.foundValidCache = true;
 
-    let prevIgnoreCache = innerState.allowCache;
+    let prevAllowCache = innerState.allowCache;
     if (refetch) {
       innerState.allowCache = false;
     }
@@ -109,6 +106,11 @@ export function createClient<
       clientCache = tempCache = createCache();
     }
 
+    let prevGlobalInterceptorListening = globalInterceptor.listening;
+    globalInterceptor.listening = false;
+
+    const interceptor = interceptorManager.createInterceptor();
+
     try {
       const data = dataFn();
 
@@ -116,7 +118,7 @@ export function createClient<
         return data;
       }
 
-      interceptor.listening = false;
+      interceptorManager.removeInterceptor(interceptor);
 
       if (innerState.foundValidCache && onCacheData) {
         const shouldContinue = onCacheData(data);
@@ -124,16 +126,18 @@ export function createClient<
         if (!shouldContinue) return data;
       }
 
-      innerState.foundValidCache = prevValidCache;
-      innerState.allowCache = prevIgnoreCache;
-
+      innerState.foundValidCache = prevFoundValidCache;
+      innerState.allowCache = prevAllowCache;
       clientCache = globalCache;
-      globalInterceptor.listening = true;
+
+      globalInterceptor.listening = prevGlobalInterceptorListening;
 
       await resolveSelections(interceptor.selections, tempCache || clientCache);
 
-      prevIgnoreCache = innerState.allowCache;
+      prevAllowCache = innerState.allowCache;
       innerState.allowCache = true;
+
+      prevGlobalInterceptorListening = globalInterceptor.listening;
       globalInterceptor.listening = false;
 
       if (tempCache) {
@@ -152,11 +156,10 @@ export function createClient<
       throw error;
     } finally {
       interceptorManager.removeInterceptor(interceptor);
-
-      innerState.allowCache = prevIgnoreCache;
+      innerState.allowCache = prevAllowCache;
       clientCache = globalCache;
-      innerState.foundValidCache = prevValidCache;
-      globalInterceptor.listening = true;
+      innerState.foundValidCache = prevFoundValidCache;
+      globalInterceptor.listening = prevGlobalInterceptorListening;
     }
   }
 

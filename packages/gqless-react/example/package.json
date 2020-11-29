@@ -8,7 +8,7 @@
     "@dish/gqless-cli": "workspace:^0.1.22",
     "@dish/gqless-react": "workspace:^0.1.6",
     "fastify": "^3.8.0",
-    "@dish/gqless-logger": "workspace:^0.1.0",
+    "@dish/gqless-logger": "workspace:^0.1.1",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "mercurius": "^6.4.0",
