@@ -12,6 +12,7 @@ export const {
   graphql,
   useRefetch,
   usePolling,
+  useLazyQuery,
 } = createReactClient<GeneratedSchema>(client, {
   defaultSuspense,
 });

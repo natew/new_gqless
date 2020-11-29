@@ -24,6 +24,7 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
 export const generatedSchema = {
   query: {
     __typename: { __type: 'String!' },
+    expectedError: { __type: 'Boolean' },
     dogs: { __type: '[Dog!]!' },
     time: { __type: 'String!' },
   },
@@ -43,6 +44,7 @@ export const generatedSchema = {
 
 export interface Query {
   __typename: 'Query';
+  expectedError?: Maybe<ScalarsEnums['Boolean']>;
   dogs: Array<Dog>;
   time: ScalarsEnums['String'];
 }

@@ -62,6 +62,7 @@ const schema = gql`
     dogs: [Dog!]
   }
   type Query {
+    expectedError: Boolean
     dogs: [Dog!]!
     time: String!
   }
@@ -74,6 +75,9 @@ const resolvers: IResolvers = {
     },
     time() {
       return new Date().toISOString();
+    },
+    async expectedError() {
+      throw Error('Expected error');
     },
   },
 };

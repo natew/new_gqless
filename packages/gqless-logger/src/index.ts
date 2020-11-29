@@ -12,6 +12,10 @@ function parseGraphQL(query: string) {
   });
 }
 
+function cleanObject(obj: object): object {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 function isTruthy<V>(v: V): v is NonNullable<V> {
   return Boolean(v);
 }
@@ -123,7 +127,7 @@ export function createLogger(
     console.groupEnd();
 
     if (error) {
-      console.error(error);
+      console.error(...format(['Error', headerStyles]), cleanObject(error));
     } else {
       console.log(
         ...format(['Result', headerStyles]),
@@ -134,7 +138,7 @@ export function createLogger(
     if (options.showSelections) {
       console.groupCollapsed(...format(['Selections', headerStyles]));
       selections.forEach(({ noIndexSelections, type, ...selection }) => {
-        console.log(stringifyJSONIfEnabled(selection));
+        console.log(stringifyJSONIfEnabled(cleanObject(selection)));
       });
       console.groupEnd();
     }
