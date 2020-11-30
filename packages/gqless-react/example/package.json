@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@dish/gqless-cli": "workspace:^0.1.22",
-    "@dish/gqless-react": "workspace:^0.1.6",
+    "@dish/gqless-react": "workspace:^0.1.7",
     "fastify": "^3.8.0",
     "@dish/gqless-logger": "workspace:^0.1.1",
     "graphql": "^15.4.0",

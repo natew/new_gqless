@@ -17,7 +17,7 @@ export interface GraphQLHOC {
 }
 
 export function createGraphqlHOC(
-  { scheduler }: ReturnType<typeof createClient>,
+  { scheduler, eventHandler }: ReturnType<typeof createClient>,
   { defaultSuspense }: CreateReactClientOptions
 ) {
   const graphql: GraphQLHOC = function graphql<
@@ -56,6 +56,28 @@ export function createGraphqlHOC(
       useEffect(() => {
         unsubscribe();
       });
+
+      useEffect(() => {
+        let isMounted = true;
+        const unsubscribeFetch = eventHandler.onFetchSubscribe(
+          (fetchPromise) => {
+            fetchPromise.then(
+              (data) => {
+                if (isMounted) {
+                  console.warn('update after fetch', data);
+                  forceUpdate();
+                }
+              },
+              () => {}
+            );
+          }
+        );
+
+        return () => {
+          isMounted = false;
+          unsubscribeFetch();
+        };
+      }, []);
 
       const returnValue = (component(props) ?? null) as R;
 

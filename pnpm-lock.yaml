@@ -100,7 +100,7 @@ importers:
   packages/gqless-cli:
     dependencies:
       '@graphql-codegen/core': 1.17.9_graphql@15.4.0
-      '@graphql-codegen/typescript': 1.18.1_graphql@15.4.0
+      '@graphql-codegen/typescript': 1.19.0_graphql@15.4.0
       '@graphql-tools/delegate': 7.0.6_graphql@15.4.0
       '@graphql-tools/wrap': 7.0.1_graphql@15.4.0
       commander: 6.2.0
@@ -126,7 +126,7 @@ importers:
     specifiers:
       '@dish/gqless': 'workspace:^1.0.23'
       '@graphql-codegen/core': ^1.17.9
-      '@graphql-codegen/typescript': ^1.18.1
+      '@graphql-codegen/typescript': ^1.19.0
       '@graphql-tools/delegate': ^7.0.6
       '@graphql-tools/wrap': ^7.0.1
       '@size-limit/preset-small-lib': ^4.9.0
@@ -246,7 +246,7 @@ importers:
     specifiers:
       '@dish/gqless-cli': 'workspace:^0.1.22'
       '@dish/gqless-logger': 'workspace:^0.1.1'
-      '@dish/gqless-react': 'workspace:^0.1.6'
+      '@dish/gqless-react': 'workspace:^0.1.7'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
       '@types/react': ^17.0.0
@@ -1478,10 +1478,10 @@ packages:
       graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-cZsuOWpPWWHX7IIv2xMbrI/AZOiv+wEzyGpoGFV8zU6vjs54C50gb7Chhj9XPjMbOhUQ+z3Pn01geTRvi1gDeA==
-  /@graphql-codegen/typescript/1.18.1_graphql@15.4.0:
+  /@graphql-codegen/typescript/1.19.0_graphql@15.4.0:
     dependencies:
       '@graphql-codegen/plugin-helpers': 1.18.2_graphql@15.4.0
-      '@graphql-codegen/visitor-plugin-common': 1.17.20_graphql@15.4.0
+      '@graphql-codegen/visitor-plugin-common': 1.17.21_graphql@15.4.0
       auto-bind: 4.0.0
       graphql: 15.4.0
       tslib: 2.0.3
@@ -1489,7 +1489,7 @@ packages:
     peerDependencies:
       graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-Ee37NutKmaNrgAo2d5mv42RqPd8jJ6zyUKAH669Gbv0dFn2EK3sdC9PYQC9gXptv+H/eQn2gYgaa2nVpEPAIzg==
+      integrity: sha512-ThpMdtb6LmEKzLNxlotpk33eIMfX1i1aAlYDaqctIhFjZ2Rbvkgdb8q/5/my7yeH33BLnuqHDKrdkDsAAvCHcw==
   /@graphql-codegen/visitor-plugin-common/1.17.18_graphql@15.4.0:
     dependencies:
       '@graphql-codegen/plugin-helpers': 1.18.1_graphql@15.4.0
@@ -1507,7 +1507,7 @@ packages:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-/E083ja1vcl5GCnoeC7BObbTq6N1hpIXF3lQElLMvVvegSRzEm3XtvMNGQIumd6t3RDdpGT87ebSAS3lKPj8Pw==
-  /@graphql-codegen/visitor-plugin-common/1.17.20_graphql@15.4.0:
+  /@graphql-codegen/visitor-plugin-common/1.17.21_graphql@15.4.0:
     dependencies:
       '@graphql-codegen/plugin-helpers': 1.18.2_graphql@15.4.0
       '@graphql-tools/optimize': 1.0.1_graphql@15.4.0
@@ -1524,7 +1524,7 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-buIpcNNyTqVubknancX8m9jARCZsUA5eKuskg+CylWKL/8CSaD2Tiq7CfbbNO10o7XIgRrPtJMl1c9hQ6N4ytw==
+      integrity: sha512-rhdJdj+4DAMgMSBlgkvfOMw65L46sAtYb7G/n9ucc9uJGUbiIcgvS/wpoQ/gxz2eUaNfcoFmjVLm+dkTM/XwqA==
   /@graphql-tools/batch-execute/7.0.0_graphql@15.4.0:
     dependencies:
       '@graphql-tools/utils': 7.0.2_graphql@15.4.0

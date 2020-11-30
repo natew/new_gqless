@@ -19,7 +19,7 @@ export function createUseQuery<
   }
 >(client: ReturnType<typeof createClient>, opts: CreateReactClientOptions) {
   const { defaultSuspense } = opts;
-  const { scheduler } = client;
+  const { scheduler, eventHandler } = client;
 
   const clientQuery: GeneratedSchema['query'] = client.query;
 
@@ -45,6 +45,26 @@ export function createUseQuery<
       });
       forceUpdate();
     });
+
+    useEffect(() => {
+      let isMounted = true;
+      const unsubscribeFetch = eventHandler.onFetchSubscribe((fetchPromise) => {
+        fetchPromise.then(
+          (data) => {
+            if (isMounted) {
+              console.warn('update after fetch', data);
+              forceUpdate();
+            }
+          },
+          () => {}
+        );
+      });
+
+      return () => {
+        isMounted = false;
+        unsubscribeFetch();
+      };
+    }, []);
 
     useEffect(() => {
       unsubscribe();
