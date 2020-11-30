@@ -1,7 +1,7 @@
 import {
   Selection,
-  SelectionType,
   SelectionConstructorArgs,
+  SelectionType,
 } from './selection';
 
 export function separateSelectionTypes(
@@ -35,13 +35,15 @@ export function separateSelectionTypes(
   };
 }
 
-export class SelectionManager {
-  selectionCache = new Map<string, Selection>();
+export type SelectionManager = ReturnType<typeof createSelectionManager>;
 
-  incId = 0;
-  aliasMap = new Map<string, string>();
+export function createSelectionManager() {
+  const selectionCache = new Map<string, Selection>();
 
-  getVariableAlias(
+  let incId = 0;
+  const aliasMap = new Map<string, string>();
+
+  function getVariableAlias(
     key: string | number,
     variables: Record<string, unknown>,
     variableTypes: Record<string, string>
@@ -49,17 +51,17 @@ export class SelectionManager {
     const aliasKey = `${key}-${JSON.stringify(variables)}-${JSON.stringify(
       variableTypes
     )}`;
-    let alias = this.aliasMap.get(aliasKey);
+    let alias = aliasMap.get(aliasKey);
 
     if (alias == null) {
-      alias = `gqlessAlias_${this.incId++}`;
-      this.aliasMap.set(aliasKey, alias);
+      alias = `gqlessAlias_${incId++}`;
+      aliasMap.set(aliasKey, alias);
     }
 
     return alias;
   }
 
-  getSelection({
+  function getSelection({
     key,
     prevSelection,
     args,
@@ -69,7 +71,7 @@ export class SelectionManager {
     let alias: string | undefined;
     let cacheKey = key.toString();
     if (args && argTypes) {
-      alias = this.getVariableAlias(key, args, argTypes);
+      alias = getVariableAlias(key, args, argTypes);
       cacheKey = alias;
     }
 
@@ -77,7 +79,7 @@ export class SelectionManager {
       cacheKey = prevSelection.pathString + '.' + cacheKey;
     }
 
-    let selection = this.selectionCache.get(cacheKey);
+    let selection = selectionCache.get(cacheKey);
 
     if (selection == null) {
       selection = new Selection({
@@ -88,9 +90,13 @@ export class SelectionManager {
         alias,
         type,
       });
-      this.selectionCache.set(cacheKey, selection);
+      selectionCache.set(cacheKey, selection);
     }
 
     return selection;
   }
+
+  return {
+    getSelection,
+  };
 }

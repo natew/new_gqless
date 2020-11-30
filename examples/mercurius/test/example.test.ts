@@ -1,3 +1,4 @@
+import { selectFields } from '@dish/gqless';
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 import { waitForExpect } from 'test-utils';
 
@@ -8,7 +9,6 @@ import {
   mutation,
   query,
   resolved,
-  selectFields,
 } from '../src/generated/gqless';
 
 const testClient = createMercuriusTestClient(app);

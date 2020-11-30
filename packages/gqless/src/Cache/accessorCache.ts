@@ -4,6 +4,8 @@ export interface ProxyAccessor extends Object {
   __proxy?: undefined;
 }
 
+export type AccessorCache = ReturnType<typeof createAccessorCache>;
+
 export function createAccessorCache() {
   const proxyMap = new WeakMap<Selection, ProxyAccessor>();
   const arrayProxyMap = new WeakMap<

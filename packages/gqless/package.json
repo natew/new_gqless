@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "1.0.23",
+  "version": "2.0.0",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -13,11 +13,11 @@
   ],
   "scripts": {
     "analyze": "size-limit --why",
-    "build": "tsdx build",
+    "build": "rimraf node_modules/.cache && tsdx build",
     "dev": "nodemon",
     "dev:nodemon": "tsup src -d dist && node dist/QueryBuilder/buildQuery.js",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
     "start": "tsdx watch",
     "test": "tsdx test"
@@ -34,7 +34,7 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.22",
+    "@dish/gqless-cli": "workspace:^1.0.0",
     "@size-limit/preset-small-lib": "^4.9.0",
     "@types/lodash": "^4.14.165",
     "@types/node": "^14.14.10",

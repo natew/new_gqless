@@ -23,3 +23,5 @@ export function createCache() {
 
   return { cache, getCacheFromSelection, mergeCache };
 }
+
+export type CacheInstance = ReturnType<typeof createCache>;

@@ -1,11 +1,11 @@
 import {
-  SelectionManager,
+  createSelectionManager,
   SelectionType,
   separateSelectionTypes,
 } from '../src/Selection';
 
 describe('selection creation', () => {
-  const manager = new SelectionManager();
+  const manager = createSelectionManager();
 
   test('selection with manager and separating types', () => {
     const selectionA = manager.getSelection({

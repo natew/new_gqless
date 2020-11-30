@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless-cli",
-  "version": "0.1.22",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",
@@ -28,8 +28,8 @@
   "dependencies": {
     "@graphql-codegen/core": "^1.17.9",
     "@graphql-codegen/typescript": "^1.19.0",
-    "@graphql-tools/delegate": "^7.0.6",
-    "@graphql-tools/wrap": "^7.0.1",
+    "@graphql-tools/delegate": "^7.0.7",
+    "@graphql-tools/wrap": "^7.0.2",
     "commander": "^6.2.0",
     "cross-fetch": "^3.0.6",
     "graphql": "^15.4.0",
@@ -40,11 +40,12 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^1.0.23",
+    "@dish/gqless": "workspace:^2.0.0",
     "@size-limit/preset-small-lib": "^4.9.0",
     "@types/lodash": "^4.14.165",
     "@types/mkdirp": "^1.0.1",
     "husky": "^4.3.0",
+    "rimraf": "^3.0.2",
     "size-limit": "^4.9.0",
     "test-utils": "workspace:^0.1.0",
     "tmp-promise": "^3.0.2",
@@ -53,7 +54,7 @@
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
-    "@dish/gqless": "workspace:^1.0.17"
+    "@dish/gqless": "workspace:^2.0.0"
   },
   "engines": {
     "node": ">=10"

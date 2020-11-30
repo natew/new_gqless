@@ -5,7 +5,7 @@
     "dev": "concurrently \"next -p 4141\" \"wait-on -s 1 tcp:4141 && open-cli http://localhost:4141\""
   },
   "dependencies": {
-    "@dish/gqless-cli": "workspace:^0.1.22",
+    "@dish/gqless-cli": "workspace:^1.0.0",
     "@dish/gqless-react": "workspace:^0.1.7",
     "fastify": "^3.8.0",
     "@dish/gqless-logger": "workspace:^0.1.1",

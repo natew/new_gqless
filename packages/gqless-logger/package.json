@@ -12,8 +12,8 @@
   ],
   "scripts": {
     "analyze": "size-limit --why",
-    "build": "tsdx build",
-    "prepare": "tsdx build",
+    "build": "rimraf node_modules/.cache && tsdx build",
+    "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
     "start": "tsdx watch",
     "test": "tsdx test"
@@ -23,10 +23,11 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^1.0.23",
+    "@dish/gqless": "workspace:^2.0.0",
     "@size-limit/preset-small-lib": "^4.9.0",
     "@types/prettier": "^2.1.5",
     "husky": "^4.3.0",
+    "rimraf": "^3.0.2",
     "size-limit": "^4.9.0",
     "test-utils": "workspace:^0.1.0",
     "tsdx": "^0.14.1",

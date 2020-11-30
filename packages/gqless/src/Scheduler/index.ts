@@ -3,6 +3,8 @@ import debounce from 'lodash/debounce';
 import { InterceptorManager } from '../Interceptor';
 import { createLazyPromise, LazyPromise } from '../Utils';
 
+export type Scheduler = ReturnType<typeof createScheduler>;
+
 export const createScheduler = (
   interceptorManager: InterceptorManager,
   resolveAllSelections: () => Promise<void>
