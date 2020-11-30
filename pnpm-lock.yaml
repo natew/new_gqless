@@ -250,7 +250,7 @@ importers:
     specifiers:
       '@dish/gqless-cli': 'workspace:^1.0.0'
       '@dish/gqless-logger': 'workspace:^0.1.1'
-      '@dish/gqless-react': 'workspace:^0.1.7'
+      '@dish/gqless-react': 'workspace:^1.0.0'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
       '@types/react': ^17.0.0

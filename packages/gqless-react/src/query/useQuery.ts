@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { createClient } from '@dish/gqless';
+import { createClient, Selection } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
 import { useDeferDispatch, useForceUpdate } from '../common';
@@ -13,21 +13,33 @@ export interface UseQuery<GeneratedSchema extends { query: object }> {
   (options?: UseQueryOptions): GeneratedSchema['query'];
 }
 
+function initSelectionsState() {
+  return new Set<Selection>();
+}
+
 export function createUseQuery<
   GeneratedSchema extends {
     query: object;
   }
 >(client: ReturnType<typeof createClient>, opts: CreateReactClientOptions) {
   const { defaultSuspense } = opts;
-  const { scheduler, eventHandler } = client;
+  const { scheduler, eventHandler, interceptorManager } = client;
 
   const clientQuery: GeneratedSchema['query'] = client.query;
 
   const useQuery: UseQuery<GeneratedSchema> = function useQuery({
     suspense = defaultSuspense,
   } = {}) {
+    const [selections] = useState(initSelectionsState);
+
     const fetchingPromise = useRef<Promise<void> | null>(null);
     const forceUpdate = useDeferDispatch(useForceUpdate());
+
+    const interceptor = interceptorManager.createInterceptor();
+
+    interceptor.selectionAddListeners.add((selection) => {
+      selections.add(selection);
+    });
 
     const unsubscribe = scheduler.subscribeResolve((promise) => {
       fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -51,8 +63,10 @@ export function createUseQuery<
       const unsubscribeFetch = eventHandler.onFetchSubscribe((fetchPromise) => {
         fetchPromise.then(
           (data) => {
-            if (isMounted) {
-              console.warn('update after fetch', data);
+            if (
+              isMounted &&
+              data.selections.some((selection) => selections.has(selection))
+            ) {
               forceUpdate();
             }
           },
@@ -67,6 +81,7 @@ export function createUseQuery<
     }, []);
 
     useEffect(() => {
+      interceptorManager.removeInterceptor(interceptor);
       unsubscribe();
     });
 

@@ -1,6 +1,6 @@
-import React, { ReactElement, useEffect, useRef } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 
-import { createClient } from '@dish/gqless';
+import { createClient, Selection } from '@dish/gqless';
 
 import { CreateReactClientOptions } from './client';
 import { useDeferDispatch, useForceUpdate } from './common';
@@ -16,8 +16,16 @@ export interface GraphQLHOC {
   ): (props: P) => R;
 }
 
+function initSelectionsState() {
+  return new Set<Selection>();
+}
+
 export function createGraphqlHOC(
-  { scheduler, eventHandler }: ReturnType<typeof createClient>,
+  {
+    scheduler,
+    eventHandler,
+    interceptorManager,
+  }: ReturnType<typeof createClient>,
   { defaultSuspense }: CreateReactClientOptions
 ) {
   const graphql: GraphQLHOC = function graphql<
@@ -31,9 +39,16 @@ export function createGraphqlHOC(
       (props: P): R;
       displayName: string;
     } = function WithGraphQL(props) {
+      const [selections] = useState(initSelectionsState);
       let fetchingPromise = useRef<Promise<void> | null>(null);
 
       const forceUpdate = useDeferDispatch(useForceUpdate());
+
+      const interceptor = interceptorManager.createInterceptor();
+
+      interceptor.selectionAddListeners.add((selection) => {
+        selections.add(selection);
+      });
 
       const unsubscribe = scheduler.subscribeResolve((promise) => {
         fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -54,6 +69,7 @@ export function createGraphqlHOC(
       });
 
       useEffect(() => {
+        interceptorManager.removeInterceptor(interceptor);
         unsubscribe();
       });
 
@@ -63,8 +79,10 @@ export function createGraphqlHOC(
           (fetchPromise) => {
             fetchPromise.then(
               (data) => {
-                if (isMounted) {
-                  console.warn('update after fetch', data);
+                if (
+                  isMounted &&
+                  data.selections.some((selection) => selections.has(selection))
+                ) {
                   forceUpdate();
                 }
               },
