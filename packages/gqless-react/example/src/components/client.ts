@@ -3,7 +3,7 @@ import { createLogger } from '@dish/gqless-logger';
 import { createReactClient } from '../../../';
 import { client, GeneratedSchema } from '../graphql/gqless';
 
-export const defaultSuspense = false;
+export const defaultSuspense = true;
 
 export const {
   useTransactionQuery,

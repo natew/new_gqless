@@ -58,6 +58,14 @@ export const useIsRendering = () => {
 export const useDeferDispatch = <F extends (...args: any[]) => void>(
   dispatchFn: F
 ) => {
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   const isRendering = useIsRendering();
 
   const pendingDispatch = useRef<(() => void) | null>(null);
@@ -73,13 +81,13 @@ export const useDeferDispatch = <F extends (...args: any[]) => void>(
     (...args: any[]) => {
       if (isRendering.current) {
         pendingDispatch.current = () => {
-          dispatchFn(...args);
+          if (isMounted.current) dispatchFn(...args);
         };
-      } else {
+      } else if (isMounted.current) {
         dispatchFn(...args);
       }
     },
-    [dispatchFn, isRendering, pendingDispatch]
+    [dispatchFn, isRendering, pendingDispatch, isMounted]
   ) as F;
 };
 

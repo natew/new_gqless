@@ -41,6 +41,7 @@ export const useIsMounted = () => {
   const isMounted = useRef(true);
 
   useIsomorphicLayoutEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };

@@ -105,11 +105,4 @@ export const client = createClient<GeneratedSchema>(
   queryFetcher
 );
 
-export const {
-  query,
-  mutation,
-  subscription,
-  resolved,
-  refetch,
-  selectFields,
-} = client;
+export const { query, mutation, subscription, resolved, refetch } = client;

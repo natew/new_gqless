@@ -1,6 +1,7 @@
 import debounce from 'lodash/debounce';
 
 import { InterceptorManager } from '../Interceptor';
+import { Selection } from '../Selection';
 import { createLazyPromise, LazyPromise } from '../Utils';
 
 export type Scheduler = ReturnType<typeof createScheduler>;
@@ -9,9 +10,13 @@ export const createScheduler = (
   interceptorManager: InterceptorManager,
   resolveAllSelections: () => Promise<void>
 ) => {
-  const resolveListeners = new Set<(promise: Promise<void>) => void>();
+  const resolveListeners = new Set<
+    (promise: Promise<void>, selection: Selection) => void
+  >();
 
-  function subscribeResolve(fn: (promise: Promise<void>) => void) {
+  function subscribeResolve(
+    fn: (promise: Promise<void>, selection: Selection) => void
+  ) {
     resolveListeners.add(fn);
 
     return function unsubscribe() {
@@ -42,18 +47,19 @@ export const createScheduler = (
   }, 10);
 
   interceptorManager.globalInterceptor.selectionAddListeners.add(
-    (_selection) => {
+    (selection) => {
       let lazyPromise: LazyPromise;
       if (resolvingPromise === null) {
         lazyPromise = createLazyPromise();
         resolvingPromise = lazyPromise;
         scheduler.resolving = lazyPromise;
-        resolveListeners.forEach((subscription) => {
-          subscription(lazyPromise.promise);
-        });
       } else {
         lazyPromise = resolvingPromise;
       }
+      const promise = lazyPromise.promise;
+      resolveListeners.forEach((subscription) => {
+        subscription(promise, selection);
+      });
       fetchSelections(lazyPromise);
     }
   );

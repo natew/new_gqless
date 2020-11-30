@@ -1,12 +1,8 @@
+import { selectFields } from '@dish/gqless';
 import { useReducer } from 'react';
 import { createReactClient } from '../../../';
 import { Suspense } from '../components/Suspense';
-import {
-  client,
-  GeneratedSchema,
-  selectFields,
-  query,
-} from '../graphql/gqless';
+import { client, GeneratedSchema, query } from '../graphql/gqless';
 
 const defaultSuspense = false;
 

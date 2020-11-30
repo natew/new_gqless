@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient, Selection } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
-import { useDeferDispatch, useForceUpdate } from '../common';
+import {
+  useDeferDispatch,
+  useForceUpdate,
+  useIsomorphicLayoutEffect,
+} from '../common';
 
 export interface UseQueryOptions {
   suspense?: boolean;
@@ -41,21 +45,23 @@ export function createUseQuery<
       selections.add(selection);
     });
 
-    const unsubscribe = scheduler.subscribeResolve((promise) => {
-      fetchingPromise.current = new Promise<void>((resolve, reject) => {
-        promise.then(
-          () => {
-            fetchingPromise.current = null;
-            forceUpdate();
-            resolve();
-          },
-          (err: unknown) => {
-            fetchingPromise.current = null;
-            reject(err);
-          }
-        );
-      });
-      forceUpdate();
+    const unsubscribe = scheduler.subscribeResolve((promise, selection) => {
+      if (fetchingPromise.current === null && selections.has(selection)) {
+        fetchingPromise.current = new Promise<void>((resolve, reject) => {
+          promise.then(
+            () => {
+              fetchingPromise.current = null;
+              forceUpdate();
+              resolve();
+            },
+            (err: unknown) => {
+              fetchingPromise.current = null;
+              reject(err);
+            }
+          );
+        });
+        forceUpdate();
+      }
     });
 
     useEffect(() => {
@@ -80,7 +86,7 @@ export function createUseQuery<
       };
     }, []);
 
-    useEffect(() => {
+    useIsomorphicLayoutEffect(() => {
       interceptorManager.removeInterceptor(interceptor);
       unsubscribe();
     });

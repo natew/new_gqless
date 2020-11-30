@@ -1,9 +1,13 @@
-import React, { ReactElement, useEffect, useRef, useState } from 'react';
+import React, { ReactElement, useRef, useState } from 'react';
 
 import { createClient, Selection } from '@dish/gqless';
 
 import { CreateReactClientOptions } from './client';
-import { useDeferDispatch, useForceUpdate } from './common';
+import {
+  useDeferDispatch,
+  useForceUpdate,
+  useIsomorphicLayoutEffect,
+} from './common';
 
 export interface GraphQLHOCOptions {
   suspense?: boolean;
@@ -44,36 +48,7 @@ export function createGraphqlHOC(
 
       const forceUpdate = useDeferDispatch(useForceUpdate());
 
-      const interceptor = interceptorManager.createInterceptor();
-
-      interceptor.selectionAddListeners.add((selection) => {
-        selections.add(selection);
-      });
-
-      const unsubscribe = scheduler.subscribeResolve((promise) => {
-        fetchingPromise.current = new Promise<void>((resolve, reject) => {
-          promise.then(
-            () => {
-              fetchingPromise.current = null;
-              forceUpdate();
-              resolve();
-            },
-            (err) => {
-              fetchingPromise.current = null;
-              reject(err);
-            }
-          );
-        });
-
-        forceUpdate();
-      });
-
-      useEffect(() => {
-        interceptorManager.removeInterceptor(interceptor);
-        unsubscribe();
-      });
-
-      useEffect(() => {
+      useIsomorphicLayoutEffect(() => {
         let isMounted = true;
         const unsubscribeFetch = eventHandler.onFetchSubscribe(
           (fetchPromise) => {
@@ -97,7 +72,37 @@ export function createGraphqlHOC(
         };
       }, []);
 
-      const returnValue = (component(props) ?? null) as R;
+      const interceptor = interceptorManager.createInterceptor();
+
+      interceptor.selectionAddListeners.add((selection) => {
+        selections.add(selection);
+      });
+
+      const unsubscribe = scheduler.subscribeResolve((promise, selection) => {
+        if (fetchingPromise.current === null && selections.has(selection)) {
+          fetchingPromise.current = new Promise<void>((resolve, reject) => {
+            promise.then(
+              () => {
+                fetchingPromise.current = null;
+                forceUpdate();
+                resolve();
+              },
+              (err) => {
+                fetchingPromise.current = null;
+                reject(err);
+              }
+            );
+          });
+        }
+      });
+
+      let returnValue: R = null as R;
+      try {
+        returnValue = (component(props) ?? null) as R;
+      } finally {
+        interceptorManager.removeInterceptor(interceptor);
+        unsubscribe();
+      }
 
       if (suspense && fetchingPromise.current) {
         const Suspend = () => {
