@@ -83,7 +83,7 @@ export function createClient<
     }
   }
 
-  const refetch = createRefetch(innerState);
+  const refetch = createRefetch(innerState, resolveSelections);
 
   const { createSchemaAccesor } = AccessorCreators(innerState);
 

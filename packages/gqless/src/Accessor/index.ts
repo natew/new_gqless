@@ -79,7 +79,7 @@ export function AccessorCreators<
     );
     if (innerState.allowCache && cacheValue === null) return null;
 
-    return accessorCache.getAccessor(selectionArg, () => {
+    const accessor = accessorCache.getAccessor(selectionArg, () => {
       return new Proxy(
         fromPairs(
           Object.keys(schemaType).map((key) => {
@@ -113,6 +113,10 @@ export function AccessorCreators<
                 if (cacheValue === CacheNotFound) {
                   // If cache was not found, add the selections to the queue
                   interceptorManager.addSelection(selection);
+                  accessorCache.addSelectionToAccessorHistory(
+                    accessor,
+                    selection
+                  );
 
                   innerState.foundValidCache = false;
                   return null;
@@ -121,6 +125,10 @@ export function AccessorCreators<
                 if (!innerState.allowCache) {
                   // Or if you are making the network fetch always
                   interceptorManager.addSelection(selection);
+                  accessorCache.addSelectionToAccessorHistory(
+                    accessor,
+                    selection
+                  );
                 }
 
                 return cacheValue;
@@ -151,6 +159,7 @@ export function AccessorCreators<
         }
       );
     });
+    return accessor;
   }
 
   function createSchemaAccesor() {

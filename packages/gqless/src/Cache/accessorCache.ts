@@ -16,6 +16,8 @@ export function createAccessorCache() {
 
   const selectionProxyMap = new WeakMap<ProxyAccessor, Selection>();
 
+  const accessorSelectionHistory = new WeakMap<ProxyAccessor, Set<Selection>>();
+
   function getAccessor(
     selection: Selection,
     proxyFactory: () => ProxyAccessor
@@ -64,10 +66,30 @@ export function createAccessorCache() {
     return proxySet.has(obj);
   }
 
+  function addSelectionToAccessorHistory(
+    accessor: ProxyAccessor,
+    selection: Selection
+  ) {
+    let selectionSet = accessorSelectionHistory.get(accessor);
+
+    if (selectionSet == null) {
+      selectionSet = new Set();
+      accessorSelectionHistory.set(accessor, selectionSet);
+    }
+
+    selectionSet.add(selection);
+  }
+
+  function getSelectionSetHistory(accessor: ProxyAccessor) {
+    return accessorSelectionHistory.get(accessor);
+  }
+
   return {
     getAccessor,
     getArrayAccessor,
     isProxy,
     getProxySelection,
+    addSelectionToAccessorHistory,
+    getSelectionSetHistory,
   };
 }

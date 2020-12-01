@@ -433,64 +433,6 @@ describe('custom query fetcher', () => {
   });
 });
 
-describe('refetch function', () => {
-  test('refetch works', async () => {
-    const { query, refetch, scheduler } = await createTestClient();
-
-    const a = query.hello;
-
-    expect(a).toBe(null);
-
-    expect(scheduler.resolving).toBeTruthy();
-
-    await scheduler.resolving!.promise;
-
-    const a2 = query.hello;
-
-    expect(scheduler.resolving).toBe(null);
-
-    expect(a2).toBe('hello world');
-
-    const a3Promise = refetch(() => query.hello);
-
-    expect(scheduler.resolving).toBeTruthy();
-
-    const a3 = await a3Promise;
-
-    expect(a3).toBe(a2);
-  });
-
-  test('warns about no selections inside function, except on production', async () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation((message) => {
-      expect(message).toBe('Warning: No selections made!');
-    });
-    const prevEnv = process.env.NODE_ENV;
-
-    try {
-      const { refetch } = await createTestClient();
-
-      const value = await refetch(() => {
-        return 123;
-      });
-
-      expect(value).toBe(123);
-      expect(spy).toBeCalledTimes(1);
-
-      process.env.NODE_ENV = 'production';
-
-      const value2 = await refetch(() => {
-        return 456;
-      });
-
-      expect(value2).toBe(456);
-      expect(spy).toBeCalledTimes(1);
-    } finally {
-      process.env.NODE_ENV = prevEnv;
-      spy.mockRestore();
-    }
-  });
-});
-
 describe('buildAndFetchSelections', () => {
   test('works with included cache', async () => {
     const { buildAndFetchSelections, cache } = await createTestClient();

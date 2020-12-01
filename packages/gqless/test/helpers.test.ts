@@ -325,3 +325,146 @@ describe('selectFields', () => {
     });
   });
 });
+
+describe('refetch function', () => {
+  test('refetch works', async () => {
+    const { query, refetch, scheduler } = await createTestClient();
+
+    const a = query.hello;
+
+    expect(a).toBe(null);
+
+    expect(scheduler.resolving).toBeTruthy();
+
+    await scheduler.resolving!.promise;
+
+    const a2 = query.hello;
+
+    expect(scheduler.resolving).toBe(null);
+
+    expect(a2).toBe('hello world');
+
+    const a3Promise = refetch(() => query.hello);
+
+    expect(scheduler.resolving).toBeTruthy();
+
+    const a3 = await a3Promise;
+
+    expect(a3).toBe(a2);
+  });
+
+  test('warns about no selections inside function, except on production', async () => {
+    const spy = jest.spyOn(console, 'warn').mockImplementation((message) => {
+      expect(message).toBe('gqless: No selections made!');
+    });
+    const prevEnv = process.env.NODE_ENV;
+
+    try {
+      const { refetch } = await createTestClient();
+
+      const value = await refetch(() => {
+        return 123;
+      });
+
+      expect(value).toBe(123);
+      expect(spy).toBeCalledTimes(1);
+
+      process.env.NODE_ENV = 'production';
+
+      const value2 = await refetch(() => {
+        return 456;
+      });
+
+      expect(value2).toBe(456);
+      expect(spy).toBeCalledTimes(1);
+    } finally {
+      process.env.NODE_ENV = prevEnv;
+      spy.mockRestore();
+    }
+  });
+
+  test('refetch proxy selections', async () => {
+    const { query, resolved, refetch, cache } = await createTestClient();
+
+    const time1 = await resolved(() => query.time);
+
+    const cacheSnapshot1 = JSON.stringify(cache);
+
+    expect(time1).toBeTruthy();
+
+    const time2 = query.time;
+
+    const cacheSnapshot2 = JSON.stringify(cache);
+
+    expect(cacheSnapshot1).toBe(cacheSnapshot2);
+
+    expect(time2).toBe(time1);
+
+    await refetch(query);
+
+    const cacheSnapshot3 = JSON.stringify(cache);
+
+    expect(cacheSnapshot3).not.toBe(cacheSnapshot2);
+
+    const time3 = query.time;
+
+    const cacheSnapshot4 = JSON.stringify(cache);
+
+    expect(cacheSnapshot4).toBe(cacheSnapshot3);
+
+    expect(time3).not.toBe(time1);
+
+    const noSelectionsToRefetchData = await refetch(query.nullArray);
+
+    expect(noSelectionsToRefetchData).toBeTruthy();
+
+    const cacheSnapshot5 = JSON.stringify(cache);
+
+    expect(cacheSnapshot5).toBe(cacheSnapshot3);
+
+    const hello = await resolved(() => query.hello);
+
+    const cacheSnapshot6 = JSON.stringify(cache);
+
+    expect(cacheSnapshot6).not.toBe(cacheSnapshot5);
+
+    expect(hello).toBe('hello world');
+
+    const time4 = query.time;
+
+    expect(time4).toBe(time3);
+
+    await refetch(query);
+
+    const time5 = query.time;
+
+    expect(time5).not.toBe(time4);
+  });
+
+  test('refetch proxy selections with invalid proxy', async () => {
+    const spy = jest.spyOn(console, 'warn').mockImplementation((message) => {
+      expect(message).toBe('gqless: Invalid proxy to refetch!');
+    });
+
+    const prevNODE_ENV = process.env.NODE_ENV;
+    try {
+      const { refetch } = await createTestClient();
+
+      const invalidProxy = {};
+      const refetchData = await refetch(invalidProxy);
+
+      expect(spy).toBeCalledTimes(1);
+      expect(refetchData).toBe(invalidProxy);
+
+      process.env.NODE_ENV = 'production';
+
+      const refetchData2 = await refetch(invalidProxy);
+
+      expect(spy).toBeCalledTimes(1);
+      expect(refetchData2).toBe(invalidProxy);
+    } finally {
+      process.env.NODE_ENV = prevNODE_ENV;
+      spy.mockRestore();
+    }
+  });
+});

@@ -37,6 +37,7 @@ export const createTestClient = async (
         throw2: Boolean
         nullArray: [Human]
         nullStringArray: [String]
+        time: String!
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
@@ -73,6 +74,9 @@ export const createTestClient = async (
         },
         async throw2() {
           throw Error('expected error 2');
+        },
+        time() {
+          return new Date().toISOString();
         },
       },
       Mutation: {
@@ -137,6 +141,7 @@ export const createTestClient = async (
       nFetchCalls: number;
       throw?: boolean;
       throw2?: boolean;
+      time: string;
     };
     mutation: {
       sendNotification(args: { message: string }): boolean;
