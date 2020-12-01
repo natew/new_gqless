@@ -106,7 +106,12 @@ export function createAccessorCache() {
     return selections;
   }
 
-  function addAccessorChild(parent: ProxyAccessor, child: ProxyAccessor) {
+  function addAccessorChild(
+    parent: ProxyAccessor,
+    child: ProxyAccessor | null
+  ) {
+    if (!child) return;
+
     let childs = accessorChildRelations.get(parent);
 
     if (childs == null) {

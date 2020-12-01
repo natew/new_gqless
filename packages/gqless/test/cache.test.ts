@@ -85,6 +85,78 @@ describe('accessorCache', () => {
 
     expect(cache.isProxy({})).toBe(false);
   });
+
+  test('getting selections history', () => {
+    const {
+      addSelectionToAccessorHistory,
+      getAccessor,
+      getSelectionSetHistory,
+      addAccessorChild,
+    } = createAccessorCache();
+
+    const rootAccessor = getAccessor(
+      new Selection({
+        key: 'root',
+      }),
+      () => {
+        return {
+          root: true,
+        };
+      }
+    );
+
+    const selectionA = new Selection({
+      key: 'a',
+    });
+
+    const accessorA = getAccessor(selectionA, () => {
+      return {
+        a: 1,
+      };
+    });
+
+    addAccessorChild(rootAccessor, accessorA);
+
+    const selectionB = new Selection({
+      key: 'b',
+    });
+
+    const accessorB = getAccessor(selectionB, () => {
+      return {
+        b: 2,
+      };
+    });
+
+    addAccessorChild(accessorA, accessorB);
+
+    addSelectionToAccessorHistory(accessorA, selectionA);
+
+    const selections1 = getSelectionSetHistory(accessorA)!;
+
+    expect(selections1).toBeTruthy();
+
+    expect(selections1).toStrictEqual(new Set([selectionA]));
+
+    addSelectionToAccessorHistory(accessorB, selectionB);
+
+    const selections2 = getSelectionSetHistory(accessorB)!;
+
+    expect(selections2).toBeTruthy();
+
+    expect(selections2).toStrictEqual(new Set([selectionB]));
+
+    const selections3 = getSelectionSetHistory(accessorA)!;
+
+    expect(selections3).toBeTruthy();
+
+    expect(selections3).toStrictEqual(new Set([selectionA, selectionB]));
+
+    const selections4 = getSelectionSetHistory(rootAccessor)!;
+
+    expect(selections4).toBeTruthy();
+
+    expect(selections4).toStrictEqual(new Set([selectionA, selectionB]));
+  });
 });
 
 describe('dataCache', () => {

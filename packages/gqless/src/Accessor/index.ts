@@ -39,38 +39,48 @@ export function AccessorCreators<
         ? proxySymbolArray
         : arrayCacheValue;
 
-    return accessorCache.getArrayAccessor(selectionArg, proxyValue, () => {
-      return new Proxy(proxyValue, {
-        get(target, key: string, receiver) {
-          let index: number | undefined;
+    const accessor = accessorCache.getArrayAccessor(
+      selectionArg,
+      proxyValue,
+      () => {
+        return new Proxy(proxyValue, {
+          get(target, key: string, receiver) {
+            let index: number | undefined;
 
-          try {
-            index = parseInt(key);
-          } catch (err) {}
+            try {
+              index = parseInt(key);
+            } catch (err) {}
 
-          if (isInteger(index)) {
-            if (
-              innerState.allowCache &&
-              arrayCacheValue !== CacheNotFound &&
-              arrayCacheValue[index] == null
-            ) {
-              /**
-               * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
-               */
-              return arrayCacheValue[index];
+            if (isInteger(index)) {
+              if (
+                innerState.allowCache &&
+                arrayCacheValue !== CacheNotFound &&
+                arrayCacheValue[index] == null
+              ) {
+                /**
+                 * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
+                 */
+                return arrayCacheValue[index];
+              }
+
+              const selection = selectionManager.getSelection({
+                key: index,
+                prevSelection: selectionArg,
+              });
+              const childAccessor = createAccessor(schemaType, selection);
+
+              accessorCache.addAccessorChild(accessor, childAccessor);
+
+              return childAccessor;
             }
 
-            const selection = selectionManager.getSelection({
-              key: index,
-              prevSelection: selectionArg,
-            });
-            return createAccessor(schemaType, selection);
-          }
+            return Reflect.get(target, key, receiver);
+          },
+        });
+      }
+    );
 
-          return Reflect.get(target, key, receiver);
-        },
-      });
-    });
+    return accessor;
   }
 
   function createAccessor(schemaType: Schema[string], selectionArg: Selection) {
@@ -140,9 +150,7 @@ export function AccessorCreators<
                   ? createArrayAccessor(typeValue, selection)
                   : createAccessor(typeValue, selection);
 
-                if (childAccessor) {
-                  accessorCache.addAccessorChild(accessor, childAccessor);
-                }
+                accessorCache.addAccessorChild(accessor, childAccessor);
 
                 return childAccessor;
               }

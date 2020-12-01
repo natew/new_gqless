@@ -1,5 +1,7 @@
-import { selectFields } from '@dish/gqless';
 import { useReducer } from 'react';
+
+import { selectFields } from '@dish/gqless';
+
 import { createReactClient } from '../../../';
 import { Suspense } from '../components/Suspense';
 import { client, GeneratedSchema, query } from '../graphql/gqless';
@@ -58,7 +60,7 @@ const Comp = graphql(function Asd() {
       <br />
       <button
         onClick={() => {
-          refetch().catch(console.error);
+          refetch(query).catch(console.error);
         }}
       >
         Refetch everything
