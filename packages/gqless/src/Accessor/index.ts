@@ -136,10 +136,15 @@ export function AccessorCreators<
 
               const typeValue = schema[pureType];
               if (typeValue) {
-                if (isArray) {
-                  return createArrayAccessor(typeValue, selection);
+                const childAccessor = isArray
+                  ? createArrayAccessor(typeValue, selection)
+                  : createAccessor(typeValue, selection);
+
+                if (childAccessor) {
+                  accessorCache.addAccessorChild(accessor, childAccessor);
                 }
-                return createAccessor(typeValue, selection);
+
+                return childAccessor;
               }
 
               throw Error('GraphQL Type not found!');
