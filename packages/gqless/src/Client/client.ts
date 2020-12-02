@@ -73,13 +73,16 @@ export function createClient<
   } = createResolvers(innerState);
 
   async function resolveAllSelections() {
-    const resolvingPromise = scheduler.resolving!;
+    const resolvingPromise = scheduler.resolving;
 
     try {
       await resolveSelections(globalInterceptor.selections);
     } catch (err) {
-      resolvingPromise.promise.catch(console.error);
-      resolvingPromise.reject(err);
+      /* istanbul ignore else */
+      if (resolvingPromise) {
+        resolvingPromise.promise.catch(console.error);
+        resolvingPromise.reject(err);
+      }
     }
   }
 

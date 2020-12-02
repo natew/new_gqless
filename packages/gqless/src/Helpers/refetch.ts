@@ -34,7 +34,8 @@ export function createRefetch(
         return data;
       }
 
-      await scheduler.resolving!.promise;
+      /* istanbul ignore else */
+      if (scheduler.resolving) await scheduler.resolving.promise;
 
       prevIgnoreCache = innerState.allowCache;
       innerState.allowCache = true;
