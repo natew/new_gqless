@@ -1,8 +1,7 @@
 import fromPairs from 'lodash/fromPairs';
-
-import { CacheNotFound } from '../Cache';
+import { CacheNotFound, ProxyAccessor } from '../Cache';
 import { InnerClientState } from '../Client/client';
-import { parseSchemaType, Schema } from '../Schema';
+import { DeepPartial, parseSchemaType, Schema } from '../Schema';
 import { Selection, SelectionType } from '../Selection';
 import { isInteger } from '../Utils';
 
@@ -24,6 +23,18 @@ export function AccessorCreators<
   const ProxySymbol = Symbol('gqless-proxy');
 
   const proxySymbolArray = [ProxySymbol];
+
+  function setAccessorCache<A>(
+    accessor: A,
+    data: DeepPartial<A> | null | undefined
+  ) {
+    if (accessorCache.isProxy(accessor)) {
+      const selection = accessorCache.getProxySelection(accessor);
+      if (selection) {
+        innerState.clientCache.setCacheFromSelection(selection, data);
+      }
+    }
+  }
 
   function createArrayAccessor(
     schemaType: Schema[string],
@@ -97,8 +108,13 @@ export function AccessorCreators<
           })
         ) as Record<string, unknown>,
         {
-          set(_target, key: string, value, _receiver) {
+          set(_target: ProxyAccessor, key: string, value, _receiver) {
             if (!schemaType.hasOwnProperty(key)) return false;
+
+            const targetSelection = selectionManager.getSelection({
+              key,
+              prevSelection: selectionArg,
+            });
 
             if (accessorCache.isProxy(value)) {
               const accessorSelection = accessorCache.getProxySelection(value);
@@ -112,8 +128,13 @@ export function AccessorCreators<
               if (selectionCache === CacheNotFound) return true;
 
               innerState.clientCache.setCacheFromSelection(
-                accessorSelection,
+                targetSelection,
                 selectionCache
+              );
+            } else {
+              innerState.clientCache.setCacheFromSelection(
+                targetSelection,
+                value
               );
             }
 
@@ -241,5 +262,6 @@ export function AccessorCreators<
     createAccessor,
     createArrayAccessor,
     createSchemaAccesor,
+    setAccessorCache,
   };
 }
