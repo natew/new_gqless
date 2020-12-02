@@ -40,7 +40,7 @@ export type SelectionManager = ReturnType<typeof createSelectionManager>;
 export function createSelectionManager() {
   const selectionCache = new Map<string, Selection>();
 
-  let incId = 0;
+  const incIds: Record<string, number> = {};
   const aliasMap = new Map<string, string>();
 
   function getVariableAlias(
@@ -54,7 +54,8 @@ export function createSelectionManager() {
     let alias = aliasMap.get(aliasKey);
 
     if (alias == null) {
-      alias = `gqlessAlias_${incId++}`;
+      if (incIds[key] === undefined) incIds[key] = 0;
+      alias = `${key}${incIds[key]++}`;
       aliasMap.set(aliasKey, alias);
     }
 

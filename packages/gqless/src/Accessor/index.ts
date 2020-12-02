@@ -97,6 +97,28 @@ export function AccessorCreators<
           })
         ) as Record<string, unknown>,
         {
+          set(_target, key: string, value, _receiver) {
+            if (!schemaType.hasOwnProperty(key)) return false;
+
+            if (accessorCache.isProxy(value)) {
+              const accessorSelection = accessorCache.getProxySelection(value);
+
+              if (!accessorSelection) return true;
+
+              const selectionCache = innerState.clientCache.getCacheFromSelection(
+                accessorSelection
+              );
+
+              if (selectionCache === CacheNotFound) return true;
+
+              innerState.clientCache.setCacheFromSelection(
+                accessorSelection,
+                selectionCache
+              );
+            }
+
+            return true;
+          },
           get(target, key: string, receiver) {
             if (!schemaType.hasOwnProperty(key))
               return Reflect.get(target, key, receiver);

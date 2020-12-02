@@ -31,6 +31,7 @@ export const createTestClient = async (
     schema: gql`
       type Query {
         hello: String!
+        stringArg(arg: String!): String!
         human(name: String): Human
         nFetchCalls: Int!
         throw: Boolean
@@ -54,6 +55,9 @@ export const createTestClient = async (
     `,
     resolvers: {
       Query: {
+        stringArg(_root, { arg }: { arg: string }) {
+          return arg;
+        },
         hello() {
           return 'hello world';
         },
@@ -135,6 +139,7 @@ export const createTestClient = async (
   return createClient<{
     query: {
       hello: string;
+      stringArg: (args: { arg: string }) => string;
       human: (args?: { name?: string }) => Human;
       nullArray?: Maybe<Array<Maybe<Human>>>;
       nullStringArray?: Maybe<Array<Maybe<string>>>;
