@@ -23,7 +23,7 @@
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^2.0.3",
+    "@dish/gqless": "workspace:^2.0.4",
     "@size-limit/preset-small-lib": "^4.9.0",
     "@types/prettier": "^2.1.5",
     "husky": "^4.3.0",
