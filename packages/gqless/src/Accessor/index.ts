@@ -1,5 +1,5 @@
 import fromPairs from 'lodash/fromPairs';
-import { CacheNotFound, ProxyAccessor } from '../Cache';
+import { CacheNotFound } from '../Cache';
 import { InnerClientState } from '../Client/client';
 import { DeepPartial, parseSchemaType, Schema } from '../Schema';
 import { Selection, SelectionType } from '../Selection';
@@ -18,9 +18,18 @@ export function AccessorCreators<
     interceptorManager,
     scalarsEnumsHash,
     schema,
+    eventHandler,
   } = innerState;
 
   const ProxySymbol = Symbol('gqless-proxy');
+
+  const ResolveInfoSymbol = Symbol();
+
+  interface ResolveInfo {
+    key: string | number;
+    prevSelection: Selection;
+    argTypes: Record<string, string> | undefined;
+  }
 
   const proxySymbolArray = [ProxySymbol];
 
@@ -30,10 +39,44 @@ export function AccessorCreators<
   ) {
     if (accessorCache.isProxy(accessor)) {
       const selection = accessorCache.getProxySelection(accessor);
+
       if (selection) {
         innerState.clientCache.setCacheFromSelection(selection, data);
+        eventHandler.sendCacheChange({
+          data,
+          selection,
+        });
+      } else {
+        throw Error('invalid selection');
       }
+    } else {
+      throw Error('accessor is not a proxy');
     }
+  }
+
+  function setAccessorCacheWithArgs<
+    A extends (args?: Record<string, unknown>) => unknown
+  >(
+    accessorWithArgs: A,
+    args: Parameters<A>['0'],
+    data: DeepPartial<ReturnType<A>> | null | undefined
+  ) {
+    const resolveInfo = (accessorWithArgs as A & {
+      [ResolveInfoSymbol]?: ResolveInfo;
+    })[ResolveInfoSymbol];
+
+    if (!resolveInfo) throw Error('Invalid function');
+
+    const selection = selectionManager.getSelection({
+      ...resolveInfo,
+      args,
+    });
+
+    innerState.clientCache.setCacheFromSelection(selection, data);
+    eventHandler.sendCacheChange({
+      data,
+      selection,
+    });
   }
 
   function createArrayAccessor(
@@ -55,6 +98,30 @@ export function AccessorCreators<
       proxyValue,
       () => {
         return new Proxy(proxyValue, {
+          set(_target, key: string, value: unknown) {
+            let index: number | undefined;
+
+            try {
+              index = parseInt(key);
+            } catch (err) {}
+
+            if (isInteger(index)) {
+              const selection = selectionManager.getSelection({
+                key: index,
+                prevSelection: selectionArg,
+              });
+
+              innerState.clientCache.setCacheFromSelection(selection, value);
+
+              eventHandler.sendCacheChange({
+                selection,
+                data: value,
+              });
+            } else {
+              console.warn('non integer set in array');
+            }
+            return true;
+          },
           get(target, key: string, receiver) {
             let index: number | undefined;
 
@@ -108,7 +175,7 @@ export function AccessorCreators<
           })
         ) as Record<string, unknown>,
         {
-          set(_target: ProxyAccessor, key: string, value, _receiver) {
+          set(_target, key: string, value: unknown) {
             if (!schemaType.hasOwnProperty(key)) return false;
 
             const targetSelection = selectionManager.getSelection({
@@ -119,23 +186,37 @@ export function AccessorCreators<
             if (accessorCache.isProxy(value)) {
               const accessorSelection = accessorCache.getProxySelection(value);
 
-              if (!accessorSelection) return true;
+              if (!accessorSelection) {
+                console.warn('no accessor selection available');
+                return true;
+              }
 
               const selectionCache = innerState.clientCache.getCacheFromSelection(
                 accessorSelection
               );
 
-              if (selectionCache === CacheNotFound) return true;
+              if (selectionCache === CacheNotFound) {
+                console.warn('cache not found for the selection');
+                return true;
+              }
 
               innerState.clientCache.setCacheFromSelection(
                 targetSelection,
                 selectionCache
               );
+              eventHandler.sendCacheChange({
+                data: selectionCache,
+                selection: selectionCache,
+              });
             } else {
               innerState.clientCache.setCacheFromSelection(
                 targetSelection,
                 value
               );
+              eventHandler.sendCacheChange({
+                data: value,
+                selection: targetSelection,
+              });
             }
 
             return true;
@@ -202,12 +283,23 @@ export function AccessorCreators<
             };
 
             if (__args) {
-              return function ProxyFn(argValues: Record<string, unknown> = {}) {
-                return resolve({
-                  argValues,
-                  argTypes: __args,
-                });
+              const resolveInfo: ResolveInfo = {
+                key,
+                prevSelection: selectionArg,
+                argTypes: __args,
               };
+
+              return Object.assign(
+                function ProxyFn(argValues: Record<string, unknown> = {}) {
+                  return resolve({
+                    argValues,
+                    argTypes: __args,
+                  });
+                },
+                {
+                  [ResolveInfoSymbol]: resolveInfo,
+                }
+              );
             }
 
             return resolve();
@@ -263,5 +355,6 @@ export function AccessorCreators<
     createArrayAccessor,
     createSchemaAccesor,
     setAccessorCache,
+    setAccessorCacheWithArgs,
   };
 }

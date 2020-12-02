@@ -80,11 +80,20 @@ export function createUseQuery<
         );
       });
 
+      const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
+        ({ selection }) => {
+          if (isMounted && selections.has(selection)) {
+            forceUpdate();
+          }
+        }
+      );
+
       return () => {
         isMounted = false;
         unsubscribeFetch();
+        unsubscribeCache();
       };
-    }, []);
+    }, [selections]);
 
     useIsomorphicLayoutEffect(() => {
       interceptorManager.removeInterceptor(interceptor);

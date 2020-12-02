@@ -27,17 +27,25 @@ export interface InnerClientState {
   readonly queryFetcher: QueryFetcher;
 }
 
+export interface ClientOptions {
+  schema: Readonly<Schema>;
+  scalarsEnumsHash: ScalarsEnumsHash;
+  queryFetcher: QueryFetcher;
+  catchSelectionsTimeMS?: number;
+}
+
 export function createClient<
   GeneratedSchema extends {
     query: {};
     mutation: {};
     subscription: {};
   } = never
->(
-  schema: Readonly<Schema>,
-  scalarsEnumsHash: ScalarsEnumsHash,
-  queryFetcher: QueryFetcher
-) {
+>({
+  schema,
+  scalarsEnumsHash,
+  queryFetcher,
+  catchSelectionsTimeMS = 10,
+}: ClientOptions) {
   const interceptorManager = createInterceptorManager();
 
   const { globalInterceptor } = interceptorManager;
@@ -48,7 +56,11 @@ export function createClient<
 
   const selectionManager = createSelectionManager();
 
-  const scheduler = createScheduler(interceptorManager, resolveAllSelections);
+  const scheduler = createScheduler(
+    interceptorManager,
+    resolveAllSelections,
+    catchSelectionsTimeMS
+  );
 
   const eventHandler = new EventHandler();
 
@@ -88,9 +100,11 @@ export function createClient<
 
   const refetch = createRefetch(innerState, resolveSelections);
 
-  const { createSchemaAccesor, setAccessorCache } = AccessorCreators(
-    innerState
-  );
+  const {
+    createSchemaAccesor,
+    setAccessorCache,
+    setAccessorCacheWithArgs,
+  } = AccessorCreators(innerState);
 
   const client: GeneratedSchema = createSchemaAccesor();
 
@@ -111,5 +125,6 @@ export function createClient<
     buildAndFetchSelections,
     eventHandler,
     setAccessorCache,
+    setAccessorCacheWithArgs,
   };
 }

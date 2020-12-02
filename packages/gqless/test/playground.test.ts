@@ -7,23 +7,43 @@ test('works', async () => {
     scheduler,
     resolved,
     setAccessorCache,
+    setAccessorCacheWithArgs,
   } = await createTestClient();
 
   await resolved(() => query.human().sons.map((v) => selectFields(v)));
 
-  let humanA = query.human();
+  let humanA = query.human({
+    name: 'asd',
+  });
 
   setAccessorCache(humanA, {
     name: 'asd',
   });
 
-  const a = query.stringArg({ arg: 'asd' });
+  expect(humanA.name).toBe('asd');
+  expect(scheduler.resolving).toBe(null);
 
-  setAccessorCache(a, 'asd');
+  setAccessorCacheWithArgs(
+    query.human,
+    {
+      name: 'zxc',
+    },
+    {
+      name: 'zxc',
+    }
+  );
 
-  // query.human = {}
+  const humanB = query.human({
+    name: 'zxc',
+  });
+
+  expect(scheduler.resolving).toBe(null);
+
+  expect(humanB.name).toBe('zxc');
+
+  expect(scheduler.resolving).toBe(null);
+
   query.human().sons = [];
-  //   query.stringArg({arg: "asd"}) = 123
 
   const xd = (query.hello = 'XDXD');
 

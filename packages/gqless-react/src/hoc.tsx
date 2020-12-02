@@ -66,11 +66,20 @@ export function createGraphqlHOC(
           }
         );
 
+        const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
+          ({ selection }) => {
+            if (isMounted && selections.has(selection)) {
+              forceUpdate();
+            }
+          }
+        );
+
         return () => {
           isMounted = false;
           unsubscribeFetch();
+          unsubscribeCache();
         };
-      }, []);
+      }, [selections]);
 
       const interceptor = interceptorManager.createInterceptor();
 

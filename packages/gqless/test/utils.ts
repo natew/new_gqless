@@ -154,9 +154,9 @@ export const createTestClient = async (
     subscription: {
       newNotification: void;
     };
-  }>(
-    merge(generatedSchema, addedToGeneratedSchema),
+  }>({
+    schema: merge(generatedSchema, addedToGeneratedSchema),
     scalarsEnumsHash,
-    queryFetcher
-  );
+    queryFetcher,
+  });
 };

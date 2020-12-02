@@ -9,7 +9,7 @@ test('scheduler works with globalInterceptor', async () => {
 
   const resolveAllSelections = jest.fn(async () => {});
 
-  createScheduler(interceptorManager, resolveAllSelections);
+  createScheduler(interceptorManager, resolveAllSelections, 10);
 
   const selection = new Selection({
     key: 'a',
@@ -52,7 +52,11 @@ test('scheduler resolve subscriptions', async () => {
     );
   });
 
-  const scheduler = createScheduler(interceptorManager, resolveAllSelections);
+  const scheduler = createScheduler(
+    interceptorManager,
+    resolveAllSelections,
+    10
+  );
 
   let subscriptionCalls = 0;
   const subscribePromise = new Promise<() => void>((resolve, reject) => {

@@ -139,10 +139,10 @@ const queryFetcher: QueryFetcher = function (query, variables) {
   });
 };
 
-export const client = createClient<GeneratedSchema>(
-  generatedSchema,
+export const client = createClient<GeneratedSchema>({
+  schema: generatedSchema,
   scalarsEnumsHash,
-  queryFetcher
-);
+  queryFetcher,
+});
 
 export const { query, mutation, subscription, resolved } = client;
