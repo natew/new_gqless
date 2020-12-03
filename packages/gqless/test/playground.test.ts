@@ -57,11 +57,28 @@ test('works', async () => {
 
   expect(scheduler.resolving).toBe(null);
 
-  console.log(54, cache);
+  expect(cache).toStrictEqual({
+    query: {
+      hello: 'XDXD',
+      human0: {
+        sons: [],
+      },
+      human1: {
+        name: 'asd',
+      },
+      human2: {
+        name: 'tyu',
+      },
+    },
+  });
 
   setCache(query, {
     hello: 'ppp',
   });
 
-  console.log(64, cache);
+  expect(cache).toStrictEqual({
+    query: {
+      hello: 'ppp',
+    },
+  });
 });

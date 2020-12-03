@@ -1,14 +1,14 @@
 import { Selection } from '../Selection';
 
 export class Interceptor {
-  selections = new Set<Selection>();
+  fetchSelections = new Set<Selection>();
   listening = true;
   selectionAddListeners = new Set<(selection: Selection) => void>();
   selectionCacheListeners = new Set<(selection: Selection) => void>();
 
   addSelection(selection: Selection) {
     if (this.listening) {
-      this.selections.add(selection);
+      this.fetchSelections.add(selection);
 
       for (const listener of this.selectionAddListeners) {
         listener(selection);
@@ -26,7 +26,7 @@ export class Interceptor {
 
   removeSelections(selections: Set<Selection> | Selection[]) {
     for (const selection of selections) {
-      this.selections.delete(selection);
+      this.fetchSelections.delete(selection);
     }
   }
 }

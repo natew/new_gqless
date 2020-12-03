@@ -13,7 +13,7 @@ export function createRefetch(
 
   async function refetchFn<T>(fn: () => T) {
     const startSelectionsSize =
-      interceptorManager.globalInterceptor.selections.size;
+      interceptorManager.globalInterceptor.fetchSelections.size;
 
     let prevIgnoreCache = innerState.allowCache;
 
@@ -25,7 +25,7 @@ export function createRefetch(
       innerState.allowCache = prevIgnoreCache;
 
       if (
-        interceptorManager.globalInterceptor.selections.size ===
+        interceptorManager.globalInterceptor.fetchSelections.size ===
         startSelectionsSize
       ) {
         if (process.env.NODE_ENV !== 'production') {

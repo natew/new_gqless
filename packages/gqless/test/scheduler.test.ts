@@ -17,9 +17,9 @@ test('scheduler works with globalInterceptor', async () => {
 
   interceptorManager.addSelection(selection);
 
-  expect(interceptorManager.globalInterceptor.selections.has(selection)).toBe(
-    true
-  );
+  expect(
+    interceptorManager.globalInterceptor.fetchSelections.has(selection)
+  ).toBe(true);
 
   await waitForExpect(
     () => {
@@ -44,11 +44,11 @@ test('scheduler resolve subscriptions', async () => {
 
     if (fetchCalls >= 3) throw ExpectedError;
 
-    interceptorManager.globalInterceptor.selections.forEach((s) =>
+    interceptorManager.globalInterceptor.fetchSelections.forEach((s) =>
       fetchedSelections.add(s)
     );
     interceptorManager.globalInterceptor.removeSelections(
-      interceptorManager.globalInterceptor.selections
+      interceptorManager.globalInterceptor.fetchSelections
     );
   });
 

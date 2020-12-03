@@ -37,8 +37,9 @@ export function AccessorCreators<
     if (accessorCache.isProxy(value)) {
       const accessorSelection = accessorCache.getProxySelection(value);
 
+      // An edge case hard to reproduce
+      /* istanbul ignore if */
       if (!accessorSelection) {
-        console.warn('no accessor selection available');
         return undefined;
       }
 
@@ -47,7 +48,6 @@ export function AccessorCreators<
       );
 
       if (selectionCache === CacheNotFound) {
-        console.warn('cache not found for the selection');
         return undefined;
       }
       return selectionCache;
@@ -60,7 +60,7 @@ export function AccessorCreators<
     accessor: A,
     data: DeepPartial<A> | null | undefined
   ): void;
-  function setCache<B extends (args?: Record<string, unknown>) => unknown>(
+  function setCache<B extends (args?: any) => unknown>(
     accessor: B,
     args: Parameters<B>['0'],
     data: DeepPartial<ReturnType<B>> | null | undefined
@@ -72,7 +72,8 @@ export function AccessorCreators<
   ) {
     if (typeof accessor === 'function') {
       if (dataOrArgs !== undefined && typeof dataOrArgs !== 'object') {
-        const err = Error('Invalid arguments');
+        const err = Error('Invalid arguments of type: ' + typeof dataOrArgs);
+        /* istanbul ignore else */
         if (Error.captureStackTrace!) {
           Error.captureStackTrace(err, setCache);
         }
@@ -84,8 +85,9 @@ export function AccessorCreators<
       })[ResolveInfoSymbol];
 
       if (!resolveInfo) {
-        const err = Error('Invalid function');
+        const err = Error('Invalid gqless function');
 
+        /* istanbul ignore else */
         if (Error.captureStackTrace!) {
           Error.captureStackTrace(err, setCache);
         }
@@ -108,8 +110,10 @@ export function AccessorCreators<
     } else if (accessorCache.isProxy(accessor)) {
       const selection = accessorCache.getProxySelection(accessor);
 
+      // An edge case hard to reproduce
+      /* istanbul ignore if */
       if (!selection) {
-        const err = Error('invalid selection');
+        const err = Error('Invalid proxy selection');
 
         if (Error.captureStackTrace!) {
           Error.captureStackTrace(err, setCache);
@@ -126,8 +130,9 @@ export function AccessorCreators<
         selection,
       });
     } else {
-      const err = Error('invalid proxy');
+      const err = Error('Invalid gqless proxy');
 
+      /* istanbul ignore else */
       if (Error.captureStackTrace!) {
         Error.captureStackTrace(err, setCache);
       }
@@ -176,10 +181,11 @@ export function AccessorCreators<
                 selection,
                 data,
               });
-            } else {
-              console.warn('non integer set in array');
+
+              return true;
             }
-            return true;
+
+            throw TypeError('Invalid array assignation');
           },
           get(target, key: string, receiver) {
             let index: number | undefined;
@@ -235,7 +241,9 @@ export function AccessorCreators<
         ) as Record<string, unknown>,
         {
           set(_target, key: string, value: unknown) {
-            if (!schemaType.hasOwnProperty(key)) return false;
+            if (!schemaType.hasOwnProperty(key)) {
+              throw TypeError('Invalid proxy assignation');
+            }
 
             const targetSelection = selectionManager.getSelection({
               key,

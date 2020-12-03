@@ -42,6 +42,7 @@ export const createTestClient = async (
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
+        humanMutation(nameArg: String!): Human
       }
       type Subscription {
         newNotification: String
@@ -91,6 +92,9 @@ export const createTestClient = async (
           });
 
           return true;
+        },
+        humanMutation(_root, { nameArg }: { nameArg: string }) {
+          return createHuman(nameArg);
         },
       },
       Subscription: {
@@ -150,6 +154,7 @@ export const createTestClient = async (
     };
     mutation: {
       sendNotification(args: { message: string }): boolean;
+      humanMutation: (args?: { nameArg?: string }) => Human;
     };
     subscription: {
       newNotification: void;

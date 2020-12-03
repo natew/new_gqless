@@ -88,7 +88,7 @@ export function createClient<
     const resolvingPromise = scheduler.resolving;
 
     try {
-      await resolveSelections(globalInterceptor.selections);
+      await resolveSelections(globalInterceptor.fetchSelections);
     } catch (err) {
       /* istanbul ignore else */
       if (resolvingPromise) {
