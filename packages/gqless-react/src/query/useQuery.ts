@@ -45,6 +45,10 @@ export function createUseQuery<
       selections.add(selection);
     });
 
+    interceptor.selectionCacheListeners.add((selection) => {
+      selections.add(selection);
+    });
+
     const unsubscribe = scheduler.subscribeResolve((promise, selection) => {
       if (fetchingPromise.current === null && selections.has(selection)) {
         fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -62,6 +66,16 @@ export function createUseQuery<
         });
         forceUpdate();
       }
+    });
+
+    setTimeout(() => {
+      interceptorManager.removeInterceptor(interceptor);
+      unsubscribe();
+    }, 0);
+
+    useIsomorphicLayoutEffect(() => {
+      interceptorManager.removeInterceptor(interceptor);
+      unsubscribe();
     });
 
     useEffect(() => {
@@ -94,11 +108,6 @@ export function createUseQuery<
         unsubscribeCache();
       };
     }, [selections]);
-
-    useIsomorphicLayoutEffect(() => {
-      interceptorManager.removeInterceptor(interceptor);
-      unsubscribe();
-    });
 
     if (suspense && fetchingPromise.current) {
       throw fetchingPromise.current;

@@ -33,50 +33,107 @@ export function AccessorCreators<
 
   const proxySymbolArray = [ProxySymbol];
 
-  function setAccessorCache<A>(
-    accessor: A,
-    data: DeepPartial<A> | null | undefined
-  ) {
-    if (accessorCache.isProxy(accessor)) {
-      const selection = accessorCache.getProxySelection(accessor);
+  function extractDataFromProxy(value: unknown): unknown {
+    if (accessorCache.isProxy(value)) {
+      const accessorSelection = accessorCache.getProxySelection(value);
 
-      if (selection) {
-        innerState.clientCache.setCacheFromSelection(selection, data);
-        eventHandler.sendCacheChange({
-          data,
-          selection,
-        });
-      } else {
-        throw Error('invalid selection');
+      if (!accessorSelection) {
+        console.warn('no accessor selection available');
+        return undefined;
       }
+
+      const selectionCache = innerState.clientCache.getCacheFromSelection(
+        accessorSelection
+      );
+
+      if (selectionCache === CacheNotFound) {
+        console.warn('cache not found for the selection');
+        return undefined;
+      }
+      return selectionCache;
     } else {
-      throw Error('accessor is not a proxy');
+      return value;
     }
   }
 
-  function setAccessorCacheWithArgs<
-    A extends (args?: Record<string, unknown>) => unknown
-  >(
-    accessorWithArgs: A,
-    args: Parameters<A>['0'],
-    data: DeepPartial<ReturnType<A>> | null | undefined
+  function setCache<A extends object>(
+    accessor: A,
+    data: DeepPartial<A> | null | undefined
+  ): void;
+  function setCache<B extends (args?: Record<string, unknown>) => unknown>(
+    accessor: B,
+    args: Parameters<B>['0'],
+    data: DeepPartial<ReturnType<B>> | null | undefined
+  ): void;
+  function setCache(
+    accessor: unknown,
+    dataOrArgs: Record<string, unknown> | unknown,
+    possibleData?: unknown
   ) {
-    const resolveInfo = (accessorWithArgs as A & {
-      [ResolveInfoSymbol]?: ResolveInfo;
-    })[ResolveInfoSymbol];
+    if (typeof accessor === 'function') {
+      if (dataOrArgs !== undefined && typeof dataOrArgs !== 'object') {
+        const err = Error('Invalid arguments');
+        if (Error.captureStackTrace!) {
+          Error.captureStackTrace(err, setCache);
+        }
+        throw err;
+      }
 
-    if (!resolveInfo) throw Error('Invalid function');
+      const resolveInfo = (accessor as Function & {
+        [ResolveInfoSymbol]?: ResolveInfo;
+      })[ResolveInfoSymbol];
 
-    const selection = selectionManager.getSelection({
-      ...resolveInfo,
-      args,
-    });
+      if (!resolveInfo) {
+        const err = Error('Invalid function');
 
-    innerState.clientCache.setCacheFromSelection(selection, data);
-    eventHandler.sendCacheChange({
-      data,
-      selection,
-    });
+        if (Error.captureStackTrace!) {
+          Error.captureStackTrace(err, setCache);
+        }
+
+        throw err;
+      }
+
+      const selection = selectionManager.getSelection({
+        ...resolveInfo,
+        args: dataOrArgs as Record<string, unknown>,
+      });
+
+      const data = extractDataFromProxy(possibleData);
+
+      innerState.clientCache.setCacheFromSelection(selection, data);
+      eventHandler.sendCacheChange({
+        data,
+        selection,
+      });
+    } else if (accessorCache.isProxy(accessor)) {
+      const selection = accessorCache.getProxySelection(accessor);
+
+      if (!selection) {
+        const err = Error('invalid selection');
+
+        if (Error.captureStackTrace!) {
+          Error.captureStackTrace(err, setCache);
+        }
+
+        throw err;
+      }
+
+      const data = extractDataFromProxy(dataOrArgs);
+
+      innerState.clientCache.setCacheFromSelection(selection, data);
+      eventHandler.sendCacheChange({
+        data,
+        selection,
+      });
+    } else {
+      const err = Error('invalid proxy');
+
+      if (Error.captureStackTrace!) {
+        Error.captureStackTrace(err, setCache);
+      }
+
+      throw err;
+    }
   }
 
   function createArrayAccessor(
@@ -111,11 +168,13 @@ export function AccessorCreators<
                 prevSelection: selectionArg,
               });
 
-              innerState.clientCache.setCacheFromSelection(selection, value);
+              const data = extractDataFromProxy(value);
+
+              innerState.clientCache.setCacheFromSelection(selection, data);
 
               eventHandler.sendCacheChange({
                 selection,
-                data: value,
+                data,
               });
             } else {
               console.warn('non integer set in array');
@@ -183,41 +242,13 @@ export function AccessorCreators<
               prevSelection: selectionArg,
             });
 
-            if (accessorCache.isProxy(value)) {
-              const accessorSelection = accessorCache.getProxySelection(value);
+            const data = extractDataFromProxy(value);
 
-              if (!accessorSelection) {
-                console.warn('no accessor selection available');
-                return true;
-              }
-
-              const selectionCache = innerState.clientCache.getCacheFromSelection(
-                accessorSelection
-              );
-
-              if (selectionCache === CacheNotFound) {
-                console.warn('cache not found for the selection');
-                return true;
-              }
-
-              innerState.clientCache.setCacheFromSelection(
-                targetSelection,
-                selectionCache
-              );
-              eventHandler.sendCacheChange({
-                data: selectionCache,
-                selection: selectionCache,
-              });
-            } else {
-              innerState.clientCache.setCacheFromSelection(
-                targetSelection,
-                value
-              );
-              eventHandler.sendCacheChange({
-                data: value,
-                selection: targetSelection,
-              });
-            }
+            innerState.clientCache.setCacheFromSelection(targetSelection, data);
+            eventHandler.sendCacheChange({
+              data,
+              selection: targetSelection,
+            });
 
             return true;
           },
@@ -244,13 +275,14 @@ export function AccessorCreators<
                   selection
                 );
 
+                accessorCache.addSelectionToAccessorHistory(
+                  accessor,
+                  selection
+                );
+
                 if (cacheValue === CacheNotFound) {
                   // If cache was not found, add the selections to the queue
                   interceptorManager.addSelection(selection);
-                  accessorCache.addSelectionToAccessorHistory(
-                    accessor,
-                    selection
-                  );
 
                   innerState.foundValidCache = false;
                   return null;
@@ -259,10 +291,9 @@ export function AccessorCreators<
                 if (!innerState.allowCache) {
                   // Or if you are making the network fetch always
                   interceptorManager.addSelection(selection);
-                  accessorCache.addSelectionToAccessorHistory(
-                    accessor,
-                    selection
-                  );
+                } else {
+                  // For the subscribers of data changes
+                  interceptorManager.addSelectionCache(selection);
                 }
 
                 return cacheValue;
@@ -354,7 +385,7 @@ export function AccessorCreators<
     createAccessor,
     createArrayAccessor,
     createSchemaAccesor,
-    setAccessorCache,
-    setAccessorCacheWithArgs,
+
+    setCache,
   };
 }

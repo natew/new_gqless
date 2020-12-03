@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { useIsomorphicLayoutEffect } from '../components/common';
 
 const C = () => {
+  setTimeout(() => {
+    console.log('timeout 0 C');
+  }, 0);
   useIsomorphicLayoutEffect(() => {
     console.log('layout effect C');
   }, []);
@@ -16,6 +19,9 @@ const C = () => {
 };
 
 const B = () => {
+  setTimeout(() => {
+    console.log('timeout 0 B');
+  }, 0);
   useIsomorphicLayoutEffect(() => {
     console.log('layout effect B');
   }, []);
@@ -35,6 +41,9 @@ const B = () => {
 };
 
 const A = () => {
+  setTimeout(() => {
+    console.log('timeout 0 A');
+  }, 0);
   useIsomorphicLayoutEffect(() => {
     console.log('layout effect A');
   }, []);

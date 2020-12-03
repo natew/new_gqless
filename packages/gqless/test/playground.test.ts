@@ -6,8 +6,8 @@ test('works', async () => {
     query,
     scheduler,
     resolved,
-    setAccessorCache,
-    setAccessorCacheWithArgs,
+    setCache,
+    cache,
   } = await createTestClient();
 
   await resolved(() => query.human().sons.map((v) => selectFields(v)));
@@ -16,20 +16,18 @@ test('works', async () => {
     name: 'asd',
   });
 
-  setAccessorCache(humanA, {
+  setCache(humanA, {
     name: 'asd',
   });
 
   expect(humanA.name).toBe('asd');
   expect(scheduler.resolving).toBe(null);
 
-  setAccessorCacheWithArgs(
+  setCache(
     query.human,
+    { name: 'zxc' },
     {
-      name: 'zxc',
-    },
-    {
-      name: 'zxc',
+      name: 'tyu',
     }
   );
 
@@ -39,7 +37,7 @@ test('works', async () => {
 
   expect(scheduler.resolving).toBe(null);
 
-  expect(humanB.name).toBe('zxc');
+  expect(humanB.name).toBe('tyu');
 
   expect(scheduler.resolving).toBe(null);
 
@@ -56,4 +54,14 @@ test('works', async () => {
   expect(hello).toBe('XDXD');
 
   expect(query.human().sons).toEqual([]);
+
+  expect(scheduler.resolving).toBe(null);
+
+  console.log(54, cache);
+
+  setCache(query, {
+    hello: 'ppp',
+  });
+
+  console.log(64, cache);
 });
