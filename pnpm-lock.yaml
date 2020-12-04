@@ -15,31 +15,31 @@ importers:
     dependencies:
       '@dish/gqless': 'link:../../packages/gqless'
       '@dish/gqless-cli': 'link:../../packages/gqless-cli'
-      fastify: 3.8.0
+      fastify: 3.9.1
       graphql: 15.4.0
       lodash: 4.17.20
       mercurius: 6.4.0
-      mercurius-codegen: 1.1.4_295da868926add62dc89af97d49884d6
+      mercurius-codegen: 1.1.4_51705d73581c398bad8eb36b86e7c579
       randomstring: 1.1.5
     devDependencies:
-      '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
+      '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
       '@types/lodash': 4.14.165
       '@types/randomstring': 1.1.6
       husky: 4.3.0
-      mercurius-integration-testing: 3.1.2_295da868926add62dc89af97d49884d6
-      size-limit: 4.9.0
+      mercurius-integration-testing: 3.1.2_51705d73581c398bad8eb36b86e7c579
+      size-limit: 4.9.1
       test-utils: 'link:../../packages/test-utils'
-      ts-node: 9.0.0_typescript@4.1.2
+      ts-node: 9.1.0_typescript@4.1.2
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^2.0.4'
-      '@dish/gqless-cli': 'workspace:^1.0.0'
-      '@size-limit/preset-small-lib': ^4.9.0
+      '@dish/gqless': 'workspace:^3.0.0'
+      '@dish/gqless-cli': 'workspace:^2.0.0'
+      '@size-limit/preset-small-lib': ^4.9.1
       '@types/lodash': ^4.14.165
       '@types/randomstring': ^1.1.6
-      fastify: ^3.8.0
+      fastify: ^3.9.1
       graphql: ^15.4.0
       husky: ^4.3.0
       lodash: ^4.17.20
@@ -47,9 +47,9 @@ importers:
       mercurius-codegen: ^1.1.4
       mercurius-integration-testing: ^3.1.2
       randomstring: ^1.1.5
-      size-limit: ^4.9.0
+      size-limit: ^4.9.1
       test-utils: 'workspace:^0.1.0'
-      ts-node: ^9.0.0
+      ts-node: ^9.1.0
       tsdx: ^0.14.1
       tslib: ^2.0.3
       typescript: ^4.1.2
@@ -59,7 +59,7 @@ importers:
       lodash-es: 4.17.15
     devDependencies:
       '@dish/gqless-cli': 'link:../gqless-cli'
-      '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
+      '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
       '@types/lodash': 4.14.165
       '@types/node': 14.14.10
       '@types/react': 17.0.0
@@ -72,7 +72,7 @@ importers:
       react: 17.0.1
       react-dom: 17.0.1_react@17.0.1
       rimraf: 3.0.2
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       tap: 14.11.0
       test-utils: 'link:../test-utils'
       tsdx: 0.14.1_@types+node@14.14.10
@@ -80,8 +80,8 @@ importers:
       tsup: 3.10.1_typescript@4.1.2
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless-cli': 'workspace:^1.0.0'
-      '@size-limit/preset-small-lib': ^4.9.0
+      '@dish/gqless-cli': 'workspace:^2.0.0'
+      '@size-limit/preset-small-lib': ^4.9.1
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
       '@types/react': ^17.0.0
@@ -96,7 +96,7 @@ importers:
       react: ^17.0.1
       react-dom: ^17.0.1
       rimraf: ^3.0.2
-      size-limit: ^4.9.0
+      size-limit: ^4.9.1
       tap: ^14.11.0
       test-utils: 'workspace:^0.1.0'
       tsdx: ^0.14.1
@@ -108,7 +108,7 @@ importers:
       '@graphql-codegen/core': 1.17.9_graphql@15.4.0
       '@graphql-codegen/typescript': 1.19.0_graphql@15.4.0
       '@graphql-tools/delegate': 7.0.7_graphql@15.4.0
-      '@graphql-tools/wrap': 7.0.3_graphql@15.4.0
+      '@graphql-tools/wrap': 7.0.4_graphql@15.4.0
       commander: 6.2.0
       cross-fetch: 3.0.6
       graphql: 15.4.0
@@ -118,24 +118,24 @@ importers:
       prettier: 2.2.1
     devDependencies:
       '@dish/gqless': 'link:../gqless'
-      '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
+      '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
       '@types/lodash': 4.14.165
       '@types/mkdirp': 1.0.1
       husky: 4.3.0
       rimraf: 3.0.2
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       test-utils: 'link:../test-utils'
       tmp-promise: 3.0.2
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^2.0.4'
+      '@dish/gqless': 'workspace:^3.0.0'
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.19.0
       '@graphql-tools/delegate': ^7.0.7
-      '@graphql-tools/wrap': ^7.0.3
-      '@size-limit/preset-small-lib': ^4.9.0
+      '@graphql-tools/wrap': ^7.0.4
+      '@size-limit/preset-small-lib': ^4.9.1
       '@types/lodash': ^4.14.165
       '@types/mkdirp': ^1.0.1
       commander: ^6.2.0
@@ -147,7 +147,7 @@ importers:
       mkdirp: ^1.0.4
       prettier: ^2.2.1
       rimraf: ^3.0.2
-      size-limit: ^4.9.0
+      size-limit: ^4.9.1
       test-utils: 'workspace:^0.1.0'
       tmp-promise: ^3.0.2
       tsdx: ^0.14.1
@@ -158,23 +158,23 @@ importers:
       prettier: 2.2.1
     devDependencies:
       '@dish/gqless': 'link:../gqless'
-      '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
+      '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
       '@types/prettier': 2.1.5
       husky: 4.3.0
       rimraf: 3.0.2
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       test-utils: 'link:../test-utils'
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^2.0.4'
-      '@size-limit/preset-small-lib': ^4.9.0
+      '@dish/gqless': 'workspace:^3.0.0'
+      '@size-limit/preset-small-lib': ^4.9.1
       '@types/prettier': ^2.1.5
       husky: ^4.3.0
       prettier: ^2.2.1
       rimraf: ^3.0.2
-      size-limit: ^4.9.0
+      size-limit: ^4.9.1
       test-utils: 'workspace:^0.1.0'
       tsdx: ^0.14.1
       tslib: ^2.0.3
@@ -186,7 +186,7 @@ importers:
       react-ssr-prepass: 1.2.1_react@17.0.1
     devDependencies:
       '@dish/gqless': 'link:../gqless'
-      '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
+      '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
       '@testing-library/react': 11.2.2_react-dom@17.0.1+react@17.0.1
       '@testing-library/react-hooks': 3.4.2_59c10a9f92837cab37888c15f7d5c44c
       '@types/lodash': 4.14.165
@@ -198,14 +198,14 @@ importers:
       react-dom: 17.0.1_react@17.0.1
       react-test-renderer: 17.0.1_react@17.0.1
       rimraf: 3.0.2
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       test-utils: 'link:../test-utils'
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
-      '@dish/gqless': 'workspace:^2.0.4'
-      '@size-limit/preset-small-lib': ^4.9.0
+      '@dish/gqless': 'workspace:^3.0.0'
+      '@size-limit/preset-small-lib': ^4.9.1
       '@testing-library/react': ^11.2.2
       '@testing-library/react-hooks': ^3.4.2
       '@types/lodash': ^4.14.165
@@ -220,7 +220,7 @@ importers:
       react-ssr-prepass: ^1.2.1
       react-test-renderer: ^17.0.1
       rimraf: ^3.0.2
-      size-limit: ^4.9.0
+      size-limit: ^4.9.1
       test-utils: 'workspace:^0.1.0'
       tsdx: ^0.14.1
       tslib: ^2.0.3
@@ -230,11 +230,11 @@ importers:
       '@dish/gqless-cli': 'link:../../gqless-cli'
       '@dish/gqless-logger': 'link:../../gqless-logger'
       '@dish/gqless-react': 'link:..'
-      fastify: 3.8.0
+      fastify: 3.9.1
       graphql: 15.4.0
       lodash: 4.17.20
       mercurius: 6.4.0
-      mercurius-codegen: 1.1.4_295da868926add62dc89af97d49884d6
+      mercurius-codegen: 1.1.4_51705d73581c398bad8eb36b86e7c579
       next: 10.0.3_c3eb1f092c5b2b789fc020efea0b6454
       node-json-db: 1.1.0
       react: 17.0.1
@@ -251,15 +251,15 @@ importers:
       typescript: 4.1.2
       wait-on: 5.2.0
     specifiers:
-      '@dish/gqless-cli': 'workspace:^1.0.0'
+      '@dish/gqless-cli': 'workspace:^2.0.0'
       '@dish/gqless-logger': 'workspace:^0.1.1'
-      '@dish/gqless-react': 'workspace:^1.0.2'
+      '@dish/gqless-react': 'workspace:^2.0.0'
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
       concurrently: ^5.3.0
-      fastify: ^3.8.0
+      fastify: ^3.9.1
       graphql: ^15.4.0
       lodash: ^4.17.20
       mercurius: ^6.4.0
@@ -275,30 +275,30 @@ importers:
       wait-on: ^5.2.0
   packages/test-utils:
     dependencies:
-      fastify: 3.8.0
+      fastify: 3.9.1
       graphql: 15.4.0
       mercurius: 6.4.0
-      mercurius-codegen: 1.1.4_295da868926add62dc89af97d49884d6
-      mercurius-integration-testing: 3.1.2_295da868926add62dc89af97d49884d6
+      mercurius-codegen: 1.1.4_51705d73581c398bad8eb36b86e7c579
+      mercurius-integration-testing: 3.1.2_51705d73581c398bad8eb36b86e7c579
       wait-for-expect: 3.0.2
     devDependencies:
       '@jest/types': 26.6.2
-      '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
+      '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
       husky: 4.3.0
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       tsdx: 0.14.1
       tslib: 2.0.3
       typescript: 4.1.2
     specifiers:
       '@jest/types': ^26.6.2
-      '@size-limit/preset-small-lib': ^4.9.0
-      fastify: ^3.8.0
+      '@size-limit/preset-small-lib': ^4.9.1
+      fastify: ^3.9.1
       graphql: ^15.4.0
       husky: ^4.3.0
       mercurius: ^6.4.0
       mercurius-codegen: ^1.1.4
       mercurius-integration-testing: ^3.1.2
-      size-limit: ^4.9.0
+      size-limit: ^4.9.1
       tsdx: ^0.14.1
       tslib: ^2.0.3
       typescript: ^4.1.2
@@ -1904,7 +1904,7 @@ packages:
       integrity: sha512-yDKgoT2+Uf3cdLYmiFB9lRIGsB6lZhILtCXHgZigYgURExrEPmfj3ZyszfEpPKYcPmKaO9FI4coDhIN0Toxl3w==
   /@graphql-tools/schema/7.1.2_graphql@15.4.0:
     dependencies:
-      '@graphql-tools/utils': 7.1.2_graphql@15.4.0
+      '@graphql-tools/utils': 7.1.4_graphql@15.4.0
       graphql: 15.4.0
       tslib: 2.0.3
     dev: false
@@ -1934,22 +1934,22 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-VQQ7krHeoXO0FS3qbWsb/vZb8c8oyiCYPIH4RSgeK9SKOUpatWYt3DW4jmLmyHZLVVMk0yjUbsOhKTBEMejKSA==
-  /@graphql-tools/utils/7.1.2_graphql@15.4.0:
+  /@graphql-tools/utils/7.1.4_graphql@15.4.0:
     dependencies:
       '@ardatan/aggregate-error': 0.0.6
-      camel-case: 4.1.1
+      camel-case: 4.1.2
       graphql: 15.4.0
       tslib: 2.0.3
     dev: false
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-xFuhDyGMhaXTQpq48vjjCLA1VWc3fEo4n+zBcvQnbBSqhVPwAVa0ANcpb0NHmU9c3ypch26kK85TmC/HoK3YRg==
-  /@graphql-tools/wrap/7.0.3_graphql@15.4.0:
+      integrity: sha512-4lxmstMpgHSM1ULD+1X5AcPFaizkdBubB7H9Rqr7Wh6L9bxUHBHFB3bhaFXT7FI0xE01Pt0IMsZadOIlhVTXrg==
+  /@graphql-tools/wrap/7.0.4_graphql@15.4.0:
     dependencies:
       '@graphql-tools/delegate': 7.0.7_graphql@15.4.0
       '@graphql-tools/schema': 7.1.2_graphql@15.4.0
-      '@graphql-tools/utils': 7.1.2_graphql@15.4.0
+      '@graphql-tools/utils': 7.1.4_graphql@15.4.0
       graphql: 15.4.0
       is-promise: 4.0.0
       tslib: 2.0.3
@@ -1957,7 +1957,7 @@ packages:
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-co+ELAwZwMut7qGZow8ATMQlYOU2G3/gsEqz/SUAt7XizXWOOguSFjQKk1/OwHzgCFBbEjvwfoERcv6QC1EUxA==
+      integrity: sha512-txBs0W4k3WR86aEzBYXtKdGeeUXCNdRNxjQA/95T6ywNYoM8pw2mvpoXrWOvzbeaH3zwhbHY7kwii4atrC9irg==
   /@graphql-typed-document-node/core/3.1.0_graphql@15.4.0:
     dependencies:
       graphql: 15.4.0
@@ -2365,39 +2365,39 @@ packages:
     dev: true
     resolution:
       integrity: sha512-892K+kWUUi3cl+LlqEWIDrhvLgdL79tECi8JZUyq6IviKy/DNhuzCRlbHUjxK89f4ypPMMaFnFuR9Ie6DoIMsw==
-  /@size-limit/file/4.9.0_size-limit@4.9.0:
+  /@size-limit/file/4.9.1_size-limit@4.9.1:
     dependencies:
-      semver: 7.3.2
-      size-limit: 4.9.0
+      semver: 7.3.4
+      size-limit: 4.9.1
     dev: true
     engines:
       node: '>=10.0.0'
     peerDependencies:
-      size-limit: 4.9.0
+      size-limit: 4.9.1
     resolution:
-      integrity: sha512-MPvM/kK/U7mWQ8x0iuUpqurxV8esnYNRGJLW0Xx1B843cn2UKuqrWEtH0YZpiTh5IwsNYYhymAULNaKgSZ5aCw==
-  /@size-limit/preset-small-lib/4.9.0_9d94d27344b7788615a299a5fbeadee3:
+      integrity: sha512-ZzjEwraQx/Q/iD6A8+0/y7/mrmJKhDr0fjivBoKpHK70Bb4cuSyRq3+IWOPvlggqcbhV2jfUHA5QD9muEnSnbA==
+  /@size-limit/preset-small-lib/4.9.1_029275a456ebea40e73e5c824b6c915a:
     dependencies:
-      '@size-limit/file': 4.9.0_size-limit@4.9.0
-      '@size-limit/webpack': 4.9.0_9d94d27344b7788615a299a5fbeadee3
-      size-limit: 4.9.0
+      '@size-limit/file': 4.9.1_size-limit@4.9.1
+      '@size-limit/webpack': 4.9.1_029275a456ebea40e73e5c824b6c915a
+      size-limit: 4.9.1
     dev: true
     peerDependencies:
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       typescript: '*'
     resolution:
-      integrity: sha512-dHTtPLqkL4irqeDwqLz3/tTXef2UhaAu8DN9vqitTHR5ZJPyx3HvbQ1xJmKG9LPRZotOfAf2jm6vBCSzKHOBGA==
-  /@size-limit/webpack/4.9.0_9d94d27344b7788615a299a5fbeadee3:
+      integrity: sha512-LcUBuYT2A+TcQr8p+npnkm3j2HgbLc1onHDsoePv43QzUK1tY6+Z7CkuB4PMUNT45g8jrfkfOVDzb3sG7NblSw==
+  /@size-limit/webpack/4.9.1_029275a456ebea40e73e5c824b6c915a:
     dependencies:
       css-loader: 5.0.1_webpack@4.44.2
       escape-string-regexp: 4.0.0
       file-loader: 6.2.0_webpack@4.44.2
       mkdirp: 1.0.4
-      nanoid: 3.1.18
+      nanoid: 3.1.20
       optimize-css-assets-webpack-plugin: 5.0.4_webpack@4.44.2
       pnp-webpack-plugin: 1.6.4_typescript@4.1.2
       rimraf: 3.0.2
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       style-loader: 2.0.0_webpack@4.44.2
       webpack: 4.44.2
       webpack-bundle-analyzer: 3.9.0
@@ -2405,10 +2405,10 @@ packages:
     engines:
       node: '>=10.0.0'
     peerDependencies:
-      size-limit: 4.9.0
+      size-limit: 4.9.1
       typescript: '*'
     resolution:
-      integrity: sha512-LqJ7TW1+Bo7FMRlRVG5mpOVXdJKR4HHx+aBQEdgxDUqHVeD+RbFprLB34XVhf/eMKRDp9bWSam7tnkui2y0Crw==
+      integrity: sha512-m6cxUkJpa4RAZTUTLWX+XD/n63n0puxB5IX1dL5iSYVwBxwduXuzAnrY50i9Kukb0jbGWey/6LGwa6wHS6dTnQ==
   /@szmarczak/http-timer/1.1.2:
     dependencies:
       defer-to-connect: 1.1.3
@@ -3913,6 +3913,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-7fa2WcG4fYFkclIvEmxBbTvmibwF2/agfEBc6q3lOpVu0A13ltLsA+Hr/8Hp6kp5f+G7hKi6t8lys6XxP+1K6Q==
+  /camel-case/4.1.2:
+    dependencies:
+      pascal-case: 3.1.2
+      tslib: 2.0.3
+    dev: false
+    resolution:
+      integrity: sha512-gxGWBrTT1JuMx6R+o5PTXMmUnhnVzLQ9SNutD4YqKtI6ap897t3tKECYla6gCWEkplXnlNybEkZg9GEGxKFCgw==
   /camelcase-keys/6.2.2:
     dependencies:
       camelcase: 5.3.1
@@ -4531,6 +4538,10 @@ packages:
       sha.js: 2.4.11
     resolution:
       integrity: sha512-MJG9liiZ+ogc4TzUwuvbER1JRdgvUFSB5+VR/g5h82fGaIRWMWddtKBHi7/sVhfjQZ6SehlyhvQYrcYkaUIpLg==
+  /create-require/1.1.1:
+    dev: true
+    resolution:
+      integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
   /cross-fetch/3.0.5:
     dependencies:
       node-fetch: 2.6.0
@@ -6076,7 +6087,7 @@ packages:
       ws: 7.4.0
     resolution:
       integrity: sha512-0K9S7DJAtWdohsjFpGPxZ7SzPUi5aqeExYWoU9kNlTqIos8d5beeBYY/9s/1RhelZ4HJ+PDHgQ5LV4IGSzInTA==
-  /fastify/3.8.0:
+  /fastify/3.9.1:
     dependencies:
       abstract-logging: 2.0.1
       ajv: 6.12.6
@@ -6092,13 +6103,13 @@ packages:
       readable-stream: 3.6.0
       rfdc: 1.1.4
       secure-json-parse: 2.1.0
-      semver: 7.3.2
+      semver: 7.3.4
       tiny-lru: 7.0.6
     dev: false
     engines:
       node: '>=10.16.0'
     resolution:
-      integrity: sha512-w57/uvyQWzF/KSr9CbWQ5nfTqSSfYcmrems9Lc3VvtrAF7EsLbfZQBQZul6xwvE1uEfxA4nGdoUKqpU7xiv7cw==
+      integrity: sha512-J+JyYc2PH7N6KxrG0d3d2V0HRPdBMpxp3eKdGcDtemTvXhuQKFHFLQ+WkeFLShkcGDsf+/vBV+NMK8Ki97/OTg==
   /fastparallel/2.4.0:
     dependencies:
       reusify: 1.0.4
@@ -8332,6 +8343,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-WrEvI7V41ZbEUe0bsfuS170QrYSVADKA0JiWyK/lVtm4Ra26pl9CYKBdlr823/s37N2wMJze8YNkHbg11aZWAw==
+  /lilconfig/2.0.1:
+    dev: true
+    engines:
+      node: '>=10'
+    resolution:
+      integrity: sha512-fFzm+Lj/Up8OGJfygxz1VLVuihcqZQpqFMmQ3yklVwUIA8Z6LWBwiISObInLg8R8g9E9r7b9t2+kh8+N7vRS+g==
   /line-column/1.0.2:
     dependencies:
       isarray: 1.0.0
@@ -8506,7 +8523,6 @@ packages:
   /lower-case/2.0.2:
     dependencies:
       tslib: 2.0.3
-    dev: true
     resolution:
       integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==
   /lowercase-keys/1.0.1:
@@ -8650,7 +8666,7 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-3YffViIt2QWgTy6Pale5QpopX/IvU3LPL03jOTqp6pGj3VjesdO/U8CuHMKpnQr4shCNCM5fd5XFFvIIl6JBHg==
-  /mercurius-codegen/1.1.4_295da868926add62dc89af97d49884d6:
+  /mercurius-codegen/1.1.4_51705d73581c398bad8eb36b86e7c579:
     dependencies:
       '@graphql-codegen/core': 1.17.8_graphql@15.4.0
       '@graphql-codegen/plugin-helpers': 1.18.1_graphql@15.4.0
@@ -8660,7 +8676,7 @@ packages:
       '@graphql-codegen/typescript-resolvers': 1.17.11_graphql@15.4.0
       '@graphql-tools/load-files': 6.2.4_graphql@15.4.0
       '@graphql-typed-document-node/core': 3.1.0_graphql@15.4.0
-      fastify: 3.8.0
+      fastify: 3.9.1
       graphql: 15.4.0
       mercurius: 6.4.0
       mkdirp: 1.0.4
@@ -8672,11 +8688,11 @@ packages:
       mercurius: ^6.4.0
     resolution:
       integrity: sha512-lp3N4JUY/yx8iDJDt1Fx2DCdj99G9tCoz5IB7+8r6ym20/88gUMxJ6OD8yUU8RArjq2DkqawXAtw8aLN5OLTXA==
-  /mercurius-integration-testing/3.1.2_295da868926add62dc89af97d49884d6:
+  /mercurius-integration-testing/3.1.2_51705d73581c398bad8eb36b86e7c579:
     dependencies:
       '@graphql-typed-document-node/core': 3.1.0_graphql@15.4.0
       cookie: 0.4.1
-      fastify: 3.8.0
+      fastify: 3.9.1
       get-port: 5.1.1
       graphql: 15.4.0
       mercurius: 6.4.0
@@ -8974,6 +8990,7 @@ packages:
     resolution:
       integrity: sha512-uM/9NGK9/E9/sTpbIZ/bQ9xOLOIHZwrrb/CRlbDHBU/GFS7Gshl24v/WJhwsVViWkpOXUmiZ66XO7fSB4Wd92Q==
   /nanoid/3.1.18:
+    dev: false
     engines:
       node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1
     hasBin: true
@@ -9110,7 +9127,6 @@ packages:
     dependencies:
       lower-case: 2.0.2
       tslib: 2.0.3
-    dev: true
     resolution:
       integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==
   /node-abi/2.19.3:
@@ -9783,7 +9799,6 @@ packages:
     dependencies:
       no-case: 3.0.4
       tslib: 2.0.3
-    dev: true
     resolution:
       integrity: sha512-uWlGT3YSnK9x3BQJaOdcZwrnV6hPpd8jFH1/ucpiLRPh/2zCVJKS19E4GvYHvaCcACn3foXZ0cLB9Wrx1KGe5g==
   /pascalcase/0.1.1:
@@ -11683,7 +11698,6 @@ packages:
   /semver/7.3.4:
     dependencies:
       lru-cache: 6.0.0
-    dev: true
     engines:
       node: '>=10'
     hasBin: true
@@ -11888,14 +11902,14 @@ packages:
     dev: true
     resolution:
       integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==
-  /size-limit/4.9.0:
+  /size-limit/4.9.1:
     dependencies:
       bytes: 3.1.0
       chokidar: 3.4.3
       ci-job-number: 1.2.2
       colorette: 1.2.1
-      cosmiconfig: 7.0.0
       globby: 11.0.1
+      lilconfig: 2.0.1
       ora: 5.1.0
       read-pkg-up: 7.0.1
     dev: true
@@ -11903,7 +11917,7 @@ packages:
       node: ^10 || ^11 || ^12 || >=13.7
     hasBin: true
     resolution:
-      integrity: sha512-nHslMzmeGDPtlHxxGykq3WYbI+tGBJl7DEUfrO0cgDceXMvQ0uTgz2cg+nguUfg/E2EY/wsmExDU5IblpbhmVw==
+      integrity: sha512-PTDgznNHwNTxE4Cg9UenOY/tIti36OQxIk967pLK7PkmUNfJiJ2VA0Bfk05Z6usGRc7Fz67+dR3w2T9IHRtlVQ==
   /slash/3.0.0:
     engines:
       node: '>=8'
@@ -12989,9 +13003,10 @@ packages:
       typescript: '>=2.7'
     resolution:
       integrity: sha512-ISJJGgkIpDdBhWVu3jufsWpK3Rzo7bdiIXJjQc0ynKxVOVcg2oIrf2H2cejminGrptVc6q6/uynAHNCuWGbpVA==
-  /ts-node/9.0.0_typescript@4.1.2:
+  /ts-node/9.1.0_typescript@4.1.2:
     dependencies:
       arg: 4.1.3
+      create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
       source-map-support: 0.5.19
@@ -13004,7 +13019,7 @@ packages:
     peerDependencies:
       typescript: '>=2.7'
     resolution:
-      integrity: sha512-/TqB4SnererCDR/vb4S/QvSZvzQMJN8daAslg7MeaiHvD8rDZsSfXmNeNumyZZzMned72Xoq/isQljYSt8Ynfg==
+      integrity: sha512-0yqcL4sgruCvM+w64LiAfNJo6+lHfCYc5Ajj4yiLNkJ9oZ2HWaa+Kso7htYOOxVQ7+csAjdUjffOe9PIqC4pMg==
   /ts-pnp/1.2.0_typescript@4.1.2:
     dependencies:
       typescript: 4.1.2

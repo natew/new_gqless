@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -33,8 +33,8 @@
     "lodash-es": "^4.17.15"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^1.0.0",
-    "@size-limit/preset-small-lib": "^4.9.0",
+    "@dish/gqless-cli": "workspace:^2.0.0",
+    "@size-limit/preset-small-lib": "^4.9.1",
     "@types/lodash": "^4.14.165",
     "@types/node": "^14.14.10",
     "@types/react": "^17.0.0",
@@ -47,7 +47,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "rimraf": "^3.0.2",
-    "size-limit": "^4.9.0",
+    "size-limit": "^4.9.1",
     "tap": "^14.11.0",
     "test-utils": "workspace:^0.1.0",
     "tsdx": "^0.14.1",

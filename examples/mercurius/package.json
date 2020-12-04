@@ -28,9 +28,9 @@
     }
   },
   "dependencies": {
-    "@dish/gqless": "workspace:^2.0.4",
-    "@dish/gqless-cli": "workspace:^1.0.0",
-    "fastify": "^3.8.0",
+    "@dish/gqless": "workspace:^3.0.0",
+    "@dish/gqless-cli": "workspace:^2.0.0",
+    "fastify": "^3.9.1",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "mercurius": "^6.4.0",
@@ -38,14 +38,14 @@
     "randomstring": "^1.1.5"
   },
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^4.9.0",
+    "@size-limit/preset-small-lib": "^4.9.1",
     "@types/lodash": "^4.14.165",
     "@types/randomstring": "^1.1.6",
     "husky": "^4.3.0",
     "mercurius-integration-testing": "^3.1.2",
-    "size-limit": "^4.9.0",
+    "size-limit": "^4.9.1",
     "test-utils": "workspace:^0.1.0",
-    "ts-node": "^9.0.0",
+    "ts-node": "^9.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.0.3",
     "typescript": "^4.1.2"

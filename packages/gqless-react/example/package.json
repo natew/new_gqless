@@ -5,10 +5,10 @@
     "dev": "concurrently \"next -p 4141\" \"wait-on -s 1 tcp:4141 && open-cli http://localhost:4141\""
   },
   "dependencies": {
-    "@dish/gqless-cli": "workspace:^1.0.0",
+    "@dish/gqless-cli": "workspace:^2.0.0",
     "@dish/gqless-logger": "workspace:^0.1.1",
-    "@dish/gqless-react": "workspace:^1.0.2",
-    "fastify": "^3.8.0",
+    "@dish/gqless-react": "workspace:^2.0.0",
+    "fastify": "^3.9.1",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "mercurius": "^6.4.0",
