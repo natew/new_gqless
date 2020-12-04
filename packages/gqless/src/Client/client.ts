@@ -6,6 +6,7 @@ import {
   createCache,
 } from '../Cache';
 import { EventHandler } from '../Events';
+import { createSSRHelpers } from '../Helpers/ssr';
 import { createRefetch } from '../Helpers/refetch';
 import { createInterceptorManager, InterceptorManager } from '../Interceptor';
 import { createScheduler, Scheduler } from '../Scheduler';
@@ -108,6 +109,13 @@ export function createClient<
   const mutation: GeneratedSchema['mutation'] = client.mutation;
   const subscription: GeneratedSchema['subscription'] = client.subscription;
 
+  const { hydrateCache, prepareRender } = createSSRHelpers({
+    innerState,
+    query,
+    refetch,
+    setCache,
+  });
+
   return {
     query,
     mutation,
@@ -121,5 +129,7 @@ export function createClient<
     buildAndFetchSelections,
     eventHandler,
     setCache,
+    hydrateCache,
+    prepareRender,
   };
 }

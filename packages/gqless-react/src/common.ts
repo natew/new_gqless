@@ -8,6 +8,14 @@ import {
   useRef,
 } from 'react';
 
+export function useOnFirstMount(fn: () => void) {
+  const isFirstMount = useRef(true);
+  if (isFirstMount.current) {
+    isFirstMount.current = false;
+    fn();
+  }
+}
+
 export const IS_BROWSER = typeof window !== 'undefined';
 
 export const useIsomorphicLayoutEffect = IS_BROWSER

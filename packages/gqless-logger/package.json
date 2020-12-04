@@ -19,8 +19,7 @@
     "test": "tsdx test"
   },
   "dependencies": {
-    "prettier": "^2.2.1",
-    "regenerator-runtime": "^0.13.7"
+    "prettier": "^2.2.1"
   },
   "devDependencies": {
     "@dish/gqless": "workspace:^2.0.3",

@@ -13,6 +13,9 @@ export const {
   useRefetch,
   usePolling,
   useLazyQuery,
+  prepareReactRender,
+  useHydrateCache,
+  useMutation,
 } = createReactClient<GeneratedSchema>(client, {
   defaultSuspense,
 });
