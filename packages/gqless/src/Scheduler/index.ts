@@ -32,29 +32,33 @@ export const createScheduler = (
 
   let resolvingPromise: LazyPromise | null = null;
 
-  let pendingSelections: Set<Selection> | undefined;
+  const pendingSelectionsGroups = new Set<Set<Selection>>();
 
   const fetchSelections = debounce((lazyPromise: LazyPromise) => {
     resolvingPromise = null;
 
-    pendingSelections = new Set(globalInterceptor.fetchSelections);
+    const selectionsToFetch = new Set(globalInterceptor.fetchSelections);
 
-    resolveSelections(pendingSelections).then(
+    pendingSelectionsGroups.add(selectionsToFetch);
+
+    resolveSelections(selectionsToFetch).then(
       () => {
+        pendingSelectionsGroups.delete(selectionsToFetch);
         scheduler.resolving = null;
-        pendingSelections = new Set(globalInterceptor.fetchSelections);
         lazyPromise.resolve();
       },
       (err) => {
+        pendingSelectionsGroups.delete(selectionsToFetch);
         scheduler.resolving = null;
-        pendingSelections = new Set(globalInterceptor.fetchSelections);
         lazyPromise.reject(err);
       }
     );
   }, catchSelectionsTimeMS);
 
   globalInterceptor.selectionAddListeners.add((selection) => {
-    if (pendingSelections?.has(selection)) return;
+    for (const group of pendingSelectionsGroups) {
+      if (group.has(selection)) return;
+    }
 
     let lazyPromise: LazyPromise;
     if (resolvingPromise === null) {

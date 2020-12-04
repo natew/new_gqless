@@ -7,7 +7,9 @@ import { Selection } from '../src/Selection';
 test('scheduler works with globalInterceptor', async () => {
   const interceptorManager = createInterceptorManager();
 
-  const resolveAllSelections = jest.fn(async () => {});
+  const resolveAllSelections = jest.fn(() => {
+    return new Promise<void>((resolve) => setTimeout(resolve, 500));
+  });
 
   createScheduler(interceptorManager, resolveAllSelections, 10);
 
@@ -24,6 +26,20 @@ test('scheduler works with globalInterceptor', async () => {
   await waitForExpect(
     () => {
       expect(resolveAllSelections).toBeCalledTimes(1);
+    },
+    15,
+    1
+  );
+
+  interceptorManager.addSelection(
+    new Selection({
+      key: 'b',
+    })
+  );
+
+  await waitForExpect(
+    () => {
+      expect(resolveAllSelections).toBeCalledTimes(2);
     },
     15,
     1
