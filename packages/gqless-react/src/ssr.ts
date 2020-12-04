@@ -4,6 +4,16 @@ import { createClient, HydrateCacheOptions } from '@dish/gqless';
 
 import { useOnFirstMount } from './common';
 
+export interface UseHydrateCacheOptions extends HydrateCacheOptions {
+  /**
+   * If it should refetch everything after the component is mounted
+   *
+   * @default
+   * true
+   */
+  shouldRefetch?: boolean;
+}
+
 export function createSSRHelpers(client: ReturnType<typeof createClient>) {
   async function prepareReactRender(element: ReactNode) {
     const ssrPrepass = (await import('react-ssr-prepass')).default;
@@ -12,19 +22,13 @@ export function createSSRHelpers(client: ReturnType<typeof createClient>) {
   function useHydrateCache({
     cacheSnapshot,
     shouldRefetch = true,
-  }: HydrateCacheOptions) {
+  }: UseHydrateCacheOptions) {
     useOnFirstMount(() => {
       client.hydrateCache({ cacheSnapshot, shouldRefetch: false });
     });
     useEffect(() => {
       if (shouldRefetch) {
-        if (typeof shouldRefetch === 'number') {
-          setTimeout(() => {
-            client.refetch(client.query).catch(console.error);
-          }, shouldRefetch);
-        } else {
-          client.refetch(client.query).catch(console.error);
-        }
+        client.refetch(client.query).catch(console.error);
       }
     }, [shouldRefetch]);
   }

@@ -113,7 +113,6 @@ export function createClient<
     innerState,
     query,
     refetch,
-    setCache,
   });
 
   return {

@@ -1,4 +1,3 @@
-import type { AccessorCreators } from '../Accessor';
 import type { ProxyAccessor } from '../Cache';
 import type { InnerClientState } from '../Client/client';
 import type { createRefetch } from './refetch';
@@ -14,37 +13,35 @@ export interface HydrateCacheOptions {
    * Specify a number greater than `0` to delay the refetch that amount in ms
    *
    * @default
-   * true
+   * false
    */
   shouldRefetch?: boolean | number;
 }
 
 export function createSSRHelpers({
-  setCache,
   query,
   refetch,
   innerState,
 }: {
-  setCache: ReturnType<typeof AccessorCreators>['setCache'];
   query: ProxyAccessor;
   refetch: ReturnType<typeof createRefetch>;
   innerState: InnerClientState;
 }) {
   const hydrateCache = ({
     cacheSnapshot,
-    shouldRefetch = true,
+    shouldRefetch = false,
   }: HydrateCacheOptions) => {
     try {
       const cache = JSON.parse(cacheSnapshot);
       if (typeof cache.query === 'object') {
-        setCache(query, cache.query);
+        innerState.clientCache.cache.query = cache.query;
 
         if (shouldRefetch) {
           setTimeout(
             () => {
-              refetch(query);
+              refetch(query).catch(console.error);
             },
-            typeof refetch === 'number' ? refetch : 0
+            typeof shouldRefetch === 'number' ? shouldRefetch : 0
           );
         }
       }
@@ -54,7 +51,7 @@ export function createSSRHelpers({
   };
 
   const prepareRender = async (render: () => Promise<void> | void) => {
-    setCache(query, null);
+    delete innerState.clientCache.cache.query;
 
     await render();
 

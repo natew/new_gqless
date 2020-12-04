@@ -62,11 +62,15 @@ importers:
       '@size-limit/preset-small-lib': 4.9.0_9d94d27344b7788615a299a5fbeadee3
       '@types/lodash': 4.14.165
       '@types/node': 14.14.10
+      '@types/react': 17.0.0
+      '@types/react-dom': 17.0.0
       '@types/tap': 14.10.1
       graphql: 15.4.0
       husky: 4.3.0
       mercurius: 6.4.0
       nodemon: 2.0.6
+      react: 17.0.1
+      react-dom: 17.0.1_react@17.0.1
       rimraf: 3.0.2
       size-limit: 4.9.0
       tap: 14.11.0
@@ -80,6 +84,8 @@ importers:
       '@size-limit/preset-small-lib': ^4.9.0
       '@types/lodash': ^4.14.165
       '@types/node': ^14.14.10
+      '@types/react': ^17.0.0
+      '@types/react-dom': ^17.0.0
       '@types/tap': ^14.10.1
       graphql: ^15.4.0
       husky: ^4.3.0
@@ -87,6 +93,8 @@ importers:
       lodash-es: ^4.17.15
       mercurius: ^6.4.0
       nodemon: ^2.0.6
+      react: ^17.0.1
+      react-dom: ^17.0.1
       rimraf: ^3.0.2
       size-limit: ^4.9.0
       tap: ^14.11.0
