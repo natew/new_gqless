@@ -184,6 +184,7 @@ importers:
       lodash: 4.17.20
       lodash-es: 4.17.15
       react-ssr-prepass: 1.2.1_react@17.0.1
+      regenerator-runtime: 0.13.7
     devDependencies:
       '@dish/gqless': 'link:../gqless'
       '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
@@ -219,6 +220,7 @@ importers:
       react-dom: ^17.0.1
       react-ssr-prepass: ^1.2.1
       react-test-renderer: ^17.0.1
+      regenerator-runtime: ^0.13.7
       rimraf: ^3.0.2
       size-limit: ^4.9.1
       test-utils: 'workspace:^0.1.0'
