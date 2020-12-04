@@ -45,6 +45,10 @@ export function createUseQuery<
       selections.add(selection);
     });
 
+    interceptor.selectionCacheListeners.add((selection) => {
+      selections.add(selection);
+    });
+
     const unsubscribe = scheduler.subscribeResolve((promise, selection) => {
       if (fetchingPromise.current === null && selections.has(selection)) {
         fetchingPromise.current = new Promise<void>((resolve, reject) => {
@@ -64,6 +68,16 @@ export function createUseQuery<
       }
     });
 
+    setTimeout(() => {
+      interceptorManager.removeInterceptor(interceptor);
+      unsubscribe();
+    }, 0);
+
+    useIsomorphicLayoutEffect(() => {
+      interceptorManager.removeInterceptor(interceptor);
+      unsubscribe();
+    });
+
     useEffect(() => {
       let isMounted = true;
       const unsubscribeFetch = eventHandler.onFetchSubscribe((fetchPromise) => {
@@ -80,16 +94,20 @@ export function createUseQuery<
         );
       });
 
+      const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
+        ({ selection }) => {
+          if (isMounted && selections.has(selection)) {
+            forceUpdate();
+          }
+        }
+      );
+
       return () => {
         isMounted = false;
         unsubscribeFetch();
+        unsubscribeCache();
       };
-    }, []);
-
-    useIsomorphicLayoutEffect(() => {
-      interceptorManager.removeInterceptor(interceptor);
-      unsubscribe();
-    });
+    }, [selections]);
 
     if (suspense && fetchingPromise.current) {
       throw fetchingPromise.current;

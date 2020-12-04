@@ -6,6 +6,7 @@ import {
   createCache,
 } from '../Cache';
 import { EventHandler } from '../Events';
+import { createSSRHelpers } from '../Helpers/ssr';
 import { createRefetch } from '../Helpers/refetch';
 import { createInterceptorManager, InterceptorManager } from '../Interceptor';
 import { createScheduler, Scheduler } from '../Scheduler';
@@ -27,17 +28,25 @@ export interface InnerClientState {
   readonly queryFetcher: QueryFetcher;
 }
 
+export interface ClientOptions {
+  schema: Readonly<Schema>;
+  scalarsEnumsHash: ScalarsEnumsHash;
+  queryFetcher: QueryFetcher;
+  catchSelectionsTimeMS?: number;
+}
+
 export function createClient<
   GeneratedSchema extends {
     query: {};
     mutation: {};
     subscription: {};
   } = never
->(
-  schema: Readonly<Schema>,
-  scalarsEnumsHash: ScalarsEnumsHash,
-  queryFetcher: QueryFetcher
-) {
+>({
+  schema,
+  scalarsEnumsHash,
+  queryFetcher,
+  catchSelectionsTimeMS = 10,
+}: ClientOptions) {
   const interceptorManager = createInterceptorManager();
 
   const { globalInterceptor } = interceptorManager;
@@ -48,7 +57,11 @@ export function createClient<
 
   const selectionManager = createSelectionManager();
 
-  const scheduler = createScheduler(interceptorManager, resolveAllSelections);
+  const scheduler = createScheduler(
+    interceptorManager,
+    resolveAllSelections,
+    catchSelectionsTimeMS
+  );
 
   const eventHandler = new EventHandler();
 
@@ -76,7 +89,7 @@ export function createClient<
     const resolvingPromise = scheduler.resolving;
 
     try {
-      await resolveSelections(globalInterceptor.selections);
+      await resolveSelections(globalInterceptor.fetchSelections);
     } catch (err) {
       /* istanbul ignore else */
       if (resolvingPromise) {
@@ -88,13 +101,19 @@ export function createClient<
 
   const refetch = createRefetch(innerState, resolveSelections);
 
-  const { createSchemaAccesor } = AccessorCreators(innerState);
+  const { createSchemaAccesor, setCache } = AccessorCreators(innerState);
 
   const client: GeneratedSchema = createSchemaAccesor();
 
   const query: GeneratedSchema['query'] = client.query;
   const mutation: GeneratedSchema['mutation'] = client.mutation;
   const subscription: GeneratedSchema['subscription'] = client.subscription;
+
+  const { hydrateCache, prepareRender } = createSSRHelpers({
+    innerState,
+    query,
+    refetch,
+  });
 
   return {
     query,
@@ -108,5 +127,8 @@ export function createClient<
     accessorCache,
     buildAndFetchSelections,
     eventHandler,
+    setCache,
+    hydrateCache,
+    prepareRender,
   };
 }

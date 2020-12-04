@@ -55,7 +55,7 @@ export function createResolvers(innerState: InnerClientState) {
     try {
       const data = dataFn();
 
-      if (interceptor.selections.size === 0) {
+      if (interceptor.fetchSelections.size === 0) {
         return data;
       }
 
@@ -74,7 +74,7 @@ export function createResolvers(innerState: InnerClientState) {
       globalInterceptor.listening = prevGlobalInterceptorListening;
 
       await resolveSelections(
-        interceptor.selections,
+        interceptor.fetchSelections,
         tempCache || innerState.clientCache
       );
 

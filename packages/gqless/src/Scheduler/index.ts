@@ -8,7 +8,8 @@ export type Scheduler = ReturnType<typeof createScheduler>;
 
 export const createScheduler = (
   interceptorManager: InterceptorManager,
-  resolveAllSelections: () => Promise<void>
+  resolveAllSelections: () => Promise<void>,
+  catchSelectionsTimeMS: number
 ) => {
   const resolveListeners = new Set<
     (promise: Promise<void>, selection: Selection) => void
@@ -44,7 +45,7 @@ export const createScheduler = (
         lazyPromise.reject(err);
       }
     );
-  }, 10);
+  }, catchSelectionsTimeMS);
 
   interceptorManager.globalInterceptor.selectionAddListeners.add(
     (selection) => {

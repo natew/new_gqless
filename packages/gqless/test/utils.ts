@@ -31,6 +31,7 @@ export const createTestClient = async (
     schema: gql`
       type Query {
         hello: String!
+        stringArg(arg: String!): String!
         human(name: String): Human
         nFetchCalls: Int!
         throw: Boolean
@@ -41,6 +42,7 @@ export const createTestClient = async (
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
+        humanMutation(nameArg: String!): Human
       }
       type Subscription {
         newNotification: String
@@ -54,6 +56,9 @@ export const createTestClient = async (
     `,
     resolvers: {
       Query: {
+        stringArg(_root, { arg }: { arg: string }) {
+          return arg;
+        },
         hello() {
           return 'hello world';
         },
@@ -87,6 +92,9 @@ export const createTestClient = async (
           });
 
           return true;
+        },
+        humanMutation(_root, { nameArg }: { nameArg: string }) {
+          return createHuman(nameArg);
         },
       },
       Subscription: {
@@ -135,6 +143,7 @@ export const createTestClient = async (
   return createClient<{
     query: {
       hello: string;
+      stringArg: (args: { arg: string }) => string;
       human: (args?: { name?: string }) => Human;
       nullArray?: Maybe<Array<Maybe<Human>>>;
       nullStringArray?: Maybe<Array<Maybe<string>>>;
@@ -145,13 +154,14 @@ export const createTestClient = async (
     };
     mutation: {
       sendNotification(args: { message: string }): boolean;
+      humanMutation: (args?: { nameArg?: string }) => Human;
     };
     subscription: {
       newNotification: void;
     };
-  }>(
-    merge(generatedSchema, addedToGeneratedSchema),
+  }>({
+    schema: merge(generatedSchema, addedToGeneratedSchema),
     scalarsEnumsHash,
-    queryFetcher
-  );
+    queryFetcher,
+  });
 };

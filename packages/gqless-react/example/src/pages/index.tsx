@@ -6,7 +6,7 @@ import { createReactClient } from '../../../';
 import { Suspense } from '../components/Suspense';
 import { client, GeneratedSchema, query } from '../graphql/gqless';
 
-const defaultSuspense = false;
+const defaultSuspense = true;
 
 const {
   useTransactionQuery,

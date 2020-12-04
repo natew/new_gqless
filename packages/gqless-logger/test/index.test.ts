@@ -28,8 +28,8 @@ describe('logger', () => {
     };
     mutation: {};
     subscription: {};
-  }>(
-    {
+  }>({
+    schema: {
       mutation: {},
       query: {
         hello: {
@@ -44,12 +44,12 @@ describe('logger', () => {
       },
       subscription: {},
     },
-    {
+    scalarsEnumsHash: {
       String: true,
       Boolean: true,
     },
-    (query, variables) => client.query(query, { variables })
-  );
+    queryFetcher: (query, variables) => client.query(query, { variables }),
+  });
 
   test('default options', async () => {
     await isReady;

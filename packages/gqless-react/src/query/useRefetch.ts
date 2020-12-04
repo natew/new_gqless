@@ -119,14 +119,24 @@ export function createUseRefetch(
 
     const interceptor = interceptorManager.createInterceptor();
 
+    setTimeout(() => {
+      interceptorManager.removeInterceptor(interceptor);
+    }, 0);
+
+    useIsomorphicLayoutEffect(() => {
+      interceptorManager.removeInterceptor(interceptor);
+    });
+
     interceptor.selectionAddListeners.add((selection) => {
       if (!innerState.current.watching) return;
 
       selections.add(selection);
     });
 
-    useIsomorphicLayoutEffect(() => {
-      interceptorManager.removeInterceptor(interceptor);
+    interceptor.selectionCacheListeners.add((selection) => {
+      if (!innerState.current.watching) return;
+
+      selections.add(selection);
     });
 
     const refetchCallback = useCallback(

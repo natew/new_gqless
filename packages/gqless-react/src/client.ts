@@ -8,6 +8,7 @@ import { createUsePolling } from './query/usePolling';
 import { createUseQuery } from './query/useQuery';
 import { createUseRefetch } from './query/useRefetch';
 import { createUseTransactionQuery } from './query/useTransactionQuery';
+import { createSSRHelpers } from './ssr';
 
 export interface CreateReactClientOptions {
   defaultSuspense?: boolean;
@@ -38,6 +39,8 @@ export function createReactClient<
     }
   );
 
+  const { prepareReactRender, useHydrateCache } = createSSRHelpers(client);
+
   return {
     useQuery: createUseQuery<GeneratedSchema>(client, opts),
     useRefetch: createUseRefetch(client, opts),
@@ -50,5 +53,7 @@ export function createReactClient<
     usePolling: createUsePolling(client, opts),
     graphql: createGraphqlHOC(client, opts),
     state,
+    prepareReactRender,
+    useHydrateCache,
   };
 }

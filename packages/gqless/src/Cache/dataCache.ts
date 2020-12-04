@@ -1,4 +1,5 @@
 import lodashGet from 'lodash/get';
+import lodashSet from 'lodash/set';
 import lodashMerge from 'lodash/merge';
 
 import { Selection } from '../Selection';
@@ -14,6 +15,10 @@ export function createCache() {
     return lodashGet(cache, selection.cachePath, CacheNotFound);
   }
 
+  function setCacheFromSelection(selection: Selection, value: unknown) {
+    lodashSet(cache, selection.cachePath, value);
+  }
+
   function mergeCache(
     data: unknown,
     prefix: 'query' | 'mutation' | 'subscription'
@@ -21,7 +26,7 @@ export function createCache() {
     lodashMerge(cache, { [prefix]: data });
   }
 
-  return { cache, getCacheFromSelection, mergeCache };
+  return { cache, getCacheFromSelection, setCacheFromSelection, mergeCache };
 }
 
 export type CacheInstance = ReturnType<typeof createCache>;

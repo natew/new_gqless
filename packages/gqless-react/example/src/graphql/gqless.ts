@@ -99,10 +99,10 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const client = createClient<GeneratedSchema>(
-  generatedSchema,
+export const client = createClient<GeneratedSchema>({
+  schema: generatedSchema,
   scalarsEnumsHash,
-  queryFetcher
-);
+  queryFetcher,
+});
 
 export const { query, mutation, subscription, resolved, refetch } = client;

@@ -36,8 +36,7 @@
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",
     "mkdirp": "^1.0.4",
-    "prettier": "^2.2.1",
-    "regenerator-runtime": "^0.13.7"
+    "prettier": "^2.2.1"
   },
   "devDependencies": {
     "@dish/gqless": "workspace:^2.0.4",
