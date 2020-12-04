@@ -122,7 +122,7 @@ export function createLogger(
       );
     }
 
-    console.log(...format([parseGraphQL(query), 'color: white']));
+    console.log(...format([parseGraphQL(query)]));
 
     console.groupEnd();
 
