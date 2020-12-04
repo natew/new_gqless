@@ -11,7 +11,11 @@ import { createRefetch } from '../Helpers/refetch';
 import { createInterceptorManager, InterceptorManager } from '../Interceptor';
 import { createScheduler, Scheduler } from '../Scheduler';
 import { QueryFetcher, ScalarsEnumsHash, Schema } from '../Schema/types';
-import { createSelectionManager, SelectionManager } from '../Selection';
+import {
+  createSelectionManager,
+  Selection,
+  SelectionManager,
+} from '../Selection';
 import { createResolvers } from './resolvers';
 
 export interface InnerClientState {
@@ -59,7 +63,7 @@ export function createClient<
 
   const scheduler = createScheduler(
     interceptorManager,
-    resolveAllSelections,
+    resolveSchedulerSelections,
     catchSelectionsTimeMS
   );
 
@@ -85,11 +89,14 @@ export function createClient<
     resolveSelections,
   } = createResolvers(innerState);
 
-  async function resolveAllSelections() {
+  async function resolveSchedulerSelections(selections: Set<Selection>) {
     const resolvingPromise = scheduler.resolving;
 
+    const resolvePromise = resolveSelections(selections);
+
+    globalInterceptor.removeSelections(selections);
     try {
-      await resolveSelections(globalInterceptor.fetchSelections);
+      await resolvePromise;
     } catch (err) {
       /* istanbul ignore else */
       if (resolvingPromise) {
