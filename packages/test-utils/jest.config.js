@@ -3,9 +3,7 @@
  */
 module.exports = {
   globals: {
-    'ts-jest': {
-      packageJson: 'package.json',
-    },
+    'ts-jest': {},
   },
   testMatch: ['**/test/**/*.test.ts', '**/test/**/*.test.tsx'],
   testPathIgnorePatterns: ['/node_modules/', '/test/generated'],
