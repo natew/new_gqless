@@ -1,6 +1,6 @@
 import { createClient } from '@dish/gqless';
-import { FetchPolicy } from './common';
 
+import { FetchPolicy } from './common';
 import { createGraphqlHOC } from './hoc';
 import { createUseMutation } from './mutation/useMutation';
 import { createUseLazyQuery } from './query/useLazyQuery';

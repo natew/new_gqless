@@ -22,10 +22,9 @@
     "prettier": "^2.2.1"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^3.0.0",
+    "@dish/gqless": "workspace:^3.0.1",
     "@size-limit/preset-small-lib": "^4.9.1",
     "@types/prettier": "^2.1.5",
-    "husky": "^4.3.0",
     "rimraf": "^3.0.2",
     "size-limit": "^4.9.1",
     "test-utils": "workspace:^0.1.0",

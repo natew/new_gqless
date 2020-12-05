@@ -20,11 +20,6 @@
     "start": "tsdx watch",
     "test": "tsdx test"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
-  },
   "dependencies": {
     "@graphql-codegen/core": "^1.17.9",
     "@graphql-codegen/typescript": "^1.19.0",
@@ -39,11 +34,10 @@
     "prettier": "^2.2.1"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^3.0.0",
+    "@dish/gqless": "workspace:^3.0.1",
     "@size-limit/preset-small-lib": "^4.9.1",
     "@types/lodash": "^4.14.165",
     "@types/mkdirp": "^1.0.1",
-    "husky": "^4.3.0",
     "rimraf": "^3.0.2",
     "size-limit": "^4.9.1",
     "test-utils": "workspace:^0.1.0",

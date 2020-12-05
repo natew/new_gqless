@@ -1,0 +1,13 @@
+[ignore]
+.*/node_modules/@babel/[A-Z-a-z-]*/.*
+.*/node_modules/babel[A-Z-a-z-]*/.*
+
+[untyped]
+.*/node_modules/react-is/.*
+.*/node_modules/styled-components/.*
+
+[libs]
+types/
+
+[include]
+.*/node_modules/react[A-Z-a-z-]*/.*

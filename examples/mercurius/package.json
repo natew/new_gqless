@@ -22,13 +22,8 @@
     "start": "tsdx watch",
     "test": "tsdx test"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
-  },
   "dependencies": {
-    "@dish/gqless": "workspace:^3.0.0",
+    "@dish/gqless": "workspace:^3.0.1",
     "@dish/gqless-cli": "workspace:^2.0.0",
     "fastify": "^3.9.1",
     "graphql": "^15.4.0",
@@ -41,7 +36,6 @@
     "@size-limit/preset-small-lib": "^4.9.1",
     "@types/lodash": "^4.14.165",
     "@types/randomstring": "^1.1.6",
-    "husky": "^4.3.0",
     "mercurius-integration-testing": "^3.1.2",
     "size-limit": "^4.9.1",
     "test-utils": "workspace:^0.1.0",

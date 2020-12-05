@@ -1,4 +1,3 @@
-import { ResolveOptions } from '@dish/gqless';
 import {
   MutableRefObject,
   useCallback,
@@ -7,6 +6,8 @@ import {
   useReducer,
   useRef,
 } from 'react';
+
+import { ResolveOptions } from '@dish/gqless';
 
 export function useOnFirstMount(fn: () => void) {
   const isFirstMount = useRef(true);

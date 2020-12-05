@@ -23,11 +23,6 @@
     "start": "tsdx watch",
     "test": "tsdx test"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
-  },
   "dependencies": {
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15"
@@ -41,7 +36,6 @@
     "@types/react-dom": "^17.0.0",
     "@types/tap": "^14.10.1",
     "graphql": "^15.4.0",
-    "husky": "^4.3.0",
     "mercurius": "^6.4.0",
     "nodemon": "^2.0.6",
     "react": "^17.0.1",
