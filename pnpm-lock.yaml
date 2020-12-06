@@ -322,10 +322,12 @@ importers:
       mercurius: 6.4.0
       mercurius-codegen: 1.1.4_51705d73581c398bad8eb36b86e7c579
       mercurius-integration-testing: 3.1.2_51705d73581c398bad8eb36b86e7c579
+      randomstring: 1.1.5
       wait-for-expect: 3.0.2
     devDependencies:
       '@jest/types': 26.6.2
       '@size-limit/preset-small-lib': 4.9.1_029275a456ebea40e73e5c824b6c915a
+      '@types/randomstring': 1.1.6
       size-limit: 4.9.1
       tsdx: 0.14.1
       tslib: 2.0.3
@@ -333,12 +335,14 @@ importers:
     specifiers:
       '@jest/types': ^26.6.2
       '@size-limit/preset-small-lib': ^4.9.1
+      '@types/randomstring': ^1.1.6
       cross-env: ^7.0.3
       fastify: ^3.9.1
       graphql: ^15.4.0
       mercurius: ^6.4.0
       mercurius-codegen: ^1.1.4
       mercurius-integration-testing: ^3.1.2
+      randomstring: ^1.1.5
       size-limit: ^4.9.1
       tsdx: ^0.14.1
       tslib: ^2.0.3

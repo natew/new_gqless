@@ -1,6 +1,7 @@
 import fromPairs from 'lodash/fromPairs';
 import { CacheNotFound } from '../Cache';
 import { InnerClientState } from '../Client/client';
+import { gqlessError } from '../Error';
 import { DeepPartial, parseSchemaType, Schema } from '../Schema';
 import { Selection, SelectionType } from '../Selection';
 import { isInteger } from '../Utils';
@@ -322,7 +323,7 @@ export function AccessorCreators<
                 return childAccessor;
               }
 
-              throw Error('GraphQL Type not found!');
+              throw new gqlessError('GraphQL Type not found!');
             };
 
             if (__args) {
@@ -394,9 +395,11 @@ export function AccessorCreators<
   }
 
   function assignSelections<A extends object, B extends A>(
-    source: A,
-    target: B
+    source: A | null | undefined,
+    target: B | null | undefined
   ): void {
+    if (source == null || target == null) return;
+
     let sourceSelection: Selection;
     let targetSelection: Selection;
 
@@ -404,12 +407,12 @@ export function AccessorCreators<
       !accessorCache.isProxy(source) ||
       !(sourceSelection = accessorCache.getProxySelection(source)!)
     )
-      throw Error('Invalid source proxy');
+      throw new gqlessError('Invalid source proxy');
     if (
       !accessorCache.isProxy(target) ||
       !(targetSelection = accessorCache.getProxySelection(target)!)
     )
-      throw Error('Invalid target proxy');
+      throw new gqlessError('Invalid target proxy');
 
     const sourceSelections = accessorCache.getSelectionSetHistory(source);
 

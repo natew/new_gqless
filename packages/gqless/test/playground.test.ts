@@ -83,13 +83,14 @@ test.skip('cache manipulation', async () => {
   });
 });
 
-test('assignSelections', async () => {
+test.skip('assignSelections', async () => {
   const {
     assignSelections,
     query,
     scheduler,
-    mutation,
     cache,
+    mutate,
+    setCache,
   } = await createTestClient();
 
   const human = query.human({
@@ -104,18 +105,21 @@ test('assignSelections', async () => {
 
   expect(cache).toStrictEqual({ query: { human0: { name: 'asd' } } });
 
-  const humanToMutate = mutation.humanMutation({
-    nameArg: 'zxc',
+  const humanMutation = await mutate((mutation) => {
+    const humanMutation = mutation.humanMutation({
+      nameArg: 'zxc',
+    });
+    assignSelections(human, humanMutation);
+    return humanMutation;
   });
-  assignSelections(human, humanToMutate);
 
-  await scheduler.resolving!.promise;
+  setCache(human, humanMutation);
 
   expect(cache).toStrictEqual({
-    query: { human0: { name: 'asd' } },
+    query: { human0: { name: 'zxc' } },
     mutation: { humanMutation0: { name: 'zxc' } },
   });
 
-  expect(human.name).toBe('asd');
-  expect(humanToMutate.name).toBe('zxc');
+  expect(human.name).toBe('zxc');
+  expect(humanMutation.name).toBe('zxc');
 });

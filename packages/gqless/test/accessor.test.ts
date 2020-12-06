@@ -1,3 +1,5 @@
+import { SelectionType } from '../src';
+import { CacheChangeEventData } from '../src/Events';
 import { createTestClient } from './utils';
 
 describe('array accessors', () => {
@@ -173,6 +175,50 @@ describe('setCache', () => {
     ).toBe('nnn');
   });
 
+  test('with listeners', async () => {
+    const { setCache, query, eventHandler } = await createTestClient();
+
+    const eventListener1 = jest
+      .fn()
+      .mockImplementation(({ selection, data }: CacheChangeEventData) => {
+        expect(selection.type).toBe(SelectionType.Query);
+        expect(selection.key).toBe('hello');
+        expect(data).toBe('12345');
+      });
+
+    const unsubscribe = eventHandler.onCacheChangeSubscribe(eventListener1);
+
+    try {
+      query.hello = '12345';
+
+      expect(eventListener1).toBeCalledTimes(1);
+
+      expect(query.hello).toBe('12345');
+    } finally {
+      unsubscribe();
+    }
+
+    const eventListener2 = jest
+      .fn()
+      .mockImplementation(({ selection, data }: CacheChangeEventData) => {
+        expect(selection.type).toBe(SelectionType.Query);
+        expect(selection.key).toBe('query');
+        expect(data).toStrictEqual({ hello: '6789' });
+      });
+
+    const unsubscribe2 = eventHandler.onCacheChangeSubscribe(eventListener2);
+
+    try {
+      setCache(query, { hello: '6789' });
+
+      expect(eventListener2).toBeCalledTimes(1);
+
+      expect(query.hello).toBe('6789');
+    } finally {
+      unsubscribe2();
+    }
+  });
+
   test('validation', async () => {
     const { setCache, query } = await createTestClient();
 
@@ -208,5 +254,110 @@ describe('setCache', () => {
       //@ts-expect-error
       query.human({ name: 'ñññ' }).zxc = null;
     }).toThrowError('Invalid proxy assignation');
+  });
+});
+
+describe('assign selections', () => {
+  test('expected usage', async () => {
+    const {
+      query,
+      scheduler,
+      mutate,
+      assignSelections,
+    } = await createTestClient();
+
+    const human = query.human({
+      name: 'A',
+    });
+
+    human.name;
+    human.father.name;
+    human.father.father.name;
+    human.sons.map((son) => son.name);
+
+    await scheduler.resolving!.promise;
+
+    expect(human.name).toBe('A');
+    expect(human.father.name).toBeTruthy();
+    expect(human.father.father.name).toBeTruthy();
+    expect(human.sons.length).toBe(2);
+    expect(
+      human.sons.every((son) => typeof son.name === 'string')
+    ).toBeTruthy();
+
+    const humanMutation = await mutate((mutation) => {
+      const humanMutation = mutation.humanMutation({
+        nameArg: 'B',
+      });
+
+      assignSelections(human, humanMutation);
+
+      return humanMutation;
+    });
+
+    expect(humanMutation.name).toBe('B');
+
+    expect(humanMutation.father.name).toBeTruthy();
+    expect(human.father.name).toBeTruthy();
+
+    expect(humanMutation.father.father.name).toBeTruthy();
+    expect(human.father.father.name).toBeTruthy();
+
+    expect(humanMutation.sons.length).toBe(2);
+    expect(
+      humanMutation.sons.every((son) => typeof son.name === 'string')
+    ).toBeTruthy();
+  });
+
+  test('Source proxy without selections warn in non-production env', async () => {
+    const {
+      query,
+
+      assignSelections,
+    } = await createTestClient();
+
+    const human = query.human({
+      name: 'L',
+    });
+
+    const spy = jest.spyOn(console, 'warn').mockImplementation((message) => {
+      expect(message).toBe("Source proxy doesn't have any selections made");
+    });
+
+    assignSelections(human, human);
+
+    expect(spy).toBeCalledTimes(1);
+
+    const prevNodeEnv = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = 'production';
+
+      assignSelections(human, human);
+    } finally {
+      process.env.NODE_ENV = prevNodeEnv;
+    }
+
+    expect(spy).toBeCalledTimes(1);
+
+    spy.mockRestore();
+  });
+
+  test('null proxies', async () => {
+    const { assignSelections, query } = await createTestClient();
+
+    assignSelections(query, null);
+    assignSelections(null, query);
+  });
+
+  test('Invalid proxies', async () => {
+    const { assignSelections, query } = await createTestClient();
+
+    expect(() => {
+      assignSelections({}, {});
+    }).toThrowError('Invalid source proxy');
+
+    expect(() => {
+      assignSelections(query, {} as any);
+    }).toThrowError('Invalid target proxy');
   });
 });

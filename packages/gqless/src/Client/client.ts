@@ -124,6 +124,21 @@ export function createClient<
     refetch,
   });
 
+  const mutate = <T>(
+    fn: (
+      mutation: GeneratedSchema['mutation'],
+      helpers: {
+        query: GeneratedSchema['query'];
+        setCache: typeof setCache;
+        assignSelections: typeof assignSelections;
+      }
+    ) => T
+  ): Promise<T> => {
+    return resolved(() => fn(mutation, { setCache, assignSelections, query }), {
+      refetch: true,
+    });
+  };
+
   return {
     query,
     mutation,
@@ -140,5 +155,6 @@ export function createClient<
     hydrateCache,
     prepareRender,
     assignSelections,
+    mutate,
   };
 }
