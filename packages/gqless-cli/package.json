@@ -34,7 +34,7 @@
     "prettier": "^2.2.1"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^3.0.1",
+    "@dish/gqless": "workspace:^3.0.3",
     "@size-limit/preset-small-lib": "^4.9.1",
     "@types/lodash": "^4.14.165",
     "@types/mkdirp": "^1.0.1",

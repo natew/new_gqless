@@ -23,12 +23,12 @@
     "test": "tsdx test"
   },
   "dependencies": {
-    "@dish/gqless": "workspace:^3.0.1",
+    "@dish/gqless": "workspace:^3.0.3",
     "@dish/gqless-cli": "workspace:^2.0.0",
     "fastify": "^3.9.1",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
-    "mercurius": "^6.4.0",
+    "mercurius": "^6.5.0",
     "mercurius-codegen": "^1.1.4",
     "randomstring": "^1.1.5"
   },

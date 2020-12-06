@@ -60,11 +60,11 @@ export interface UseMutation<
   }
 > {
   <TData = unknown>(
-    fn?: (query: GeneratedSchema['mutation']) => TData,
+    fn?: (mutation: GeneratedSchema['mutation']) => TData,
     options?: UseMutationOptions<TData>
   ): readonly [
     (
-      fnArg?: ((query: GeneratedSchema['mutation']) => TData) | undefined
+      fnArg?: ((mutation: GeneratedSchema['mutation']) => TData) | undefined
     ) => Promise<TData>,
     UseMutationState<TData>
   ];

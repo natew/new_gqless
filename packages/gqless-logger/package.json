@@ -22,7 +22,7 @@
     "prettier": "^2.2.1"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^3.0.1",
+    "@dish/gqless": "workspace:^3.0.3",
     "@size-limit/preset-small-lib": "^4.9.1",
     "@types/prettier": "^2.1.5",
     "rimraf": "^3.0.2",

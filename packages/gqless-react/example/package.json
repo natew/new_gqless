@@ -7,11 +7,11 @@
   "dependencies": {
     "@dish/gqless-cli": "workspace:^2.0.0",
     "@dish/gqless-logger": "workspace:^0.1.2",
-    "@dish/gqless-react": "workspace:^2.0.1",
+    "@dish/gqless-react": "workspace:^2.0.3",
     "fastify": "^3.9.1",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
-    "mercurius": "^6.4.0",
+    "mercurius": "^6.5.0",
     "mercurius-codegen": "^1.1.4",
     "next": "^10.0.3",
     "node-json-db": "^1.1.0",

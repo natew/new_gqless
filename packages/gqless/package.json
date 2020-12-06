@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -36,7 +36,7 @@
     "@types/react-dom": "^17.0.0",
     "@types/tap": "^14.10.1",
     "graphql": "^15.4.0",
-    "mercurius": "^6.4.0",
+    "mercurius": "^6.5.0",
     "nodemon": "^2.0.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
