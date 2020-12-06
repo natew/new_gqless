@@ -26,6 +26,7 @@ export class Selection {
   pathString: string;
 
   noIndexSelections: readonly Selection[];
+  selectionsList: readonly Selection[];
 
   constructor({
     key,
@@ -53,9 +54,9 @@ export class Selection {
 
     const prevIndexSelections = prevSelection?.noIndexSelections || [];
 
+    this.selectionsList = [...prevIndexSelections, this];
+
     this.noIndexSelections =
-      typeof key === 'string'
-        ? [...prevIndexSelections, this]
-        : prevIndexSelections;
+      typeof key === 'string' ? this.selectionsList : prevIndexSelections;
   }
 }

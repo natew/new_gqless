@@ -108,7 +108,9 @@ export function createClient<
 
   const refetch = createRefetch(innerState, resolveSelections);
 
-  const { createSchemaAccesor, setCache } = AccessorCreators(innerState);
+  const { createSchemaAccesor, setCache, assignSelections } = AccessorCreators(
+    innerState
+  );
 
   const client: GeneratedSchema = createSchemaAccesor();
 
@@ -137,5 +139,6 @@ export function createClient<
     setCache,
     hydrateCache,
     prepareRender,
+    assignSelections,
   };
 }

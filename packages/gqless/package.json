@@ -17,7 +17,7 @@
     "dev": "nodemon",
     "dev:nodemon": "tsup src -d dist && node dist/QueryBuilder/buildQuery.js",
     "lint": "tsdx lint",
-    "playground": "tsdx test test/playground.test.ts --watch",
+    "playground": "tsdx test test/playground.test.ts --watch --no-coverage",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
     "start": "tsdx watch",

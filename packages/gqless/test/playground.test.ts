@@ -1,7 +1,7 @@
 import { selectFields } from '../src';
 import { createTestClient } from './utils';
 
-test('works', async () => {
+test.skip('cache manipulation', async () => {
   const {
     query,
     scheduler,
@@ -81,4 +81,28 @@ test('works', async () => {
       hello: 'ppp',
     },
   });
+});
+
+test('assignSelections', async () => {
+  const {
+    assignSelections,
+    query,
+    scheduler,
+    mutation,
+  } = await createTestClient();
+
+  const human = query.human({
+    name: 'asd',
+  });
+
+  human.name;
+
+  await scheduler.resolving?.promise;
+
+  assignSelections(
+    human,
+    mutation.humanMutation({
+      nameArg: 'zxc',
+    })
+  );
 });

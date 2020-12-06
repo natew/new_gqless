@@ -393,11 +393,47 @@ export function AccessorCreators<
     ) as unknown) as GeneratedSchema;
   }
 
+  function assignSelections<A extends object, B extends A>(
+    source: A,
+    target: B
+  ): void {
+    let sourceSelection: Selection | undefined;
+    let targetSelection: Selection | undefined;
+
+    if (
+      !accessorCache.isProxy(source) ||
+      !(sourceSelection = accessorCache.getProxySelection(source))
+    )
+      throw Error('Invalid source proxy');
+    if (
+      !accessorCache.isProxy(target) ||
+      !(targetSelection = accessorCache.getProxySelection(target))
+    )
+      throw Error('Invalid target proxy');
+
+    const sourceSelections = accessorCache.getSelectionSetHistory(source);
+
+    console.log(410, sourceSelection, targetSelection);
+
+    if (!sourceSelections) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn("Source proxy doesn't have any selections made");
+      }
+      return;
+    }
+
+    for (const selection of sourceSelections) {
+      for (const _selectionSelection of selection.selectionsList) {
+      }
+      console.log(411, selection);
+    }
+  }
+
   return {
     createAccessor,
     createArrayAccessor,
     createSchemaAccesor,
-
+    assignSelections,
     setCache,
   };
 }
