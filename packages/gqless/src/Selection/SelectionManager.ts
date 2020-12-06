@@ -68,7 +68,10 @@ export function createSelectionManager() {
     args,
     argTypes,
     type,
-  }: SelectionConstructorArgs) {
+  }: Pick<
+    SelectionConstructorArgs,
+    'key' | 'prevSelection' | 'args' | 'argTypes' | 'type'
+  >) {
     let alias: string | undefined;
     let cacheKey = key.toString();
     if (args && argTypes) {

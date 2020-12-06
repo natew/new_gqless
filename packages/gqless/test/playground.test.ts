@@ -89,6 +89,7 @@ test('assignSelections', async () => {
     query,
     scheduler,
     mutation,
+    cache,
   } = await createTestClient();
 
   const human = query.human({
@@ -97,12 +98,24 @@ test('assignSelections', async () => {
 
   human.name;
 
-  await scheduler.resolving?.promise;
+  await scheduler.resolving!.promise;
 
-  assignSelections(
-    human,
-    mutation.humanMutation({
-      nameArg: 'zxc',
-    })
-  );
+  expect(human.name).toBe('asd');
+
+  expect(cache).toStrictEqual({ query: { human0: { name: 'asd' } } });
+
+  const humanToMutate = mutation.humanMutation({
+    nameArg: 'zxc',
+  });
+  assignSelections(human, humanToMutate);
+
+  await scheduler.resolving!.promise;
+
+  expect(cache).toStrictEqual({
+    query: { human0: { name: 'asd' } },
+    mutation: { humanMutation0: { name: 'zxc' } },
+  });
+
+  expect(human.name).toBe('asd');
+  expect(humanToMutate.name).toBe('zxc');
 });

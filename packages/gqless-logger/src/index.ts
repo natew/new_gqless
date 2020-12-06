@@ -137,9 +137,11 @@ export function createLogger(
 
     if (options.showSelections) {
       console.groupCollapsed(...format(['Selections', headerStyles]));
-      selections.forEach(({ noIndexSelections, type, ...selection }) => {
-        console.log(stringifyJSONIfEnabled(cleanObject(selection)));
-      });
+      selections.forEach(
+        ({ noIndexSelections, selectionsList, type, ...selection }) => {
+          console.log(stringifyJSONIfEnabled(cleanObject(selection)));
+        }
+      );
       console.groupEnd();
     }
 

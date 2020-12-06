@@ -397,23 +397,21 @@ export function AccessorCreators<
     source: A,
     target: B
   ): void {
-    let sourceSelection: Selection | undefined;
-    let targetSelection: Selection | undefined;
+    let sourceSelection: Selection;
+    let targetSelection: Selection;
 
     if (
       !accessorCache.isProxy(source) ||
-      !(sourceSelection = accessorCache.getProxySelection(source))
+      !(sourceSelection = accessorCache.getProxySelection(source)!)
     )
       throw Error('Invalid source proxy');
     if (
       !accessorCache.isProxy(target) ||
-      !(targetSelection = accessorCache.getProxySelection(target))
+      !(targetSelection = accessorCache.getProxySelection(target)!)
     )
       throw Error('Invalid target proxy');
 
     const sourceSelections = accessorCache.getSelectionSetHistory(source);
-
-    console.log(410, sourceSelection, targetSelection);
 
     if (!sourceSelections) {
       if (process.env.NODE_ENV !== 'production') {
@@ -423,9 +421,22 @@ export function AccessorCreators<
     }
 
     for (const selection of sourceSelections) {
-      for (const _selectionSelection of selection.selectionsList) {
+      let mappedSelection = targetSelection;
+      const filteredSelections = selection.selectionsList.filter(
+        (value) => !sourceSelection.selectionsList.includes(value)
+      );
+
+      for (const { key, args, argTypes } of filteredSelections) {
+        mappedSelection = selectionManager.getSelection({
+          key,
+          args,
+          argTypes,
+          prevSelection: mappedSelection,
+        });
       }
-      console.log(411, selection);
+
+      accessorCache.addSelectionToAccessorHistory(target, mappedSelection);
+      interceptorManager.addSelection(mappedSelection);
     }
   }
 
