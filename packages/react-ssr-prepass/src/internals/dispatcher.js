@@ -297,6 +297,10 @@ function useDeferredValue<T>(input: T): T {
   return input;
 }
 
+function useMutableSource<T>(_a, getSnapshot) {
+  return getSnapshot();
+}
+
 export const Dispatcher = {
   readContext,
   useContext,
@@ -316,5 +320,5 @@ export const Dispatcher = {
   useEffect: noop,
   // Debugging effect
   useDebugValue: noop,
-  useMutableSource: noop,
+  useMutableSource,
 };

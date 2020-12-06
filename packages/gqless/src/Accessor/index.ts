@@ -195,6 +195,14 @@ export function AccessorCreators<
             } catch (err) {}
 
             if (isInteger(index)) {
+              const selection = selectionManager.getSelection({
+                key: index,
+                prevSelection: selectionArg,
+              });
+
+              // For the subscribers of data changes
+              interceptorManager.addSelectionCache(selection);
+
               if (
                 innerState.allowCache &&
                 arrayCacheValue !== CacheNotFound &&
@@ -206,10 +214,6 @@ export function AccessorCreators<
                 return arrayCacheValue[index];
               }
 
-              const selection = selectionManager.getSelection({
-                key: index,
-                prevSelection: selectionArg,
-              });
               const childAccessor = createAccessor(schemaType, selection);
 
               accessorCache.addAccessorChild(accessor, childAccessor);
@@ -278,6 +282,9 @@ export function AccessorCreators<
                 argTypes: args != null ? args.argTypes : undefined,
               });
 
+              // For the subscribers of data changes
+              interceptorManager.addSelectionCache(selection);
+
               if (scalarsEnumsHash[pureType]) {
                 const cacheValue = innerState.clientCache.getCacheFromSelection(
                   selection
@@ -299,9 +306,6 @@ export function AccessorCreators<
                 if (!innerState.allowCache) {
                   // Or if you are making the network fetch always
                   interceptorManager.addSelection(selection);
-                } else {
-                  // For the subscribers of data changes
-                  interceptorManager.addSelectionCache(selection);
                 }
 
                 return cacheValue;
