@@ -4,7 +4,10 @@ import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
 
-export interface UseLazyQueryOptions<TData> extends ResolveOptions<TData> {}
+export interface UseLazyQueryOptions<TData> extends ResolveOptions<TData> {
+  onCompleted?: (data: TData) => void;
+  onError?: (error: gqlessError) => void;
+}
 
 export interface UseLazyQueryState<TData> {
   data: TData | undefined;
@@ -57,12 +60,24 @@ export interface UseLazyQuery<
     query: object;
   }
 > {
-  <TData = unknown>(
-    fn?: (query: GeneratedSchema['query']) => TData,
+  <TData = unknown, TArgs = undefined>(
+    queryFn?: (query: GeneratedSchema['query'], args: TArgs) => TData,
     options?: UseLazyQueryOptions<TData>
   ): readonly [
     (
-      fnArg?: ((query: GeneratedSchema['query']) => TData) | undefined
+      ...opts: TArgs extends undefined
+        ? [
+            {
+              fn?: (query: GeneratedSchema['query'], args: TArgs) => TData;
+              args?: TArgs;
+            }?
+          ]
+        : [
+            {
+              fn?: (query: GeneratedSchema['query'], args: TArgs) => TData;
+              args: TArgs;
+            }
+          ]
     ) => Promise<TData>,
     UseLazyQueryState<TData>
   ];
@@ -77,10 +92,11 @@ export function createUseLazyQuery<
   const clientQuery: GeneratedSchema['query'] = client.query;
 
   const useLazyQuery: UseLazyQuery<GeneratedSchema> = function useLazyQuery<
-    TData
+    TData,
+    TArgs = undefined
   >(
-    fn?: (query: typeof clientQuery) => TData,
-    { noCache, refetch = true }: UseLazyQueryOptions<TData> = {}
+    fn?: (query: typeof clientQuery, args: TArgs) => TData,
+    opts: UseLazyQueryOptions<TData> = {}
   ) {
     const [state, dispatch] = useReducer(
       UseLazyQueryReducer,
@@ -91,8 +107,11 @@ export function createUseLazyQuery<
     const fnRef = useRef(fn);
     fnRef.current = fn;
 
+    const optsRef = useRef(opts);
+    optsRef.current = opts;
+
     const queryFn = useCallback(
-      (fnArg?: typeof fn) => {
+      ({ fn: fnArg, args }: { fn?: typeof fn; args?: any } = {}) => {
         dispatch({
           type: 'loading',
         });
@@ -100,20 +119,24 @@ export function createUseLazyQuery<
         const refFn = fnRef.current;
 
         const functionResolve = fnArg
-          ? () => fnArg(clientQuery)
+          ? () => fnArg(clientQuery, args)
           : refFn
-          ? () => refFn(clientQuery)
+          ? () => refFn(clientQuery, args)
           : (() => {
               throw new gqlessError(
                 'You have to specify a function to be resolved'
               );
             })();
 
+        const { noCache, refetch, onCacheData } = optsRef.current;
+
         return resolved<TData>(functionResolve, {
           noCache,
           refetch,
+          onCacheData,
         }).then(
           (data) => {
+            optsRef.current.onCompleted?.(data);
             dispatch({
               type: 'success',
               data,
@@ -122,6 +145,7 @@ export function createUseLazyQuery<
           },
           (err) => {
             const error = gqlessError.create(err);
+            optsRef.current.onError?.(error);
             dispatch({
               type: 'failure',
               error,
@@ -131,7 +155,7 @@ export function createUseLazyQuery<
           }
         );
       },
-      [refetch, noCache, fnRef, dispatch]
+      [fnRef, dispatch, optsRef]
     );
 
     return useMemo(() => [queryFn, state] as const, [queryFn, state]);

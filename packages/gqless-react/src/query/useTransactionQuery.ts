@@ -87,7 +87,10 @@ function InitUseTransactionQueryReducer<
   TVariables extends Record<string, unknown> | undefined
 >({
   skip,
-}: UseTransactionQueryOptions<TVariables>): UseTransactionQueryState<TData> {
+}: UseTransactionQueryOptions<
+  TData,
+  TVariables
+>): UseTransactionQueryState<TData> {
   return {
     data: undefined,
     isLoading: skip ? false : true,
@@ -96,6 +99,7 @@ function InitUseTransactionQueryReducer<
 }
 
 export interface UseTransactionQueryOptions<
+  TData,
   Variables extends Record<string, unknown> | undefined
 > {
   fetchPolicy?: FetchPolicy;
@@ -103,6 +107,8 @@ export interface UseTransactionQueryOptions<
   pollInterval?: number;
   notifyOnNetworkStatusChange?: boolean;
   variables?: Variables;
+  onCompleted?: (data: TData) => void;
+  onError?: (error: gqlessError) => void;
 }
 
 export interface UseTransactionQuery<
@@ -112,7 +118,7 @@ export interface UseTransactionQuery<
 > {
   <TData, TVariables extends Record<string, unknown> | undefined = undefined>(
     fn: (query: GeneratedSchema['query'], variables: TVariables) => TData,
-    options?: UseTransactionQueryOptions<TVariables>
+    options?: UseTransactionQueryOptions<TData, TVariables>
   ): UseTransactionQueryState<TData>;
 }
 
@@ -132,7 +138,7 @@ export function createUseTransactionQuery<
     TVariables extends Record<string, unknown> | undefined = undefined
   >(
     fn: (query: typeof clientQuery, variables: TVariables) => TData,
-    queryOptions?: UseTransactionQueryOptions<TVariables>
+    queryOptions?: UseTransactionQueryOptions<TData, TVariables>
   ) {
     const opts = Object.assign({}, queryOptions);
 
@@ -210,6 +216,7 @@ export function createUseTransactionQuery<
           }
         ).then(
           (data) => {
+            optsRef.current.onCompleted?.(data);
             isFetching.current = false;
             dispatch({
               type: 'success',
@@ -221,6 +228,7 @@ export function createUseTransactionQuery<
           (err: unknown) => {
             isFetching.current = false;
             const error = gqlessError.create(err);
+            optsRef.current.onError?.(error);
             dispatch({
               type: 'failure',
               error,

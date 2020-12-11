@@ -6,7 +6,10 @@ import { CreateReactClientOptions } from '../client';
 import { useDeferDispatch } from '../common';
 
 export interface UseMutationOptions<TData>
-  extends Pick<ResolveOptions<TData>, 'noCache'> {}
+  extends Pick<ResolveOptions<TData>, 'noCache'> {
+  onCompleted?: (data: TData) => void;
+  onError?: (error: gqlessError) => void;
+}
 
 export interface UseMutationState<TData> {
   data: TData | undefined;
@@ -59,12 +62,30 @@ export interface UseMutation<
     mutation: object;
   }
 > {
-  <TData = unknown>(
-    fn?: (mutation: GeneratedSchema['mutation']) => TData,
+  <TData = unknown, TArgs = undefined>(
+    mutationFn?: (mutation: GeneratedSchema['mutation']) => TData,
     options?: UseMutationOptions<TData>
   ): readonly [
     (
-      fnArg?: ((mutation: GeneratedSchema['mutation']) => TData) | undefined
+      ...opts: TArgs extends undefined
+        ? [
+            {
+              fn?: (
+                mutation: GeneratedSchema['mutation'],
+                args: TArgs
+              ) => TData;
+              args?: TArgs;
+            }?
+          ]
+        : [
+            {
+              fn?: (
+                mutation: GeneratedSchema['mutation'],
+                args: TArgs
+              ) => TData;
+              args: TArgs;
+            }
+          ]
     ) => Promise<TData>,
     UseMutationState<TData>
   ];
@@ -78,8 +99,11 @@ export function createUseMutation<
   const { resolved } = client;
   const clientMutation: GeneratedSchema['mutation'] = client.mutation;
 
-  const useMutation: UseMutation<GeneratedSchema> = function useMutation<TData>(
-    fn?: (mutation: typeof clientMutation) => TData,
+  const useMutation: UseMutation<GeneratedSchema> = function useMutation<
+    TData,
+    TArgs = undefined
+  >(
+    mutationFn?: (mutation: typeof clientMutation, args: TArgs) => TData,
     mutationOptions?: UseMutationOptions<TData>
   ) {
     const opts = Object.assign({}, mutationOptions);
@@ -94,19 +118,19 @@ export function createUseMutation<
     ) as [UseMutationState<TData>, Dispatch<UseMutationReducerAction<TData>>];
     const dispatch = useDeferDispatch(dispatchReducer);
 
-    const fnRef = useRef(fn);
-    fnRef.current = fn;
+    const fnRef = useRef(mutationFn);
+    fnRef.current = mutationFn;
 
     const mutate = useCallback(
-      (fnArg?: typeof fn) => {
+      ({ fn: fnArg, args }: { fn?: typeof mutationFn; args?: any } = {}) => {
         dispatch({ type: 'loading' });
 
         const refFn = fnRef.current;
 
         const functionResolve = fnArg
-          ? () => fnArg(clientMutation)
+          ? () => fnArg(clientMutation, args)
           : refFn
-          ? () => refFn(clientMutation)
+          ? () => refFn(clientMutation, args)
           : (() => {
               throw new gqlessError(
                 'You have to specify a function to be resolved'
@@ -118,6 +142,7 @@ export function createUseMutation<
           refetch: true,
         }).then(
           (data) => {
+            optsRef.current.onCompleted?.(data);
             dispatch({
               type: 'success',
               data,
@@ -127,6 +152,7 @@ export function createUseMutation<
           },
           (err: unknown) => {
             const error = gqlessError.create(err);
+            optsRef.current.onError?.(error);
             dispatch({
               type: 'failure',
               error,
