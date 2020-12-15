@@ -22,7 +22,7 @@ test('basic functionality works', async () => {
 
   const shouldBeIncluded = '// This should be included';
 
-  const { code, generatedSchema, scalarsEnumsHash } = await generate(
+  const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
     server.graphql.schema,
     {
       preImport: `
@@ -31,7 +31,7 @@ test('basic functionality works', async () => {
     }
   );
 
-  expect(code).toMatchSnapshot('generate_code');
+  expect(schemaCode).toMatchSnapshot('generate_code');
 
   expect(JSON.stringify(generatedSchema, null, 2)).toMatchSnapshot(
     'generate_generatedSchema'
@@ -41,68 +41,7 @@ test('basic functionality works', async () => {
     'generate_scalarsEnumHash'
   );
 
-  expect(code.startsWith(shouldBeIncluded)).toBeTruthy();
-});
-
-test('custom query fetcher', async () => {
-  const { server, isReady } = createTestApp({
-    schema: gql`
-      type Query {
-        hello: String!
-      }
-    `,
-    resolvers: {
-      Query: {
-        hello() {
-          return 'hello world';
-        },
-      },
-    },
-  });
-
-  await isReady;
-
-  const customQueryFetcher = `
-const queryFetcher: QueryFetcher = async function (query, variables) {
-  const response = await fetch('/graphql', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: 'bearer <token>',
-    },
-    body: JSON.stringify({
-      query,
-      variables,
-    }),
-    mode: 'cors',
-  });
-
-  if (!response.ok) {
-    throw new Error(\`Network error, received status code \${response.status}\`);
-  }
-
-  const json = await response.json();
-};
-      `;
-
-  const { code, generatedSchema, scalarsEnumsHash } = await generate(
-    server.graphql.schema,
-    {
-      queryFetcher: customQueryFetcher,
-    }
-  );
-
-  expect(code).toMatchSnapshot('generate_customQueryFetcher_code');
-
-  expect(JSON.stringify(generatedSchema, null, 2)).toMatchSnapshot(
-    'generate_customQueryFetcher_generatedSchema'
-  );
-
-  expect(JSON.stringify(scalarsEnumsHash, null, 2)).toMatchSnapshot(
-    'generate_customQueryFetcher_scalarsEnumHash'
-  );
-
-  expect(code.includes(customQueryFetcher.trim())).toBeTruthy();
+  expect(schemaCode.startsWith(shouldBeIncluded)).toBeTruthy();
 });
 
 test('custom scalars works', async () => {
@@ -124,7 +63,7 @@ test('custom scalars works', async () => {
 
   await isReady;
 
-  const { code, generatedSchema, scalarsEnumsHash } = await generate(
+  const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
     server.graphql.schema,
     {
       scalars: {
@@ -133,7 +72,7 @@ test('custom scalars works', async () => {
     }
   );
 
-  expect(code).toMatchSnapshot('generate_code');
+  expect(schemaCode).toMatchSnapshot('generate_code');
 
   expect(JSON.stringify(generatedSchema, null, 2)).toMatchSnapshot(
     'generate_customScalars_generatedSchema'
@@ -144,7 +83,7 @@ test('custom scalars works', async () => {
   );
 
   expect(
-    code.includes(
+    schemaCode.includes(
       `
 export interface Scalars {
   ID: string;
@@ -208,11 +147,11 @@ describe('feature complete app', () => {
     await isReady;
   });
   test('generate works', async () => {
-    const { code, generatedSchema, scalarsEnumsHash } = await generate(
+    const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
       server.graphql.schema
     );
 
-    expect(code).toMatchSnapshot('featureComplete_code');
+    expect(schemaCode).toMatchSnapshot('featureComplete_code');
     expect(JSON.stringify(generatedSchema)).toMatchSnapshot(
       'featureComplete_generatedSchema'
     );
@@ -265,11 +204,11 @@ describe('mutation', () => {
   });
 
   test('generates mutation', async () => {
-    const { code, generatedSchema, scalarsEnumsHash } = await generate(
+    const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
       server.graphql.schema
     );
 
-    expect(code).toMatchSnapshot('mutation_code');
+    expect(schemaCode).toMatchSnapshot('mutation_code');
     expect(generatedSchema).toMatchSnapshot('mutation_generatedSchema');
     expect(scalarsEnumsHash).toMatchSnapshot('mutation_scalarsEnumHash');
   });
@@ -299,11 +238,11 @@ describe('subscription', () => {
   });
 
   test('generates subscription', async () => {
-    const { code, generatedSchema, scalarsEnumsHash } = await generate(
+    const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
       server.graphql.schema
     );
 
-    expect(code).toMatchSnapshot('subscription_code');
+    expect(schemaCode).toMatchSnapshot('subscription_code');
     expect(generatedSchema).toMatchSnapshot('subscription_generatedSchema');
     expect(scalarsEnumsHash).toMatchSnapshot('subscription_scalarsEnumHash');
   });

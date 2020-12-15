@@ -16,33 +16,6 @@ import * as typescriptPlugin from '@graphql-codegen/typescript';
 
 export type GenerateOptions = {
   /**
-   * Overwrite the default 'queryFetcher'
-   * 
-   * @default
-   * const queryFetcher: QueryFetcher = async function (query, variables) {
-        const response = await fetch('/graphql', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query,
-            variables,
-          }),
-          mode: 'cors',
-        });
-
-      if (!response.ok) {
-        throw new Error(`Network error, received status code ${response.status}`);
-      }
-
-      const json = await response.json();
-
-      return json;
-    };
-   */
-  queryFetcher?: string;
-  /**
    * Add a custom string at the beginning of the file, for example, add imports.
    */
   preImport?: string;
@@ -54,7 +27,7 @@ export type GenerateOptions = {
 
 export async function generate(
   schema: GraphQLSchema,
-  { queryFetcher, preImport = '', scalars }: GenerateOptions = {}
+  { preImport = '', scalars }: GenerateOptions = {}
 ) {
   const prettierConfig = resolveConfig(process.cwd());
   const codegenResult = codegen({
@@ -290,9 +263,7 @@ export async function generate(
     }
     `;
 
-  queryFetcher =
-    queryFetcher ||
-    `
+  const queryFetcher = `
     const queryFetcher : QueryFetcher = async function (query, variables) {
         const response = await fetch("/graphql", {
           method: "POST",
@@ -316,10 +287,15 @@ export async function generate(
       };
     `;
 
-  const code = format(
+  const formatConfig = Object.assign({}, await prettierConfig, {
+    parser: 'typescript',
+  } as PrettierOptions);
+
+  const schemaCode = format(
     `
   ${preImport}
-  import { createClient, QueryFetcher, ScalarsEnumsHash } from "@dish/gqless";
+
+  import { ScalarsEnumsHash } from "@dish/gqless";
 
   ${await codegenResult}
 
@@ -329,20 +305,29 @@ export async function generate(
   export const generatedSchema = ${JSON.stringify(generatedSchema)} as const;
 
   ${typescriptTypes}
+    `,
+    formatConfig
+  );
+
+  const clientCode = format(
+    `
+  import { createClient, QueryFetcher } from "@dish/gqless";
+  import { GeneratedSchema, generatedSchema, scalarsEnumsHash } from "./schema.generated";
 
   ${queryFetcher}
 
-  export const client = createClient<GeneratedSchema>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher})
+  export const client = createClient<GeneratedSchema>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher});
 
-  export const { query, mutation, subscription, resolved, refetch } = client;
+  export const { query, mutation, mutate, subscription, resolved, refetch } = client;
+
+  export * from "./schema.generated";
   `,
-    Object.assign({}, await prettierConfig, {
-      parser: 'typescript',
-    } as PrettierOptions)
-  );
 
+    formatConfig
+  );
   return {
-    code,
+    clientCode,
+    schemaCode,
     generatedSchema,
     scalarsEnumsHash,
   };

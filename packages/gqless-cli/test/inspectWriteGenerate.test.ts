@@ -1,8 +1,9 @@
 import fs from 'fs';
 import { createTestApp } from 'test-utils';
-import tmp from 'tmp-promise';
+import { resolve } from 'path';
 
 import { inspectWriteGenerate } from '../src/inspectWriteGenerate';
+import { getTempDir } from './utils';
 
 const { readFile, writeFile } = fs.promises;
 const { server, isReady } = createTestApp({
@@ -32,27 +33,33 @@ afterAll(async () => {
 });
 
 test('basic inspectWriteGenerate functionality', async () => {
-  const tempFile = await tmp.file();
+  const tempDir = await getTempDir();
 
   try {
     await inspectWriteGenerate({
       endpoint,
       overwrite: true,
-      destination: tempFile.path,
+      destination: tempDir.clientPath,
     });
 
     expect(
-      await readFile(tempFile.path, {
+      await readFile(tempDir.clientPath, {
         encoding: 'utf-8',
       })
-    ).toMatchSnapshot('basic inspectWriteGenerate');
+    ).toMatchSnapshot('basic inspectWriteGenerate client');
+
+    expect(
+      await readFile(tempDir.schemaPath, {
+        encoding: 'utf-8',
+      })
+    ).toMatchSnapshot('basic inspectWriteGenerate schema');
   } finally {
-    await tempFile.cleanup();
+    await tempDir.cleanup();
   }
 });
 
 test('specify generateOptions to inspectWriteGenerate', async () => {
-  const tempFile = await tmp.file();
+  const tempDir = await getTempDir();
 
   const shouldBeIncluded = '// This should be included';
 
@@ -60,7 +67,7 @@ test('specify generateOptions to inspectWriteGenerate', async () => {
     await inspectWriteGenerate({
       endpoint,
       overwrite: true,
-      destination: tempFile.path,
+      destination: tempDir.clientPath,
       generateOptions: {
         preImport: `
             ${shouldBeIncluded}
@@ -68,15 +75,26 @@ test('specify generateOptions to inspectWriteGenerate', async () => {
       },
     });
 
-    const generatedFileContent = await readFile(tempFile.path, {
+    const generatedFileContentClient = await readFile(tempDir.clientPath, {
       encoding: 'utf-8',
     });
 
-    expect(generatedFileContent).toMatchSnapshot('generateOptions');
+    const generatedFileContentSchema = await readFile(tempDir.schemaPath, {
+      encoding: 'utf-8',
+    });
 
-    expect(generatedFileContent.startsWith(shouldBeIncluded)).toBeTruthy();
+    expect(generatedFileContentClient).toMatchSnapshot(
+      'generateOptions client'
+    );
+    expect(generatedFileContentSchema).toMatchSnapshot(
+      'generateOptions schema'
+    );
+
+    expect(
+      generatedFileContentSchema.startsWith(shouldBeIncluded)
+    ).toBeTruthy();
   } finally {
-    await tempFile.cleanup();
+    await tempDir.cleanup();
   }
 });
 
@@ -116,7 +134,7 @@ describe('inspect headers', () => {
   });
 
   test('specify headers to inspectWriteGenerate', async () => {
-    const tempFile = await tmp.file();
+    const tempDir = await getTempDir();
 
     const shouldBeIncluded = '// This should be included';
 
@@ -124,7 +142,7 @@ describe('inspect headers', () => {
       await inspectWriteGenerate({
         endpoint,
         overwrite: true,
-        destination: tempFile.path,
+        destination: tempDir.clientPath,
         headers: {
           authorization: secretToken,
         },
@@ -133,7 +151,7 @@ describe('inspect headers', () => {
         },
       });
 
-      const generatedFileContent = await readFile(tempFile.path, {
+      const generatedFileContent = await readFile(tempDir.schemaPath, {
         encoding: 'utf-8',
       });
 
@@ -141,40 +159,42 @@ describe('inspect headers', () => {
 
       expect(generatedFileContent.startsWith(shouldBeIncluded)).toBeTruthy();
     } finally {
-      await tempFile.cleanup();
+      await tempDir.cleanup();
     }
   });
 
   test('should throw if headers are not specified when required by server', async () => {
-    const tempFile = await tmp.file();
+    const tempDir = await getTempDir({
+      initClientFile: '',
+    });
 
     try {
       await expect(
         inspectWriteGenerate({
           endpoint,
           overwrite: true,
-          destination: tempFile.path,
+          destination: tempDir.clientPath,
         })
       ).rejects.toEqual({
         message: 'Unauthorized!',
       });
 
-      const generatedFileContent = await readFile(tempFile.path, {
+      const generatedFileContent = await readFile(tempDir.clientPath, {
         encoding: 'utf-8',
       });
 
       expect(generatedFileContent).toBe('');
     } finally {
-      await tempFile.cleanup();
+      await tempDir.cleanup();
     }
   });
 });
 
 test('should respect to not overwrite', async () => {
-  const tempFile = await tmp.file();
+  const tempDir = await getTempDir();
 
   try {
-    await writeFile(tempFile.path, 'this should be kept', {
+    await writeFile(tempDir.clientPath, 'this should be kept', {
       encoding: 'utf-8',
     });
 
@@ -182,28 +202,28 @@ test('should respect to not overwrite', async () => {
       inspectWriteGenerate({
         endpoint,
         overwrite: false,
-        destination: tempFile.path,
+        destination: tempDir.clientPath,
       })
     ).rejects.toThrow(
-      `File '${tempFile.path}' already exists, specify 'overwrite: true' to overwrite the existing file.`
+      `File '${tempDir.clientPath}' already exists, specify 'overwrite: true' to overwrite the existing file.`
     );
 
     expect(
-      await readFile(tempFile.path, {
+      await readFile(tempDir.clientPath, {
         encoding: 'utf-8',
       })
     ).toBe('this should be kept');
   } finally {
-    await tempFile.cleanup();
+    await tempDir.cleanup();
   }
 });
 
 describe('CLI behavior', () => {
   test('overwrite message', async () => {
-    const tempFile = await tmp.file();
+    const tempDir = await getTempDir();
 
     try {
-      await writeFile(tempFile.path, 'this should be kept', {
+      await writeFile(tempDir.clientPath, 'this should be kept', {
         encoding: 'utf-8',
       });
 
@@ -211,48 +231,54 @@ describe('CLI behavior', () => {
         inspectWriteGenerate({
           endpoint,
           overwrite: false,
-          destination: tempFile.path,
+          destination: tempDir.clientPath,
           cli: true,
         })
       ).rejects.toThrow(
-        `File '${tempFile.path}' already exists, specify '--overwrite' to overwrite the existing file.`
+        `File '${tempDir.clientPath}' already exists, specify '--overwrite' to overwrite the existing file.`
       );
 
       expect(
-        await readFile(tempFile.path, {
+        await readFile(tempDir.clientPath, {
           encoding: 'utf-8',
         })
       ).toBe('this should be kept');
     } finally {
-      await tempFile.cleanup();
+      await tempDir.cleanup();
     }
   });
 
   test('final message', async () => {
     const spy = jest.spyOn(console, 'log').mockImplementation();
-    const tempFile = await tmp.file();
+    const tempDir = await getTempDir();
 
     try {
       await inspectWriteGenerate({
         endpoint,
         overwrite: true,
-        destination: tempFile.path,
+        destination: tempDir.clientPath,
         cli: true,
       });
 
       expect(spy).toHaveBeenCalledTimes(1);
 
       expect(spy).toHaveBeenLastCalledWith(
-        'Code generated successfully at ' + tempFile.path
+        'Code generated successfully at ' + tempDir.clientPath
       );
 
       expect(
-        await readFile(tempFile.path, {
+        await readFile(tempDir.clientPath, {
           encoding: 'utf-8',
         })
       ).toMatchSnapshot('basic functionality with cli final messsage');
+
+      expect(
+        await readFile(tempDir.schemaPath, {
+          encoding: 'utf-8',
+        })
+      ).toMatchSnapshot('basic functionality with cli final messsage - schema');
     } finally {
-      await tempFile.cleanup();
+      await tempDir.cleanup();
       spy.mockRestore();
     }
   });

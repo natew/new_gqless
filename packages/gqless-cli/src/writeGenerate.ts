@@ -5,27 +5,70 @@ import { dirname, resolve } from 'path';
 
 import { generate, GenerateOptions } from './generate';
 
+async function writeClientCode({
+  destinationPath,
+  clientCode,
+}: {
+  clientCode: string;
+  destinationPath: string;
+}): Promise<void> {
+  if (fs.existsSync(destinationPath)) return;
+
+  await fs.promises.writeFile(destinationPath, clientCode, {
+    encoding: 'utf-8',
+  });
+}
+
+async function writeSchemaCode({
+  schemaCode,
+  destinationPath,
+}: {
+  schemaCode: string;
+  destinationPath: string;
+}): Promise<void> {
+  const schemaPath = resolve(dirname(destinationPath), './schema.generated.ts');
+
+  if (fs.existsSync(schemaPath)) {
+    const existingCode = await fs.promises.readFile(schemaPath, {
+      encoding: 'utf-8',
+    });
+
+    if (existingCode === schemaCode) return;
+  }
+
+  await fs.promises.writeFile(schemaPath, schemaCode, {
+    encoding: 'utf-8',
+  });
+}
+
 export async function writeGenerate(
   schema: GraphQLSchema,
   destinationPath: string,
   generateOptions?: GenerateOptions
 ) {
-  destinationPath = resolve(destinationPath);
-  const { code } = await generate(schema, generateOptions);
+  if (!destinationPath.endsWith('.ts')) {
+    const err = Error(
+      'You have to specify the ".ts" extension, instead, it received: "' +
+        destinationPath +
+        '"'
+    );
 
-  await mkdirp(dirname(destinationPath));
+    Error.captureStackTrace(err, writeGenerate);
 
-  if (fs.existsSync(destinationPath)) {
-    const existingCode = await fs.promises.readFile(destinationPath, {
-      encoding: 'utf-8',
-    });
-
-    if (existingCode === code) return destinationPath;
+    throw err;
   }
 
-  await fs.promises.writeFile(destinationPath, code, {
-    encoding: 'utf-8',
-  });
+  destinationPath = resolve(destinationPath);
+
+  const [{ clientCode, schemaCode }] = await Promise.all([
+    generate(schema, generateOptions),
+    mkdirp(dirname(destinationPath)),
+  ]);
+
+  await Promise.all([
+    writeClientCode({ clientCode, destinationPath }),
+    writeSchemaCode({ schemaCode, destinationPath }),
+  ]);
 
   return destinationPath;
 }
