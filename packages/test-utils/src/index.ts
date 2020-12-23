@@ -12,14 +12,14 @@ export function createTestApp(
 ): {
   server: FastifyInstance;
   client: ReturnType<typeof createMercuriusTestClient>;
-  isReady: Promise<void>;
+  isReady: Promise<unknown>;
 } {
   const server = fastify();
 
   server.register(mercurius, options);
 
   let isReady = codegenPath
-    ? new Promise<void>((resolve, reject) => {
+    ? new Promise<unknown>((resolve, reject) => {
         import('mercurius-codegen')
           .then(({ default: mercuriusCodegen }) => {
             mercuriusCodegen(server, {

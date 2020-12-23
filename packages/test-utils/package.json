@@ -20,15 +20,15 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch",
+    "start": "tsdx watch --noClean",
     "test": "tsdx test"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
-    "fastify": "^3.9.1",
+    "fastify": "^3.9.2",
     "graphql": "^15.4.0",
-    "mercurius": "^6.5.0",
-    "mercurius-codegen": "^1.1.4",
+    "mercurius": "^6.7.0",
+    "mercurius-codegen": "^1.2.0",
     "mercurius-integration-testing": "^3.1.2",
     "randomstring": "^1.1.5",
     "wait-for-expect": "^3.0.2"

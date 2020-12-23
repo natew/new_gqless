@@ -17,19 +17,20 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch",
-    "test": "tsdx test"
+    "start": "tsdx watch --noClean",
+    "test": "tsdx test",
+    "test:watch": "tsdx test --watch"
   },
   "dependencies": {
     "@graphql-codegen/core": "^1.17.9",
     "@graphql-codegen/typescript": "^1.19.0",
-    "@graphql-tools/delegate": "^7.0.7",
+    "@graphql-tools/delegate": "^7.0.8",
     "@graphql-tools/wrap": "^7.0.4",
     "commander": "^6.2.1",
     "cross-fetch": "^3.0.6",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
-    "lodash-es": "^4.17.15",
+    "lodash-es": "^4.17.20",
     "mkdirp": "^1.0.4",
     "prettier": "^2.2.1"
   },

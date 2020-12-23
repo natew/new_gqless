@@ -20,23 +20,24 @@
     "playground": "tsdx test test/playground.test.ts --watch --no-coverage",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch",
-    "test": "tsdx test"
+    "start": "tsdx watch --noClean",
+    "test": "tsdx test",
+    "test:watch": "tsdx test --watch"
   },
   "dependencies": {
     "lodash": "^4.17.20",
-    "lodash-es": "^4.17.15"
+    "lodash-es": "^4.17.20"
   },
   "devDependencies": {
     "@dish/gqless-cli": "workspace:^3.0.0",
     "@size-limit/preset-small-lib": "^4.9.1",
     "@types/lodash": "^4.14.165",
-    "@types/node": "^14.14.13",
+    "@types/node": "^14.14.14",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/tap": "^14.10.1",
     "graphql": "^15.4.0",
-    "mercurius": "^6.5.0",
+    "mercurius": "^6.7.0",
     "nodemon": "^2.0.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

@@ -19,17 +19,18 @@
     "listen": "node listen.js",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch",
-    "test": "tsdx test"
+    "start": "tsdx watch --noClean",
+    "test": "tsdx test",
+    "test:watch": "tsdx test --watch"
   },
   "dependencies": {
     "@dish/gqless": "workspace:^3.0.3",
     "@dish/gqless-cli": "workspace:^3.0.0",
-    "fastify": "^3.9.1",
+    "fastify": "^3.9.2",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
-    "mercurius": "^6.5.0",
-    "mercurius-codegen": "^1.1.4",
+    "mercurius": "^6.7.0",
+    "mercurius-codegen": "^1.2.0",
     "randomstring": "^1.1.5"
   },
   "devDependencies": {

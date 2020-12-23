@@ -131,31 +131,9 @@ codegenMercurius(app, {
 const ready = new Promise<void>(async (resolve) => {
   await app.ready();
 
-  writeGenerate(app.graphql.schema, './src/graphql/gqless.ts', {
-    queryFetcher: `
-    const queryFetcher: QueryFetcher = async function (query, variables) {
-      const response = await fetch('http://localhost:4141/api/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          variables,
-        }),
-        mode: 'cors',
-      });
-   
-    if (!response.ok) {
-      throw new Error(\`Network error, received status code \${response.status}\`);
-    }
-   
-    const json = await response.json();
-   
-    return json;
-   };
-    `,
-  }).catch(console.error);
+  writeGenerate(app.graphql.schema, './src/graphql/gqless.ts', {}).catch(
+    console.error
+  );
 
   resolve();
 });
