@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { createTestApp } from 'test-utils';
-import { resolve } from 'path';
 
 import { inspectWriteGenerate } from '../src/inspectWriteGenerate';
 import { getTempDir } from './utils';
