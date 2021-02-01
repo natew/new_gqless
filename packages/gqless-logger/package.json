@@ -15,7 +15,7 @@
     "build": "rimraf node_modules/.cache && tsdx build",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch --noClean",
+    "start": "tsdx watch --noClean --verbose",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },

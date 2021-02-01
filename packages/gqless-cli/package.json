@@ -17,7 +17,7 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch --noClean",
+    "start": "tsdx watch --verbose --noClean",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },

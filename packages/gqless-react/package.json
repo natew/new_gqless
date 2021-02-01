@@ -16,7 +16,8 @@
     "lint": "tsdx lint",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch --noClean",
+    "start": "tsdx watch --verbose --noClean",
+    "start:with:example": "tsdx watch --verbose --noClean --onSuccess \"pnpm -r --filter gqless-react-example dev\"",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },

@@ -18,7 +18,7 @@
   "sideEffects": false,
   "types": "index.d.ts",
   "scripts": {
-    "prepublishOnly": "run-s build",
+    "prepare": "run-s build",
     "build": "rollup -c rollup.config.js",
     "test": "jest",
     "flow": "flow"

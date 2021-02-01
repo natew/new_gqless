@@ -40,21 +40,16 @@ export function AccessorCreators<
 
       // An edge case hard to reproduce
       /* istanbul ignore if */
-      if (!accessorSelection) {
-        return undefined;
-      }
+      if (!accessorSelection) return undefined;
 
       const selectionCache = innerState.clientCache.getCacheFromSelection(
         accessorSelection
       );
 
-      if (selectionCache === CacheNotFound) {
-        return undefined;
-      }
+      if (selectionCache === CacheNotFound) return undefined;
+
       return selectionCache;
-    } else {
-      return value;
-    }
+    } else return value;
   }
 
   function setCache<A extends object>(
@@ -116,9 +111,7 @@ export function AccessorCreators<
       if (!selection) {
         const err = Error('Invalid proxy selection');
 
-        if (Error.captureStackTrace!) {
-          Error.captureStackTrace(err, setCache);
-        }
+        if (Error.captureStackTrace!) Error.captureStackTrace(err, setCache);
 
         throw err;
       }
@@ -134,9 +127,7 @@ export function AccessorCreators<
       const err = Error('Invalid gqless proxy');
 
       /* istanbul ignore else */
-      if (Error.captureStackTrace!) {
-        Error.captureStackTrace(err, setCache);
-      }
+      if (Error.captureStackTrace!) Error.captureStackTrace(err, setCache);
 
       throw err;
     }
