@@ -1,22 +1,30 @@
-import { useLazyQuery } from '../components/client';
-export default function ErrorPage() {
-  const [getError] = useLazyQuery();
+import { useQuery } from '../components/client';
+import { ErrorBoundary } from 'react-error-boundary';
+const ErrorComponent = () => {
+  const query = useQuery();
 
+  return <div>{query.expectedError}</div>;
+};
+
+export default function ErrorPage() {
   return (
-    <div>
-      <button
-        onClick={() => {
-          getError((query) => {
-            return query.expectedError;
-          })
-            .then((value) => {
-              console.log(value);
+    <>
+      <div>123</div>
+      <ErrorBoundary
+        onError={(err) => {
+          console.log(
+            1515,
+            JSON.stringify({
+              err,
             })
-            .catch(() => {});
+          );
+        }}
+        fallbackRender={() => {
+          return <>error</>;
         }}
       >
-        Click here
-      </button>
-    </div>
+        <ErrorComponent />
+      </ErrorBoundary>
+    </>
   );
 }

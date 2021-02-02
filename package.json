@@ -6,10 +6,10 @@
     "build": "pnpm build -r --stream",
     "dev": "node dev.mjs",
     "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test -r --no-bail --no-sort --stream",
+    "dev:react": "pnpm -r --filter @dish/gqless start -- --onSuccess \"pnpm --filter gqless_refactor -r exec -- node dev-react.mjs\"",
     "dev:start": "pnpm start -r --no-bail --no-sort",
     "dev:test": "pnpm test:watch -r --no-bail --no-sort --stream",
     "publish:next": "pnpm i && pnpm test && pnpm -r publish --access public --tag next",
-    "dev:react": "concurrently --names core,react -p name \"pnpm -r --filter @dish/gqless start\" \"pnpm -r --filter @dish/gqless-react start:with:example\"",
     "test": "pnpm test -r --no-sort --no-bail --stream"
   },
   "husky": {
@@ -24,6 +24,7 @@
     "concurrently": "^5.3.0",
     "fkill": "^7.1.0",
     "husky": "^4.3.8",
+    "kill-port": "^1.6.1",
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0"
   },
