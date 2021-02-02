@@ -97,11 +97,12 @@ export function createClient<
     globalInterceptor.removeSelections(selections);
     try {
       await resolvePromise;
-    } catch (err) {
+    } catch (error) {
       /* istanbul ignore else */
       if (resolvingPromise) {
-        resolvingPromise.promise.catch(console.error);
-        resolvingPromise.reject(err);
+        resolvingPromise.resolve({
+          error,
+        });
       }
     }
   }

@@ -1,13 +1,11 @@
-export interface LazyPromise<T = void> {
+export interface LazyPromise<T> {
   promise: Promise<T>;
-  resolve: T extends void ? () => void : (value: T) => void;
+  resolve: (value: T) => void;
   reject: (reason: unknown) => void;
 }
 
-export function createLazyPromise<T = void>(): LazyPromise<T> {
-  let resolve: T extends void
-    ? () => void
-    : (value: T) => void = undefined as any;
+export function createLazyPromise<T>(): LazyPromise<T> {
+  let resolve: (value: T) => void = undefined as any;
   let reject: (reason: unknown) => void = undefined as any;
   const promise = new Promise<T>((resolveFn: any, rejectFn) => {
     resolve = resolveFn;

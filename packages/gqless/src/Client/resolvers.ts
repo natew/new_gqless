@@ -131,6 +131,8 @@ export function createResolvers(innerState: InnerClientState) {
 
       const { data, errors } = executionResult;
 
+      if (data) cache.mergeCache(data, type);
+
       if (errors?.length) {
         if (errors.length > 1) {
           const err = new gqlessError(
@@ -152,10 +154,6 @@ export function createResolvers(innerState: InnerClientState) {
 
           throw error;
         }
-      }
-
-      if (data) {
-        cache.mergeCache(data, type);
       }
 
       loggingPromise?.resolve({

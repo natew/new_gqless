@@ -11,12 +11,15 @@ export const createScheduler = (
   resolveSelections: (selections: Set<Selection>) => Promise<void>,
   catchSelectionsTimeMS: number
 ) => {
+  type ResolvingLazyPromise = LazyPromise<{ error: unknown } | null>;
+  type ResolvedLazyPromise = Promise<{ error: unknown } | null>;
+
   const resolveListeners = new Set<
-    (promise: Promise<void>, selection: Selection) => void
+    (promise: ResolvedLazyPromise, selection: Selection) => void
   >();
 
   function subscribeResolve(
-    fn: (promise: Promise<void>, selection: Selection) => void
+    fn: (promise: ResolvedLazyPromise, selection: Selection) => void
   ) {
     resolveListeners.add(fn);
 
@@ -26,15 +29,15 @@ export const createScheduler = (
   }
 
   const scheduler = {
-    resolving: null as null | LazyPromise,
+    resolving: null as null | ResolvingLazyPromise,
     subscribeResolve,
   };
 
-  let resolvingPromise: LazyPromise | null = null;
+  let resolvingPromise: ResolvingLazyPromise | null = null;
 
   const pendingSelectionsGroups = new Set<Set<Selection>>();
 
-  const fetchSelections = debounce((lazyPromise: LazyPromise) => {
+  const fetchSelections = debounce((lazyPromise: ResolvingLazyPromise) => {
     resolvingPromise = null;
 
     const selectionsToFetch = new Set(globalInterceptor.fetchSelections);
@@ -45,12 +48,14 @@ export const createScheduler = (
       () => {
         pendingSelectionsGroups.delete(selectionsToFetch);
         scheduler.resolving = null;
-        lazyPromise.resolve();
+        lazyPromise.resolve(null);
       },
-      (err) => {
+      (error) => {
         pendingSelectionsGroups.delete(selectionsToFetch);
         scheduler.resolving = null;
-        lazyPromise.reject(err);
+        lazyPromise.resolve({
+          error,
+        });
       }
     );
   }, catchSelectionsTimeMS);
@@ -60,9 +65,14 @@ export const createScheduler = (
       if (group.has(selection)) return;
     }
 
-    let lazyPromise: LazyPromise;
+    let lazyPromise: ResolvingLazyPromise;
     if (resolvingPromise === null) {
       lazyPromise = createLazyPromise();
+
+      lazyPromise.promise.then(
+        (result) => result && console.error(result.error)
+      );
+
       resolvingPromise = lazyPromise;
       scheduler.resolving = lazyPromise;
     } else {

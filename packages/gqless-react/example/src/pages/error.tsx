@@ -1,30 +1,28 @@
 import { useQuery } from '../components/client';
-import { ErrorBoundary } from 'react-error-boundary';
+
+import { useErrorBoundary } from 'use-error-boundary';
+import { NoSSR } from '../components/NoSSR';
+
 const ErrorComponent = () => {
-  const query = useQuery();
+  const query = useQuery({
+    suspense: true,
+  });
 
   return <div>{query.expectedError}</div>;
 };
 
 export default function ErrorPage() {
+  const { ErrorBoundary, didCatch } = useErrorBoundary();
   return (
-    <>
-      <div>123</div>
+    <NoSSR>
+      <div>{didCatch ? 'CATCH' : 'NO-CATCH'}</div>
       <ErrorBoundary
-        onError={(err) => {
-          console.log(
-            1515,
-            JSON.stringify({
-              err,
-            })
-          );
-        }}
-        fallbackRender={() => {
-          return <>error</>;
+        renderError={(err) => {
+          return <div>error!!!!</div>;
         }}
       >
         <ErrorComponent />
       </ErrorBoundary>
-    </>
+    </NoSSR>
   );
 }
