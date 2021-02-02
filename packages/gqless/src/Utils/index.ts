@@ -4,7 +4,7 @@ export interface LazyPromise<T> {
   reject: (reason: unknown) => void;
 }
 
-export function createLazyPromise<T>(): LazyPromise<T> {
+export function createLazyPromise<T = void>(): LazyPromise<T> {
   let resolve: (value: T) => void = undefined as any;
   let reject: (reason: unknown) => void = undefined as any;
   const promise = new Promise<T>((resolveFn: any, rejectFn) => {

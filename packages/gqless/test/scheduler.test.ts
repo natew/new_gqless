@@ -126,15 +126,22 @@ test('scheduler resolve subscriptions', async () => {
     key: 'd',
   });
 
-  interceptorManager.globalInterceptor.addSelection(selectionC);
-  interceptorManager.globalInterceptor.addSelection(selectionD);
-
-  expect(scheduler.resolving).toBeTruthy();
-  try {
-    await scheduler.resolving!.promise;
-
-    throw Error("Shouldn't reach this");
-  } catch (err) {
+  const spy = jest.spyOn(console, 'error').mockImplementationOnce((err) => {
     expect(err).toBe(ExpectedError);
+  });
+
+  try {
+    interceptorManager.globalInterceptor.addSelection(selectionC);
+    interceptorManager.globalInterceptor.addSelection(selectionD);
+
+    expect(scheduler.resolving).toBeTruthy();
+
+    const result = await scheduler.resolving!.promise;
+
+    expect(result?.error).toBe(ExpectedError);
+
+    expect(spy).toBeCalledTimes(1);
+  } finally {
+    spy.mockRestore();
   }
 });

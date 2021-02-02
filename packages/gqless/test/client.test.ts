@@ -212,10 +212,15 @@ describe('error handling', () => {
 
       process.env.NODE_ENV = 'production';
 
-      await resolved(() => {
-        query.throw;
-        query.throw2;
-      })
+      await resolved(
+        () => {
+          query.throw;
+          query.throw2;
+        },
+        {
+          noCache: true,
+        }
+      )
         .then(() => {
           throw Error("Shouldn't reach here");
         })

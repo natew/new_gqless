@@ -137,9 +137,14 @@ describe('logger', () => {
 
       expect(data).toBe('hello world');
 
-      const errorPromise = gqlessClient.resolved(() => {
-        return gqlessClient.query.throw;
-      });
+      const errorPromise = gqlessClient.resolved(
+        () => {
+          return gqlessClient.query.throw;
+        },
+        {
+          noCache: true,
+        }
+      );
 
       await errorPromise.catch(() => {});
 
@@ -193,9 +198,14 @@ describe('logger', () => {
 
       expect(data).toBe('hello world');
 
-      const errorPromise = gqlessClient.resolved(() => {
-        return gqlessClient.query.throw;
-      });
+      const errorPromise = gqlessClient.resolved(
+        () => {
+          return gqlessClient.query.throw;
+        },
+        {
+          noCache: true,
+        }
+      );
 
       await errorPromise.catch(() => {});
 
