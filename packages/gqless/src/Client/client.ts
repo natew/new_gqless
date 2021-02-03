@@ -16,7 +16,7 @@ import {
   Selection,
   SelectionManager,
 } from '../Selection';
-import { createResolvers } from './resolvers';
+import { createResolvers, FetchResolveOptions } from './resolvers';
 
 export interface InnerClientState {
   allowCache: boolean;
@@ -37,6 +37,7 @@ export interface ClientOptions {
   scalarsEnumsHash: ScalarsEnumsHash;
   queryFetcher: QueryFetcher;
   catchSelectionsTimeMS?: number;
+  retry?: FetchResolveOptions['retry'];
 }
 
 export function createClient<
@@ -50,6 +51,7 @@ export function createClient<
   scalarsEnumsHash,
   queryFetcher,
   catchSelectionsTimeMS = 10,
+  retry,
 }: ClientOptions) {
   const interceptorManager = createInterceptorManager();
 
@@ -92,7 +94,9 @@ export function createClient<
   async function resolveSchedulerSelections(selections: Set<Selection>) {
     const resolvingPromise = scheduler.resolving;
 
-    const resolvePromise = resolveSelections(selections);
+    const resolvePromise = resolveSelections(selections, undefined, {
+      retry: retry ?? true,
+    });
 
     globalInterceptor.removeSelections(selections);
     try {

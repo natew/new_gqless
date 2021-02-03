@@ -25,6 +25,25 @@ export interface ResolveOptions<TData> {
   onCacheData?: (data: TData) => boolean;
 }
 
+const defaultMaxRetries = 3;
+
+const defaultRetryDelay = (attemptIndex: number) =>
+  Math.min(1000 * 2 ** attemptIndex, 30000);
+
+export interface FetchResolveOptions {
+  retry?:
+    | {
+        maxRetries?: number;
+        retryDelay?: number | ((attemptIndex: number) => number);
+      }
+    | boolean
+    | number;
+}
+
+export interface BuildAndFetchState {
+  currentErrorRetry?: number;
+}
+
 export function createResolvers(innerState: InnerClientState) {
   const { interceptorManager, eventHandler, queryFetcher } = innerState;
   const { globalInterceptor } = interceptorManager;
@@ -110,7 +129,9 @@ export function createResolvers(innerState: InnerClientState) {
   async function buildAndFetchSelections(
     selections: Selection[],
     type: 'query' | 'mutation' | 'subscription',
-    cache: CacheInstance = innerState.clientCache
+    cache: CacheInstance = innerState.clientCache,
+    options: FetchResolveOptions = {},
+    state: BuildAndFetchState = {}
   ) {
     if (selections.length === 0) return;
 
@@ -174,6 +195,41 @@ export function createResolvers(innerState: InnerClientState) {
         selections,
         type,
       });
+
+      if (options.retry) {
+        const currentErrorRetry = state.currentErrorRetry ?? 0;
+
+        const maxRetries =
+          typeof options.retry === 'number'
+            ? options.retry
+            : (typeof options.retry === 'object'
+                ? options.retry.maxRetries
+                : undefined) ?? defaultMaxRetries;
+        const retryDelay =
+          (typeof options.retry === 'object'
+            ? options.retry.retryDelay
+            : undefined) ?? defaultRetryDelay;
+
+        if (currentErrorRetry < maxRetries) {
+          setTimeout(
+            () => {
+              buildAndFetchSelections(
+                selections,
+                type,
+                cache,
+                options,
+                Object.assign({}, state, {
+                  currentErrorRetry: currentErrorRetry + 1,
+                } as typeof state)
+              ).catch(console.error);
+            },
+            typeof retryDelay === 'function'
+              ? retryDelay(currentErrorRetry)
+              : retryDelay
+          );
+        }
+      }
+
       throw error;
     } finally {
       interceptorManager.removeSelections(selections);
@@ -182,7 +238,8 @@ export function createResolvers(innerState: InnerClientState) {
 
   async function resolveSelections(
     selections: Selection[] | Set<Selection>,
-    cache: CacheInstance = innerState.clientCache
+    cache: CacheInstance = innerState.clientCache,
+    options: FetchResolveOptions = {}
   ) {
     const {
       querySelections,
@@ -192,9 +249,14 @@ export function createResolvers(innerState: InnerClientState) {
 
     try {
       await Promise.all([
-        buildAndFetchSelections(querySelections, 'query', cache),
-        buildAndFetchSelections(mutationSelections, 'mutation', cache),
-        buildAndFetchSelections(subscriptionSelections, 'subscription', cache),
+        buildAndFetchSelections(querySelections, 'query', cache, options),
+        buildAndFetchSelections(mutationSelections, 'mutation', cache, options),
+        buildAndFetchSelections(
+          subscriptionSelections,
+          'subscription',
+          cache,
+          options
+        ),
       ]);
     } catch (err) {
       throw gqlessError.create(err);
