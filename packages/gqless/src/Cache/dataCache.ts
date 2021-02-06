@@ -11,8 +11,11 @@ export type CacheType = Record<string, unknown>;
 export function createCache() {
   const cache: CacheType = {};
 
-  function getCacheFromSelection(selection: Selection) {
-    return lodashGet(cache, selection.cachePath, CacheNotFound);
+  function getCacheFromSelection(
+    selection: Selection,
+    notFoundValue: unknown = CacheNotFound
+  ) {
+    return lodashGet(cache, selection.cachePath, notFoundValue);
   }
 
   function setCacheFromSelection(selection: Selection, value: unknown) {

@@ -95,7 +95,7 @@ export function createClient<
     const resolvingPromise = scheduler.resolving;
 
     const resolvePromise = resolveSelections(selections, undefined, {
-      retry: retry ?? true,
+      retry: retry === undefined ? true : retry,
     });
 
     globalInterceptor.removeSelections(selections);

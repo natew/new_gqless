@@ -180,6 +180,10 @@ export function AccessorCreators<
             throw TypeError('Invalid array assignation');
           },
           get(target, key: string, receiver) {
+            if (key === 'toJSON')
+              return () =>
+                innerState.clientCache.getCacheFromSelection(selectionArg, []);
+
             let index: number | undefined;
 
             try {
@@ -257,6 +261,10 @@ export function AccessorCreators<
             return true;
           },
           get(target, key: string, receiver) {
+            if (key === 'toJSON')
+              return () =>
+                innerState.clientCache.getCacheFromSelection(selectionArg, {});
+
             if (!schemaType.hasOwnProperty(key))
               return Reflect.get(target, key, receiver);
 

@@ -2,6 +2,7 @@ import { assertIsDefined } from 'test-utils';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../src/Cache';
 import { Selection } from '../src/Selection';
+import { createTestClient } from './utils';
 
 describe('accessorCache', () => {
   test('getAccessor', () => {
@@ -186,5 +187,15 @@ describe('dataCache', () => {
     const data = cache.getCacheFromSelection(selection);
 
     expect(data).toBe(1);
+  });
+
+  test('toJSON', async () => {
+    const { query, scheduler } = await createTestClient();
+
+    expect(JSON.stringify(query)).toBe('{}');
+
+    expect(JSON.stringify(query.nullArray)).toBe('[]');
+
+    await scheduler.resolving?.promise;
   });
 });

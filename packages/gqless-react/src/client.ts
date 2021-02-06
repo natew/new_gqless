@@ -31,9 +31,8 @@ export function createReactClient<
     },
     {
       get(target, key, receiver) {
-        if (key === 'isLoading') {
-          return Boolean(client.scheduler.resolving);
-        }
+        if (key === 'isLoading') return Boolean(client.scheduler.resolving);
+
         return Reflect.get(target, key, receiver);
       },
     }
