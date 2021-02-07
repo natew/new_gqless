@@ -38,6 +38,7 @@ export interface FetchResolveOptions {
       }
     | boolean
     | number;
+  scheduler?: boolean;
 }
 
 export interface BuildAndFetchState {
@@ -155,26 +156,30 @@ export function createResolvers(innerState: InnerClientState) {
       if (data) cache.mergeCache(data, type);
 
       if (errors?.length) {
-        if (errors.length > 1) {
-          const err = new gqlessError(
-            `GraphQL Errors${
-              process.env.NODE_ENV === 'production'
-                ? ''
-                : ', please check .graphQLErrors property'
-            }`,
-            {
-              graphQLErrors: errors,
-            }
-          );
+        const error =
+          errors.length > 1
+            ? new gqlessError(
+                `GraphQL Errors${
+                  process.env.NODE_ENV === 'production'
+                    ? ''
+                    : ', please check .graphQLErrors property'
+                }`,
+                {
+                  graphQLErrors: errors,
+                }
+              )
+            : new gqlessError(errors[0].message, {
+                graphQLErrors: errors,
+              });
 
-          throw err;
-        } else {
-          const error = new gqlessError(errors[0].message, {
-            graphQLErrors: errors,
-          });
-
-          throw error;
+        if (options.scheduler) {
+          innerState.scheduler.errors.triggerError(error, selections);
         }
+
+        throw error;
+      } else if (options.scheduler) {
+        const errorsMap = innerState.scheduler.errors.map;
+        for (const selection of selections) errorsMap.delete(selection);
       }
 
       loggingPromise?.resolve({
