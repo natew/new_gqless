@@ -178,8 +178,7 @@ export function createResolvers(innerState: InnerClientState) {
 
         throw error;
       } else if (options.scheduler) {
-        const errorsMap = innerState.scheduler.errors.map;
-        for (const selection of selections) errorsMap.delete(selection);
+        innerState.scheduler.errors.removeErrors(selections);
       }
 
       loggingPromise?.resolve({

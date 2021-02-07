@@ -3,6 +3,7 @@ import { createClient } from '@dish/gqless';
 import { FetchPolicy } from './common';
 import { createGraphqlHOC } from './hoc';
 import { createUseMutation } from './mutation/useMutation';
+import { createUseMetaState } from './query/useMetaState';
 import { createUseLazyQuery } from './query/useLazyQuery';
 import { createUsePolling } from './query/usePolling';
 import { createUseQuery } from './query/useQuery';
@@ -54,5 +55,6 @@ export function createReactClient<
     state,
     prepareReactRender,
     useHydrateCache,
+    useMetaState: createUseMetaState(client),
   };
 }

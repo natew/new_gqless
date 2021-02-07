@@ -9,6 +9,19 @@ export type Scheduler = ReturnType<typeof createScheduler>;
 
 export type SchedulerPromiseValue = { error: unknown } | null;
 
+export type ErrorSubscriptionFn = (
+  data:
+    | {
+        newError: gqlessError;
+        selections: Selection[];
+      }
+    | {
+        selectionsCleaned: Selection[];
+      }
+) => void;
+
+export type IsFetchingSubscriptionFn = (isFetching: boolean) => void;
+
 export const createScheduler = (
   { globalInterceptor }: InterceptorManager,
   resolveSelections: (selections: Set<Selection>) => Promise<void>,
@@ -32,20 +45,20 @@ export const createScheduler = (
     };
   }
 
+  const errorsMap = new Map<Selection, gqlessError>();
+
   const scheduler = {
     resolving: null as null | ResolvingLazyPromise,
     subscribeResolve,
     errors: {
-      map: new Map<Selection, gqlessError>(),
+      map: errorsMap,
       subscribeErrors,
       triggerError,
+      removeErrors,
     },
+    isFetching: false,
+    subscribeIsFetching,
   };
-
-  type ErrorSubscriptionFn = (data: {
-    error: gqlessError;
-    selections: Selection[];
-  }) => void;
 
   const errorsListeners = new Set<ErrorSubscriptionFn>();
 
@@ -57,17 +70,60 @@ export const createScheduler = (
     };
   }
 
-  function triggerError(error: gqlessError, selections: Selection[]) {
-    const errorsMap = scheduler.errors.map;
-    for (const selection of selections) errorsMap.set(selection, error);
+  function triggerError(newError: gqlessError, selections: Selection[]) {
+    for (const selection of selections) errorsMap.set(selection, newError);
 
     const data = {
-      error,
+      newError,
       selections,
     };
     errorsListeners.forEach((listener) => {
       listener(data);
     });
+  }
+
+  function removeErrors(selectionsCleaned: Selection[]) {
+    if (errorsMap.size === 0) return;
+
+    for (const selection of selectionsCleaned) errorsMap.delete(selection);
+
+    const data = {
+      selectionsCleaned,
+    };
+    errorsListeners.forEach((listener) => {
+      listener(data);
+    });
+  }
+
+  const pendingRequests = new Set<ResolvingLazyPromise>();
+
+  const isFetchingListeners = new Set<IsFetchingSubscriptionFn>();
+
+  function subscribeIsFetching(fn: IsFetchingSubscriptionFn) {
+    isFetchingListeners.add(fn);
+
+    return function unsubscribe() {
+      isFetchingListeners.delete(fn);
+    };
+  }
+
+  function addPendingRequest(resolvingPromise: ResolvingLazyPromise) {
+    pendingRequests.add(resolvingPromise);
+    if (!scheduler.isFetching) {
+      isFetchingListeners.forEach((listener) => {
+        listener(true);
+      });
+    }
+
+    return function RemovePendingRequest() {
+      pendingRequests.delete(resolvingPromise);
+
+      if (pendingRequests.size === 0) {
+        isFetchingListeners.forEach((listener) => {
+          listener(false);
+        });
+      }
+    };
   }
 
   let resolvingPromise: ResolvingLazyPromise | null = null;
@@ -106,7 +162,11 @@ export const createScheduler = (
     if (resolvingPromise === null) {
       lazyPromise = createLazyPromise();
 
+      const removePendingRequest = addPendingRequest(lazyPromise);
+
       lazyPromise.promise.then((result) => {
+        removePendingRequest();
+
         if (result) console.error(result.error);
       });
 

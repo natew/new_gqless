@@ -16,6 +16,7 @@ export const {
   prepareReactRender,
   useHydrateCache,
   useMutation,
+  useMetaState,
 } = createReactClient<GeneratedSchema>(client, {
   defaultSuspense,
 });
