@@ -133,7 +133,10 @@ export function createUseMutation<
           ? () => refFn(clientMutation, args)
           : (() => {
               throw new gqlessError(
-                'You have to specify a function to be resolved'
+                'You have to specify a function to be resolved',
+                {
+                  caller: useMutation,
+                }
               );
             })();
 
@@ -151,7 +154,7 @@ export function createUseMutation<
             return data;
           },
           (err: unknown) => {
-            const error = gqlessError.create(err);
+            const error = gqlessError.create(err, useMutation);
             optsRef.current.onError?.(error);
             dispatch({
               type: 'failure',

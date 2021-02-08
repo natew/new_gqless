@@ -159,7 +159,7 @@ export function createUseRefetch(
 
             return refetchData;
           } catch (err) {
-            const error = gqlessError.create(err);
+            const error = gqlessError.create(err, useRefetch);
             dispatch({
               type: 'error',
               error,
@@ -188,7 +188,7 @@ export function createUseRefetch(
             type: 'done',
           });
         } catch (err) {
-          const error = gqlessError.create(err);
+          const error = gqlessError.create(err, useRefetch);
           dispatch({
             type: 'error',
             error,

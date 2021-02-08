@@ -112,7 +112,7 @@ export function createUsePolling(
             break;
           }
           case 'error': {
-            const error = gqlessError.create(event.error);
+            const error = gqlessError.create(event.error, usePolling);
 
             if (isMounted)
               dispatch({

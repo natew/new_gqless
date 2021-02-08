@@ -227,7 +227,7 @@ export function createUseTransactionQuery<
           },
           (err: unknown) => {
             isFetching.current = false;
-            const error = gqlessError.create(err);
+            const error = gqlessError.create(err, useTransactionQuery);
             optsRef.current.onError?.(error);
             dispatch({
               type: 'failure',
@@ -291,7 +291,7 @@ export function createUseTransactionQuery<
             if (isMounted)
               dispatch({
                 type: 'failure',
-                error: gqlessError.create(err),
+                error: gqlessError.create(err, useTransactionQuery),
               });
           }
         );

@@ -68,12 +68,12 @@ export function AccessorCreators<
   ) {
     if (typeof accessor === 'function') {
       if (dataOrArgs !== undefined && typeof dataOrArgs !== 'object') {
-        const err = Error('Invalid arguments of type: ' + typeof dataOrArgs);
-        /* istanbul ignore else */
-        if (Error.captureStackTrace!) {
-          Error.captureStackTrace(err, setCache);
-        }
-        throw err;
+        throw new gqlessError(
+          'Invalid arguments of type: ' + typeof dataOrArgs,
+          {
+            caller: setCache,
+          }
+        );
       }
 
       const resolveInfo = (accessor as Function & {
@@ -81,14 +81,9 @@ export function AccessorCreators<
       })[ResolveInfoSymbol];
 
       if (!resolveInfo) {
-        const err = Error('Invalid gqless function');
-
-        /* istanbul ignore else */
-        if (Error.captureStackTrace!) {
-          Error.captureStackTrace(err, setCache);
-        }
-
-        throw err;
+        throw new gqlessError('Invalid gqless function', {
+          caller: setCache,
+        });
       }
 
       const selection = selectionManager.getSelection({
@@ -109,11 +104,9 @@ export function AccessorCreators<
       // An edge case hard to reproduce
       /* istanbul ignore if */
       if (!selection) {
-        const err = Error('Invalid proxy selection');
-
-        if (Error.captureStackTrace!) Error.captureStackTrace(err, setCache);
-
-        throw err;
+        throw new gqlessError('Invalid proxy selection', {
+          caller: setCache,
+        });
       }
 
       const data = extractDataFromProxy(dataOrArgs);
@@ -124,12 +117,9 @@ export function AccessorCreators<
         selection,
       });
     } else {
-      const err = Error('Invalid gqless proxy');
-
-      /* istanbul ignore else */
-      if (Error.captureStackTrace!) Error.captureStackTrace(err, setCache);
-
-      throw err;
+      throw new gqlessError('Invalid gqless proxy', {
+        caller: setCache,
+      });
     }
   }
 
@@ -407,12 +397,16 @@ export function AccessorCreators<
       !accessorCache.isProxy(source) ||
       !(sourceSelection = accessorCache.getProxySelection(source)!)
     )
-      throw new gqlessError('Invalid source proxy');
+      throw new gqlessError('Invalid source proxy', {
+        caller: assignSelections,
+      });
     if (
       !accessorCache.isProxy(target) ||
       !(targetSelection = accessorCache.getProxySelection(target)!)
     )
-      throw new gqlessError('Invalid target proxy');
+      throw new gqlessError('Invalid target proxy', {
+        caller: assignSelections,
+      });
 
     const sourceSelections = accessorCache.getSelectionSetHistory(source);
 

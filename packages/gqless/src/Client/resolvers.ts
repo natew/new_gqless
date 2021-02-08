@@ -110,14 +110,7 @@ export function createResolvers(innerState: InnerClientState) {
 
       return dataFn();
     } catch (err) {
-      const error = gqlessError.create(err);
-
-      /* istanbul ignore else */
-      if (Error.captureStackTrace!) {
-        Error.captureStackTrace(err, resolved);
-      }
-
-      throw error;
+      throw gqlessError.create(err, resolved);
     } finally {
       interceptorManager.removeInterceptor(interceptor);
       innerState.allowCache = prevAllowCache;

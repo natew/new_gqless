@@ -32,7 +32,9 @@ export function createSelectionBuilder(innerState: InnerClientState) {
         break;
       }
       default:
-        throw new gqlessError('Invalid initial selection build argument');
+        throw new gqlessError('Invalid initial selection build argument', {
+          caller: buildSelection,
+        });
     }
 
     let prevSelection = selectionManager.getSelection({
@@ -40,10 +42,10 @@ export function createSelectionBuilder(innerState: InnerClientState) {
       type,
     });
 
-    let isArray = false;
+    let isArraySelection = false;
     let schemaType = schema[typeInput];
 
-    for (const inputValue of input) {
+    for (const [index, inputValue] of input.entries()) {
       let key: string | number;
       let args: Record<string, unknown> | undefined;
       if (typeof inputValue !== 'object') {
@@ -53,13 +55,13 @@ export function createSelectionBuilder(innerState: InnerClientState) {
         args = inputValue[1];
       }
 
-      if (isArray) {
-        let index: number | undefined;
+      if (isArraySelection) {
+        let arrayIndex: number | undefined;
         try {
-          index = parseInt(key as string);
+          arrayIndex = parseInt(key as string);
         } catch (err) {}
 
-        if (isInteger(index)) {
+        if (isInteger(arrayIndex)) {
           prevSelection = selectionManager.getSelection({
             key,
             prevSelection,
@@ -76,14 +78,21 @@ export function createSelectionBuilder(innerState: InnerClientState) {
 
       const schemaTypeValue = schemaType[key];
       if (!schemaTypeValue)
-        throw new gqlessError('Invalid selection key: ' + JSON.stringify(key));
+        throw new gqlessError(
+          `Invalid selection argument at index ${index + 1}: ${JSON.stringify(
+            key
+          )}, possible valid keys: ${Object.keys(schemaType)
+            .map((v) => `"${v}"`)
+            .join(' | ')}`,
+          {
+            caller: buildSelection,
+          }
+        );
 
       const { __type, __args: argTypes } = schemaTypeValue;
-      const parsedType = parseSchemaType(__type);
+      const { pureType, isArray } = parseSchemaType(__type);
 
-      isArray = parsedType.isArray;
-
-      const pureType = parsedType.pureType;
+      isArraySelection = isArray;
 
       prevSelection = selectionManager.getSelection({
         key,
@@ -95,7 +104,10 @@ export function createSelectionBuilder(innerState: InnerClientState) {
       if (scalarsEnumsHash[pureType]) continue;
 
       const typeValue = schema[pureType];
-      if (!typeValue) throw new gqlessError('Invalid selection type');
+      if (!typeValue)
+        throw new gqlessError('Invalid selection type', {
+          caller: buildSelection,
+        });
 
       schemaType = typeValue;
     }

@@ -3,10 +3,11 @@ import { query } from '../graphql/gqless';
 
 query.dogs;
 
-console.log(
-  'selection',
-  buildSelection('query', 'dogs', 'owner', 'dogs', 'owner', 'name')
-);
+typeof window !== 'undefined' &&
+  console.log(
+    'selection',
+    buildSelection('query', 'dogs', 'owner', 'dogs', 'owner', 'name')
+  );
 
 export default function TestingStringArray() {
   const query = useQuery({

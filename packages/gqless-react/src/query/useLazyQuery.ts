@@ -124,7 +124,10 @@ export function createUseLazyQuery<
           ? () => refFn(clientQuery, args)
           : (() => {
               throw new gqlessError(
-                'You have to specify a function to be resolved'
+                'You have to specify a function to be resolved',
+                {
+                  caller: useLazyQuery,
+                }
               );
             })();
 
@@ -144,7 +147,7 @@ export function createUseLazyQuery<
             return data;
           },
           (err) => {
-            const error = gqlessError.create(err);
+            const error = gqlessError.create(err, useLazyQuery);
             optsRef.current.onError?.(error);
             dispatch({
               type: 'failure',
