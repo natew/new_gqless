@@ -255,9 +255,13 @@ export async function generate(
     `;
 
   typescriptTypes += `
-    export interface ScalarsEnums extends Scalars {
+    export type MakeNullable<T> = {
+      [K in keyof T]: T[K] | null;
+    };
+  
+    export interface ScalarsEnums extends MakeNullable<Scalars> {
       ${enumsNames.reduce((acum, enumName) => {
-        acum += `${enumName}: ${enumName};`;
+        acum += `${enumName}: ${enumName} | null;`;
         return acum;
       }, '')}
     }

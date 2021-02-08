@@ -1,7 +1,11 @@
 import { useMetaState } from './client';
 
 export const MetaClient = () => {
-  const { isFetching, errors } = useMetaState();
+  const { isFetching, errors } = useMetaState({
+    onIsFetching() {},
+    onDoneFetching() {},
+    onNewError() {},
+  });
 
   return (
     <div

@@ -129,6 +129,10 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export interface ScalarsEnums extends Scalars {
-  GreetingsEnum: GreetingsEnum;
+export type MakeNullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+export interface ScalarsEnums extends MakeNullable<Scalars> {
+  GreetingsEnum: GreetingsEnum | null;
 }

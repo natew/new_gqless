@@ -27,6 +27,7 @@ export const generatedSchema = {
     expectedError: { __type: 'Boolean' },
     dogs: { __type: '[Dog!]!' },
     time: { __type: 'String!' },
+    stringList: { __type: '[String!]!' },
   },
   mutation: {},
   subscription: {},
@@ -47,6 +48,7 @@ export interface Query {
   expectedError?: Maybe<ScalarsEnums['Boolean']>;
   dogs: Array<Dog>;
   time: ScalarsEnums['String'];
+  stringList: Array<ScalarsEnums['String']>;
 }
 
 export interface Mutation {
@@ -75,4 +77,8 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export interface ScalarsEnums extends Scalars {}
+export type MakeNullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+export interface ScalarsEnums extends MakeNullable<Scalars> {}

@@ -190,7 +190,7 @@ describe('gqless integration tests', () => {
 
     expect(
       result.every((v) => {
-        expect(v.length).toBeGreaterThan(10);
+        expect(v!.length).toBeGreaterThan(10);
         expect(typeof v).toBe('string');
       })
     );
@@ -213,7 +213,7 @@ describe('gqless integration tests', () => {
       return generatedClient.query.greetings;
     });
 
-    expect(Object.values(GreetingsEnum).includes(result)).toBeTruthy();
+    expect(Object.values(GreetingsEnum).includes(result!)).toBeTruthy();
   });
 
   test('nullable', async () => {

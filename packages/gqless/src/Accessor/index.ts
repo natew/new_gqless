@@ -300,7 +300,8 @@ export function AccessorCreators<
                   interceptorManager.addSelection(selection);
 
                   innerState.foundValidCache = false;
-                  return null;
+
+                  return isArray ? [] : null;
                 }
 
                 if (!innerState.allowCache) {

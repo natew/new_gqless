@@ -41,6 +41,7 @@ export type Query = {
   expectedError?: Maybe<Scalars['Boolean']>;
   dogs: Array<Dog>;
   time: Scalars['String'];
+  stringList: Array<Scalars['String']>;
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -197,6 +198,11 @@ export type QueryResolvers<
   >;
   dogs?: Resolver<Array<ResolversTypes['Dog']>, ParentType, ContextType>;
   time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stringList?: Resolver<
+    Array<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >;
 };
 
 export type Resolvers<ContextType = any> = {

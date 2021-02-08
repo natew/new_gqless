@@ -26,4 +26,4 @@ if (typeof window !== 'undefined') {
   logger.start();
 }
 
-export const { refetch } = client;
+export const { refetch, buildSelection } = client;

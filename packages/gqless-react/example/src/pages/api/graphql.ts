@@ -65,11 +65,15 @@ const schema = gql`
     expectedError: Boolean
     dogs: [Dog!]!
     time: String!
+    stringList: [String!]!
   }
 `;
 
 const resolvers: IResolvers = {
   Query: {
+    stringList() {
+      return ['a', 'b', 'c'];
+    },
     async dogs() {
       return db.getData('/dogs');
     },

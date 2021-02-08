@@ -1,8 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[
-  `CLI behavior final message: basic functionality with cli final messsage - schema 1`
-] = `
+exports[`CLI behavior final message: basic functionality with cli final messsage - schema 1`] = `
 "import { ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
@@ -51,13 +49,15 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export interface ScalarsEnums extends Scalars {}
+export type MakeNullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+export interface ScalarsEnums extends MakeNullable<Scalars> {}
 "
 `;
 
-exports[
-  `CLI behavior final message: basic functionality with cli final messsage 1`
-] = `
+exports[`CLI behavior final message: basic functionality with cli final messsage 1`] = `
 "import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -106,9 +106,7 @@ export * from './schema.generated';
 "
 `;
 
-exports[
-  `basic inspectWriteGenerate functionality: basic inspectWriteGenerate client 1`
-] = `
+exports[`basic inspectWriteGenerate functionality: basic inspectWriteGenerate client 1`] = `
 "import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -157,9 +155,7 @@ export * from './schema.generated';
 "
 `;
 
-exports[
-  `basic inspectWriteGenerate functionality: basic inspectWriteGenerate schema 1`
-] = `
+exports[`basic inspectWriteGenerate functionality: basic inspectWriteGenerate schema 1`] = `
 "import { ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
@@ -208,13 +204,15 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export interface ScalarsEnums extends Scalars {}
+export type MakeNullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+export interface ScalarsEnums extends MakeNullable<Scalars> {}
 "
 `;
 
-exports[
-  `inspect headers specify headers to inspectWriteGenerate: specify headers 1`
-] = `
+exports[`inspect headers specify headers to inspectWriteGenerate: specify headers 1`] = `
 "// This should be included
 
 import { ScalarsEnumsHash } from '@dish/gqless';
@@ -265,13 +263,15 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export interface ScalarsEnums extends Scalars {}
+export type MakeNullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+export interface ScalarsEnums extends MakeNullable<Scalars> {}
 "
 `;
 
-exports[
-  `specify generateOptions to inspectWriteGenerate: generateOptions client 1`
-] = `
+exports[`specify generateOptions to inspectWriteGenerate: generateOptions client 1`] = `
 "import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -320,9 +320,7 @@ export * from './schema.generated';
 "
 `;
 
-exports[
-  `specify generateOptions to inspectWriteGenerate: generateOptions schema 1`
-] = `
+exports[`specify generateOptions to inspectWriteGenerate: generateOptions schema 1`] = `
 "// This should be included
 
 import { ScalarsEnumsHash } from '@dish/gqless';
@@ -373,6 +371,10 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export interface ScalarsEnums extends Scalars {}
+export type MakeNullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+export interface ScalarsEnums extends MakeNullable<Scalars> {}
 "
 `;

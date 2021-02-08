@@ -17,6 +17,7 @@ import {
   SelectionManager,
 } from '../Selection';
 import { createResolvers, FetchResolveOptions } from './resolvers';
+import { createSelectionBuilder } from '../Selection/SelectionBuilder';
 
 export interface InnerClientState {
   allowCache: boolean;
@@ -145,6 +146,8 @@ export function createClient<
     });
   };
 
+  const { buildSelection } = createSelectionBuilder(innerState);
+
   return {
     query,
     mutation,
@@ -162,5 +165,6 @@ export function createClient<
     prepareRender,
     assignSelections,
     mutate,
+    buildSelection,
   };
 }
