@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -29,7 +29,7 @@
     "lodash-es": "^4.17.20"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^3.0.0",
+    "@dish/gqless-cli": "workspace:^4.0.0",
     "@size-limit/preset-small-lib": "^4.9.2",
     "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.25",
