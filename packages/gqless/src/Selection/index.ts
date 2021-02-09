@@ -1,2 +1,6 @@
 export * from './selection';
-export * from './SelectionManager';
+export type { SelectionManager } from './SelectionManager';
+export type {
+  BuildSelectionInput,
+  BuildSelectionValue,
+} from './SelectionBuilder';

@@ -53,6 +53,14 @@ export const useIsFirstMount = () => {
   return isFirstMount;
 };
 
+export const useUpdateEffect: typeof useEffect = (effect, deps) => {
+  const isFirstMount = useIsFirstMount();
+
+  useEffect(() => {
+    if (!isFirstMount) return effect();
+  }, deps);
+};
+
 export const useIsRendering = () => {
   const isRendering = useRef(true);
   isRendering.current = true;

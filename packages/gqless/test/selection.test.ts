@@ -1,8 +1,8 @@
+import { SelectionType } from '../src/Selection/selection';
 import {
   createSelectionManager,
-  SelectionType,
   separateSelectionTypes,
-} from '../src/Selection';
+} from '../src/Selection/SelectionManager';
 
 describe('selection creation', () => {
   const manager = createSelectionManager();

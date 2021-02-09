@@ -1,10 +1,11 @@
-import { InnerClientState } from './client';
 import { CacheInstance, createCache } from '../Cache';
 import { gqlessError } from '../Error';
 import { FetchEventData } from '../Events';
 import { buildQuery } from '../QueryBuilder';
-import { Selection, separateSelectionTypes } from '../Selection';
+import { Selection } from '../Selection/selection';
+import { separateSelectionTypes } from '../Selection/SelectionManager';
 import { createLazyPromise, LazyPromise } from '../Utils';
+import { InnerClientState } from './client';
 
 export interface ResolveOptions<TData> {
   /**
@@ -120,13 +121,13 @@ export function createResolvers(innerState: InnerClientState) {
     }
   }
 
-  async function buildAndFetchSelections(
+  async function buildAndFetchSelections<TData = unknown>(
     selections: Selection[],
     type: 'query' | 'mutation' | 'subscription',
     cache: CacheInstance = innerState.clientCache,
     options: FetchResolveOptions = {},
     state: BuildAndFetchState = {}
-  ) {
+  ): Promise<TData | null | undefined> {
     if (selections.length === 0) return;
 
     const { query, variables } = buildQuery(selections, {
@@ -142,7 +143,7 @@ export function createResolvers(innerState: InnerClientState) {
     }
 
     try {
-      const executionResult = await queryFetcher(query, variables);
+      const executionResult = await queryFetcher<TData>(query, variables);
 
       const { data, errors } = executionResult;
 
@@ -182,8 +183,10 @@ export function createResolvers(innerState: InnerClientState) {
         selections,
         type,
       });
+
+      return data;
     } catch (err) {
-      const error = gqlessError.create(err);
+      const error = gqlessError.create(err, buildAndFetchSelections);
       loggingPromise?.resolve({
         error,
         query,
@@ -233,7 +236,11 @@ export function createResolvers(innerState: InnerClientState) {
     }
   }
 
-  async function resolveSelections(
+  async function resolveSelections<
+    TQuery = unknown,
+    TMutation = unknown,
+    TSubscription = unknown
+  >(
     selections: Selection[] | Set<Selection>,
     cache: CacheInstance = innerState.clientCache,
     options: FetchResolveOptions = {}
@@ -245,16 +252,36 @@ export function createResolvers(innerState: InnerClientState) {
     } = separateSelectionTypes(selections);
 
     try {
-      await Promise.all([
-        buildAndFetchSelections(querySelections, 'query', cache, options),
-        buildAndFetchSelections(mutationSelections, 'mutation', cache, options),
-        buildAndFetchSelections(
+      const [
+        queryResult,
+        mutationResult,
+        subscriptionResult,
+      ] = await Promise.all([
+        buildAndFetchSelections<TQuery>(
+          querySelections,
+          'query',
+          cache,
+          options
+        ),
+        buildAndFetchSelections<TMutation>(
+          mutationSelections,
+          'mutation',
+          cache,
+          options
+        ),
+        buildAndFetchSelections<TSubscription>(
           subscriptionSelections,
           'subscription',
           cache,
           options
         ),
       ]);
+
+      return {
+        queryResult,
+        mutationResult,
+        subscriptionResult,
+      };
     } catch (err) {
       throw gqlessError.create(err);
     }

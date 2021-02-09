@@ -7,7 +7,10 @@ import { createLazyPromise, LazyPromise } from '../Utils';
 
 export type Scheduler = ReturnType<typeof createScheduler>;
 
-export type SchedulerPromiseValue = { error: unknown } | null;
+export type SchedulerPromiseValue = {
+  error?: unknown;
+  selections: Set<Selection>;
+};
 
 export type ErrorSubscriptionFn = (
   data:
@@ -47,6 +50,8 @@ export const createScheduler = (
 
   const errorsMap = new Map<Selection, gqlessError>();
 
+  const pendingSelectionsGroups = new Set<Set<Selection>>();
+
   const scheduler = {
     resolving: null as null | ResolvingLazyPromise,
     subscribeResolve,
@@ -57,7 +62,7 @@ export const createScheduler = (
       removeErrors,
     },
     isFetching: false,
-    subscribeIsFetching,
+    pendingSelectionsGroups,
   };
 
   const errorsListeners = new Set<ErrorSubscriptionFn>();
@@ -95,40 +100,7 @@ export const createScheduler = (
     });
   }
 
-  const pendingRequests = new Set<ResolvingLazyPromise>();
-
-  const isFetchingListeners = new Set<IsFetchingSubscriptionFn>();
-
-  function subscribeIsFetching(fn: IsFetchingSubscriptionFn) {
-    isFetchingListeners.add(fn);
-
-    return function unsubscribe() {
-      isFetchingListeners.delete(fn);
-    };
-  }
-
-  function addPendingRequest(resolvingPromise: ResolvingLazyPromise) {
-    pendingRequests.add(resolvingPromise);
-    if (!scheduler.isFetching) {
-      isFetchingListeners.forEach((listener) => {
-        listener(true);
-      });
-    }
-
-    return function RemovePendingRequest() {
-      pendingRequests.delete(resolvingPromise);
-
-      if (pendingRequests.size === 0) {
-        isFetchingListeners.forEach((listener) => {
-          listener(false);
-        });
-      }
-    };
-  }
-
   let resolvingPromise: ResolvingLazyPromise | null = null;
-
-  const pendingSelectionsGroups = new Set<Set<Selection>>();
 
   const fetchSelections = debounce((lazyPromise: ResolvingLazyPromise) => {
     resolvingPromise = null;
@@ -141,13 +113,16 @@ export const createScheduler = (
       () => {
         pendingSelectionsGroups.delete(selectionsToFetch);
         if (scheduler.resolving === lazyPromise) scheduler.resolving = null;
-        lazyPromise.resolve(null);
+        lazyPromise.resolve({
+          selections: selectionsToFetch,
+        });
       },
       (error) => {
         pendingSelectionsGroups.delete(selectionsToFetch);
         if (scheduler.resolving === lazyPromise) scheduler.resolving = null;
         lazyPromise.resolve({
           error,
+          selections: selectionsToFetch,
         });
       }
     );
@@ -162,12 +137,8 @@ export const createScheduler = (
     if (resolvingPromise === null) {
       lazyPromise = createLazyPromise();
 
-      const removePendingRequest = addPendingRequest(lazyPromise);
-
-      lazyPromise.promise.then((result) => {
-        removePendingRequest();
-
-        if (result) console.error(result.error);
+      lazyPromise.promise.then(({ error }) => {
+        if (error) console.error(error);
       });
 
       resolvingPromise = lazyPromise;

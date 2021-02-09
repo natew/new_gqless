@@ -6,18 +6,18 @@ import {
   createCache,
 } from '../Cache';
 import { EventHandler } from '../Events';
-import { createSSRHelpers } from '../Helpers/ssr';
 import { createRefetch } from '../Helpers/refetch';
+import { createSSRHelpers } from '../Helpers/ssr';
 import { createInterceptorManager, InterceptorManager } from '../Interceptor';
 import { createScheduler, Scheduler } from '../Scheduler';
 import { QueryFetcher, ScalarsEnumsHash, Schema } from '../Schema/types';
+import { Selection } from '../Selection/selection';
+import { createSelectionBuilder } from '../Selection/SelectionBuilder';
 import {
   createSelectionManager,
-  Selection,
   SelectionManager,
-} from '../Selection';
+} from '../Selection/SelectionManager';
 import { createResolvers, FetchResolveOptions } from './resolvers';
-import { createSelectionBuilder } from '../Selection/SelectionBuilder';
 
 export interface InnerClientState {
   allowCache: boolean;
@@ -108,6 +108,7 @@ export function createClient<
       if (resolvingPromise) {
         resolvingPromise.resolve({
           error,
+          selections,
         });
       }
     }

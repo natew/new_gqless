@@ -20,10 +20,10 @@ export interface Scalars {
 
 export type ScalarsEnumsHash = Record<string, true>;
 
-export type QueryFetcher = (
+export type QueryFetcher = <TData = unknown>(
   query: string,
   variables?: Record<string, any>
-) => Promise<ExecutionResult> | ExecutionResult;
+) => Promise<ExecutionResult<TData>> | ExecutionResult<TData>;
 
 export type ParseSchemaTypeInfo = ReturnType<typeof parseSchemaType>;
 

@@ -7,7 +7,7 @@ export function isFunction<T>(v: T | (() => T)): v is () => T {
 
 export function createRefetch(
   innerState: InnerClientState,
-  resolveSelections: (selections: Set<Selection>) => Promise<void>
+  resolveSelections: (selections: Set<Selection>) => Promise<unknown>
 ) {
   const { interceptorManager, scheduler, accessorCache } = innerState;
 
