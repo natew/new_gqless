@@ -312,6 +312,7 @@ importers:
       prettier: 2.2.1
       react: 17.0.1
       react-dom: 17.0.1_react@17.0.1
+      retry-cli: 0.6.0
       rollup: 2.38.5
       rollup-plugin-terser: 7.0.2_rollup@2.38.5
     specifiers:
@@ -338,6 +339,7 @@ importers:
       prettier: ^2.2.1
       react: ^17.0.1
       react-dom: ^17.0.1
+      retry-cli: ^0.6.0
       rollup: ^2.38.5
       rollup-plugin-terser: ^7.0.2
   packages/test-utils:
@@ -9359,6 +9361,12 @@ packages:
       node: 4.x || >=6.0.0
     resolution:
       integrity: sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
+  /node-getopt/0.3.2:
+    dev: true
+    engines:
+      node: '>= 0.6.0'
+    resolution:
+      integrity: sha512-yqkmYrMbK1wPrfz7mgeYvA4tBperLg9FQ4S3Sau3nSAkpOA0x0zC8nQ1siBwozy1f4SE8vq2n1WKv99r+PCa1Q==
   /node-html-parser/1.4.9:
     dependencies:
       he: 1.2.0
@@ -11578,6 +11586,19 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-M0b3YWQs7R3Z917WRQy1HHA7Ba7D8hvZg6UE5mLykJxQVE2ju0IXbGlaHPPlkY+WN7wFP+wUMXmBFA0aV6vYGQ==
+  /retry-cli/0.6.0:
+    dependencies:
+      cross-spawn: 6.0.5
+      node-getopt: 0.3.2
+      retry: 0.10.1
+    dev: true
+    hasBin: true
+    resolution:
+      integrity: sha512-F344tJhTR6Ya4o0XJH2/Rpy4K9byPkvCkkq0iMeR7x+9aRRuE4jK9iLkN4xZehCW62iZWV5x6BcLbxxqhbvmrg==
+  /retry/0.10.1:
+    dev: true
+    resolution:
+      integrity: sha1-52OI0heZLCUnUCQdPTlW/tmNj/Q=
   /reusify/1.0.4:
     engines:
       iojs: '>=1.0.0'
