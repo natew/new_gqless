@@ -20,7 +20,7 @@
     "playground": "tsdx test test/playground.test.ts --watch --no-coverage",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch --noClean --verbose",
+    "start": "tsc-watch --noClear",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },
@@ -45,6 +45,7 @@
     "size-limit": "^4.9.2",
     "tap": "^14.11.0",
     "test-utils": "workspace:^0.1.0",
+    "tsc-watch": "^4.2.9",
     "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
     "tsup": "^3.12.1",

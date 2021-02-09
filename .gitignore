@@ -5,3 +5,4 @@ coverage
 .next
 packages/gqless-react/example/db.json
 packages/gqless-react/example/last-browser-open
+*.tsbuildinfo

@@ -16,8 +16,8 @@
     "lint": "tsdx lint",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
-    "start": "tsdx watch --verbose --noClean",
-    "start:with:example": "node dev-with-example.mjs",
+    "start": "tsc-watch --noClear",
+    "start:with:example": "tsc-watch --noClear --onSuccess \"pnpm -r --filter gqless-react-example dev\"",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },
@@ -41,6 +41,7 @@
     "rimraf": "^3.0.2",
     "size-limit": "^4.9.2",
     "test-utils": "workspace:^0.1.0",
+    "tsc-watch": "^4.2.9",
     "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
     "typescript": "^4.1.3"

@@ -5,9 +5,10 @@ import {
   useLayoutEffect,
   useReducer,
   useRef,
+  useState,
 } from 'react';
 
-import { ResolveOptions } from '@dish/gqless';
+import { BuildSelectionInput, ResolveOptions, Selection } from '@dish/gqless';
 
 export function useOnFirstMount(fn: () => void) {
   const isFirstMount = useRef(true);
@@ -140,4 +141,54 @@ export function fetchPolicyDefaultResolveOptions(
       return emptyResolveOptions;
     }
   }
+}
+
+export type BuildSelections = (Selection | BuildSelectionInput)[];
+
+export function useBuildSelections(
+  argSelections: BuildSelections | null | undefined,
+  buildSelection: (...args: BuildSelectionInput) => Selection,
+  caller: Function
+) {
+  const buildSelections = useCallback(
+    (selectionsSet: Set<Selection>) => {
+      selectionsSet.clear();
+
+      if (!argSelections) return;
+
+      try {
+        for (const filterValue of argSelections) {
+          if (filterValue instanceof Selection) {
+            selectionsSet.add(filterValue);
+          } else {
+            selectionsSet.add(buildSelection(...filterValue));
+          }
+        }
+      } catch (err) {
+        if (err instanceof Error && Error.captureStackTrace!) {
+          Error.captureStackTrace(err, caller);
+        }
+
+        throw err;
+      }
+    },
+    [argSelections]
+  );
+
+  const [selections] = useState(() => {
+    const selectionsSet = new Set<Selection>();
+
+    buildSelections(selectionsSet);
+
+    return selectionsSet;
+  });
+
+  useUpdateEffect(() => {
+    buildSelections(selections);
+  }, [buildSelections, selections]);
+
+  return {
+    selections,
+    hasSpecifiedSelections: argSelections != null,
+  };
 }

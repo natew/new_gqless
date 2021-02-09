@@ -2,7 +2,7 @@
   "name": "gqless-react-example",
   "private": true,
   "scripts": {
-    "dev": "kill-port 4141 && concurrently --raw \"next -p 4141\" \"wait-on -s 1 tcp:4141 && ts-node -T src/utils/open-browser.ts\""
+    "dev": "kill-port 4141 && concurrently --raw \"next -p 4141\" \"wait-on -s 1 tcp:4141 && ts-node -T ./open-browser.ts\""
   },
   "dependencies": {
     "@dish/gqless-cli": "workspace:^4.0.0",

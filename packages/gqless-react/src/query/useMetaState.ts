@@ -1,24 +1,16 @@
-import type {
-  createClient,
-  gqlessError,
-  BuildSelectionInput,
-} from '@dish/gqless';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type { createClient, gqlessError } from '@dish/gqless';
+import { useEffect, useRef, useState } from 'react';
 
 import { Selection } from '@dish/gqless';
 
-import { useUpdateEffect } from '../common';
+import { useBuildSelections, BuildSelections } from '../common';
 import { areArraysEqual } from '../utils';
 
 export interface UseGqlessStateOptions {
   onIsFetching?: () => void;
   onDoneFetching?: () => void;
   onNewError?: (error: gqlessError) => void;
-  filterSelections?: (Selection | BuildSelectionInput)[];
-}
-
-function initSelectionsState() {
-  return new Set<Selection>();
+  filterSelections?: BuildSelections;
 }
 
 export function createUseMetaState(client: ReturnType<typeof createClient>) {
@@ -31,39 +23,15 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
   const defaultEmptyOpts = {};
 
   function useMetaState(opts: UseGqlessStateOptions = defaultEmptyOpts) {
-    const argFilterSelections = opts.filterSelections;
-    const hasFilterSelections = Boolean(argFilterSelections);
-
-    const [selectionsToFilter] = useState(initSelectionsState);
-
-    const buildSelectionsToFilter = useCallback(() => {
-      selectionsToFilter.clear();
-
-      if (!argFilterSelections) return;
-
-      try {
-        for (const filterValue of argFilterSelections) {
-          if (filterValue instanceof Selection) {
-            selectionsToFilter.add(filterValue);
-          } else {
-            selectionsToFilter.add(buildSelection(...filterValue));
-          }
-        }
-      } catch (err) {
-        if (err instanceof Error && Error.captureStackTrace!) {
-          Error.captureStackTrace(err, useMetaState);
-        }
-
-        throw err;
-      }
-    }, [argFilterSelections, selectionsToFilter]);
+    const {
+      hasSpecifiedSelections: hasFilterSelections,
+      selections: selectionsToFilter,
+    } = useBuildSelections(opts.filterSelections, buildSelection, useMetaState);
 
     const [state, setState] = useState<{
       isFetching: boolean;
       errors?: gqlessError[];
     }>(() => {
-      buildSelectionsToFilter();
-
       const isFetching =
         scheduler.pendingSelectionsGroups.size > 0
           ? hasFilterSelections
@@ -111,10 +79,6 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
     const optsRef = useRef(opts);
     optsRef.current = opts;
 
-    useUpdateEffect(() => {
-      buildSelectionsToFilter();
-    }, [buildSelectionsToFilter]);
-
     useEffect(() => {
       let isMounted = true;
 
@@ -146,7 +110,9 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
 
                   for (const group of selectionsGroups) {
                     for (const selection of selectionsToFilterArray) {
-                      if (group.has(selection)) return true;
+                      if (group.has(selection)) {
+                        return true;
+                      }
                     }
                   }
 
@@ -187,7 +153,9 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
       const promisesInFly = new Set<Promise<unknown>>();
       const unsubscribeIsFetching = scheduler.subscribeResolve(
         (promise, selection) => {
-          if (!isSelectionIncluded(selection)) return;
+          if (!isSelectionIncluded(selection)) {
+            return;
+          }
 
           if (!promisesInFly.has(promise)) {
             if (promisesInFly.size === 0) optsRef.current.onIsFetching?.();
@@ -219,12 +187,34 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
           } else {
             optsRef.current.onNewError?.(data.newError);
           }
-        } else if (hasFilterSelections) {
+        } else if ('selectionsCleaned' in data && hasFilterSelections) {
           const isIncluded = data.selectionsCleaned.some((selection) =>
             isSelectionIncluded(selection)
           );
 
           if (!isIncluded) return;
+        } else if ('retryPromise' in data) {
+          if (hasFilterSelections) {
+            const isIncluded = Array.from(data.selections).some((selection) =>
+              isSelectionIncluded(selection)
+            );
+
+            if (isIncluded) {
+              setStateIfChanged();
+              data.retryPromise.finally(() => {
+                setTimeout(() => {
+                  setStateIfChanged();
+                });
+              });
+            }
+          } else {
+            setStateIfChanged();
+            data.retryPromise.finally(() => {
+              setTimeout(() => {
+                setStateIfChanged();
+              }, 0);
+            });
+          }
         }
 
         setStateIfChanged();

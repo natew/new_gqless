@@ -21,6 +21,10 @@ export type ErrorSubscriptionFn = (
     | {
         selectionsCleaned: Selection[];
       }
+    | {
+        retryPromise: Promise<unknown>;
+        selections: Set<Selection>;
+      }
 ) => void;
 
 export type IsFetchingSubscriptionFn = (isFetching: boolean) => void;
@@ -60,6 +64,7 @@ export const createScheduler = (
       subscribeErrors,
       triggerError,
       removeErrors,
+      retryPromise,
     },
     isFetching: false,
     pendingSelectionsGroups,
@@ -73,6 +78,19 @@ export const createScheduler = (
     return function unsubscribe() {
       errorsListeners.delete(fn);
     };
+  }
+
+  function retryPromise(
+    retryPromise: Promise<unknown>,
+    selections: Set<Selection>
+  ) {
+    const data = {
+      retryPromise,
+      selections,
+    };
+    errorsListeners.forEach((listener) => {
+      listener(data);
+    });
   }
 
   function triggerError(newError: gqlessError, selections: Selection[]) {

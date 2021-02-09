@@ -1,6 +1,6 @@
 import { createLogger } from '@dish/gqless-logger';
 
-import { createReactClient } from '../../../';
+import { createReactClient } from '@dish/gqless-react';
 import { client, GeneratedSchema } from '../graphql/gqless';
 
 export const defaultSuspense = true;

@@ -6,7 +6,7 @@
     "build": "pnpm build -r --stream",
     "dev": "node dev.mjs",
     "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test -r --no-bail --no-sort --stream",
-    "dev:react": "pnpm -r --filter @dish/gqless start -- --onSuccess \"pnpm --filter gqless_refactor -r exec -- node dev-react.mjs\"",
+    "dev:react": "rimraf packages/gqless/dist packages/gqless-react/dist && pnpm -r --filter @dish/gqless start -- --onSuccess \"pnpm --filter gqless_refactor -r exec -- pnpm -r --filter @dish/gqless-react start:with:example\"",
     "dev:start": "pnpm start -r --no-bail --no-sort",
     "dev:test": "pnpm test:watch -r --no-bail --no-sort --stream",
     "publish:next": "pnpm i && pnpm test && pnpm -r publish --access public --tag next",
@@ -26,7 +26,8 @@
     "husky": "^4.3.8",
     "kill-port": "^1.6.1",
     "prettier": "^2.2.1",
-    "pretty-quick": "^3.1.0"
+    "pretty-quick": "^3.1.0",
+    "rimraf": "^3.0.2"
   },
   "pnpm": {
     "overrides": {

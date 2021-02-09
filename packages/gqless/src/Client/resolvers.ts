@@ -47,7 +47,12 @@ export interface BuildAndFetchState {
 }
 
 export function createResolvers(innerState: InnerClientState) {
-  const { interceptorManager, eventHandler, queryFetcher } = innerState;
+  const {
+    interceptorManager,
+    eventHandler,
+    queryFetcher,
+    scheduler,
+  } = innerState;
   const { globalInterceptor } = interceptorManager;
 
   async function resolved<T = unknown>(
@@ -213,7 +218,7 @@ export function createResolvers(innerState: InnerClientState) {
         if (currentErrorRetry < maxRetries) {
           setTimeout(
             () => {
-              buildAndFetchSelections(
+              const retryPromise = buildAndFetchSelections(
                 selections,
                 type,
                 cache,
@@ -222,6 +227,17 @@ export function createResolvers(innerState: InnerClientState) {
                   currentErrorRetry: currentErrorRetry + 1,
                 } as typeof state)
               ).catch(console.error);
+
+              if (options.scheduler) {
+                const setSelections = new Set(selections);
+                scheduler.pendingSelectionsGroups.add(setSelections);
+
+                scheduler.errors.retryPromise(retryPromise, setSelections);
+
+                retryPromise.finally(() => {
+                  scheduler.pendingSelectionsGroups.delete(setSelections);
+                });
+              }
             },
             typeof retryDelay === 'function'
               ? retryDelay(currentErrorRetry)
