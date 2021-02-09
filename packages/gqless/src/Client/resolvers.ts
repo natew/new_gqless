@@ -143,7 +143,7 @@ export function createResolvers(innerState: InnerClientState) {
     }
 
     try {
-      const executionResult = await queryFetcher<TData>(query, variables);
+      const executionResult = await queryFetcher(query, variables);
 
       const { data, errors } = executionResult;
 
@@ -184,7 +184,7 @@ export function createResolvers(innerState: InnerClientState) {
         type,
       });
 
-      return data;
+      return data as TData;
     } catch (err) {
       const error = gqlessError.create(err, buildAndFetchSelections);
       loggingPromise?.resolve({
