@@ -192,3 +192,53 @@ export function useBuildSelections(
     hasSpecifiedSelections: argSelections != null,
   };
 }
+
+export type List<T> = Set<T> | Array<T>;
+
+export function toArrayIfNeeded<T>(list: List<T>): Array<T> {
+  return Array.isArray(list) ? list : Array.from(list);
+}
+
+export function toSetIfNeeded<T>(list: List<T>): Set<T> {
+  return Array.isArray(list) ? new Set(list) : list;
+}
+
+export function isSelectionIncluded(
+  selection: Selection,
+  selectionList: List<Selection>
+) {
+  const setSelectionList = toSetIfNeeded(selectionList);
+
+  if (setSelectionList.has(selection)) return true;
+
+  for (const listValue of selection.selectionsList) {
+    if (setSelectionList.has(listValue)) return true;
+  }
+
+  return false;
+}
+
+export function isAnySelectionIncluded(
+  selectionsToCheck: List<Selection>,
+  selectionsList: List<Selection>
+) {
+  for (const selection of toArrayIfNeeded(selectionsToCheck)) {
+    if (isSelectionIncluded(selection, selectionsList)) return true;
+  }
+
+  return false;
+}
+
+export function isAnySelectionIncludedInMatrix(
+  selectionsToCheck: List<Selection>,
+  selectionsMatrix: List<List<Selection>>
+) {
+  const selectionsGroups = toArrayIfNeeded(selectionsMatrix);
+  const selectionsToCheckArray = toArrayIfNeeded(selectionsToCheck);
+
+  for (const group of selectionsGroups) {
+    if (isAnySelectionIncluded(selectionsToCheckArray, group)) return true;
+  }
+
+  return false;
+}

@@ -1,9 +1,13 @@
 import type { createClient, gqlessError } from '@dish/gqless';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Selection } from '@dish/gqless';
-
-import { useBuildSelections, BuildSelections } from '../common';
+import {
+  BuildSelections,
+  isAnySelectionIncluded,
+  isAnySelectionIncludedInMatrix,
+  isSelectionIncluded,
+  useBuildSelections,
+} from '../common';
 import { areArraysEqual } from '../utils';
 
 export interface UseGqlessStateOptions {
@@ -11,6 +15,11 @@ export interface UseGqlessStateOptions {
   onDoneFetching?: () => void;
   onNewError?: (error: gqlessError) => void;
   filterSelections?: BuildSelections;
+}
+
+export interface MetaState {
+  isFetching: boolean;
+  errors?: gqlessError[];
 }
 
 export function createUseMetaState(client: ReturnType<typeof createClient>) {
@@ -28,50 +37,37 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
       selections: selectionsToFilter,
     } = useBuildSelections(opts.filterSelections, buildSelection, useMetaState);
 
-    const [state, setState] = useState<{
-      isFetching: boolean;
-      errors?: gqlessError[];
-    }>(() => {
+    const getState = useCallback((): MetaState => {
       const isFetching =
         scheduler.pendingSelectionsGroups.size > 0
           ? hasFilterSelections
-            ? (() => {
-                const selectionsGroups = Array.from(
-                  scheduler.pendingSelectionsGroups
-                );
-                const selectionsToFilterArray = Array.from(selectionsToFilter);
-
-                for (const group of selectionsGroups) {
-                  for (const selection of selectionsToFilterArray) {
-                    if (group.has(selection)) return true;
-                  }
-                }
-
-                return false;
-              })()
+            ? isAnySelectionIncludedInMatrix(
+                selectionsToFilter,
+                scheduler.pendingSelectionsGroups
+              )
             : true
           : false;
 
-      const errors = hasFilterSelections
-        ? (() => {
-            const errorsSet = new Set<gqlessError>();
+      let errors: gqlessError[] | undefined;
 
-            selectionsToFilter.forEach((selection) => {
-              const error = errorsMap.get(selection);
+      if (hasFilterSelections) {
+        const errorsSet = new Set<gqlessError>();
 
-              if (error) errorsSet.add(error);
-            });
+        selectionsToFilter.forEach((selection) => {
+          const error = errorsMap.get(selection);
 
-            return errorsSet.size ? Array.from(errorsSet) : null;
-          })()
-        : (() => {
-            return errorsMap.size
-              ? Array.from(new Set(errorsMap.values()))
-              : null;
-          })();
+          if (error) errorsSet.add(error);
+        });
+
+        if (errorsSet.size) errors = Array.from(errorsSet);
+      } else if (errorsMap.size) {
+        errors = Array.from(new Set(errorsMap.values()));
+      }
 
       return errors ? { isFetching, errors } : { isFetching };
-    });
+    }, [hasFilterSelections, selectionsToFilter]);
+
+    const [state, setState] = useState(getState);
 
     const stateRef = useRef(state);
     stateRef.current = state;
@@ -82,78 +78,25 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
     useEffect(() => {
       let isMounted = true;
 
-      function isSelectionIncluded(selection: Selection) {
-        if (selectionsToFilter.has(selection)) return true;
-
-        for (const listValue of selection.selectionsList) {
-          if (selectionsToFilter.has(listValue)) return true;
-        }
-
-        return false;
-      }
-
       function setStateIfChanged() {
         if (!isMounted) return;
 
         const prevState = stateRef.current;
 
-        const isFetching =
-          scheduler.pendingSelectionsGroups.size > 0
-            ? hasFilterSelections
-              ? (() => {
-                  const selectionsGroups = Array.from(
-                    scheduler.pendingSelectionsGroups
-                  );
-                  const selectionsToFilterArray = Array.from(
-                    selectionsToFilter
-                  );
-
-                  for (const group of selectionsGroups) {
-                    for (const selection of selectionsToFilterArray) {
-                      if (group.has(selection)) {
-                        return true;
-                      }
-                    }
-                  }
-
-                  return false;
-                })()
-              : true
-            : false;
-        const errors = hasFilterSelections
-          ? (() => {
-              const errorsSet = new Set<gqlessError>();
-
-              selectionsToFilter.forEach((selection) => {
-                const error = errorsMap.get(selection);
-
-                if (error) errorsSet.add(error);
-              });
-
-              return errorsSet.size ? Array.from(errorsSet) : undefined;
-            })()
-          : (() => {
-              return errorsMap.size
-                ? Array.from(new Set(errorsMap.values()))
-                : undefined;
-            })();
+        const newState = getState();
 
         if (
-          prevState.isFetching !== isFetching ||
-          !areArraysEqual(prevState.errors, errors)
+          prevState.isFetching !== newState.isFetching ||
+          !areArraysEqual(prevState.errors, newState.errors)
         ) {
-          setState(
-            (stateRef.current = errors
-              ? { isFetching, errors }
-              : { isFetching })
-          );
+          setState((stateRef.current = newState));
         }
       }
 
       const promisesInFly = new Set<Promise<unknown>>();
       const unsubscribeIsFetching = scheduler.subscribeResolve(
         (promise, selection) => {
-          if (!isSelectionIncluded(selection)) {
+          if (!isSelectionIncluded(selection, selectionsToFilter)) {
             return;
           }
 
@@ -178,8 +121,9 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
       const unsubscribeErrors = scheduler.errors.subscribeErrors((data) => {
         if ('newError' in data) {
           if (hasFilterSelections) {
-            const isIncluded = data.selections.some((selection) =>
-              isSelectionIncluded(selection)
+            const isIncluded = isAnySelectionIncluded(
+              selectionsToFilter,
+              data.selections
             );
 
             if (isIncluded) optsRef.current.onNewError?.(data.newError);
@@ -188,15 +132,17 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
             optsRef.current.onNewError?.(data.newError);
           }
         } else if ('selectionsCleaned' in data && hasFilterSelections) {
-          const isIncluded = data.selectionsCleaned.some((selection) =>
-            isSelectionIncluded(selection)
+          const isIncluded = isAnySelectionIncluded(
+            selectionsToFilter,
+            data.selectionsCleaned
           );
 
           if (!isIncluded) return;
         } else if ('retryPromise' in data) {
           if (hasFilterSelections) {
-            const isIncluded = Array.from(data.selections).some((selection) =>
-              isSelectionIncluded(selection)
+            const isIncluded = isAnySelectionIncluded(
+              selectionsToFilter,
+              data.selections
             );
 
             if (isIncluded) {
@@ -225,7 +171,7 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
         unsubscribeIsFetching();
         unsubscribeErrors();
       };
-    }, [hasFilterSelections, setState, optsRef, selectionsToFilter]);
+    }, [getState, hasFilterSelections, setState, optsRef, selectionsToFilter]);
 
     return state;
   }
