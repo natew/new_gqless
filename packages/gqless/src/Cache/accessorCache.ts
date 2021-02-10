@@ -6,8 +6,14 @@ export interface ProxyAccessor extends Object {
 
 export type AccessorCache = ReturnType<typeof createAccessorCache>;
 
+const notFoundObjectKey = {};
+const nullObjectKey = {};
+
 export function createAccessorCache() {
-  const proxyMap = new WeakMap<Selection, ProxyAccessor>();
+  const proxyCacheMap = new WeakMap<
+    Selection,
+    WeakMap<object, ProxyAccessor>
+  >();
   const arrayProxyMap = new WeakMap<
     Selection,
     WeakMap<unknown[], ProxyAccessor>
@@ -25,13 +31,27 @@ export function createAccessorCache() {
 
   function getAccessor(
     selection: Selection,
+    cacheValue: unknown,
     proxyFactory: () => ProxyAccessor
   ): ProxyAccessor {
-    let proxy = proxyMap.get(selection);
+    const mapKey: object =
+      cacheValue == null
+        ? nullObjectKey
+        : typeof cacheValue === 'object'
+        ? cacheValue!
+        : notFoundObjectKey;
+    let cacheMap = proxyCacheMap.get(selection);
+
+    if (cacheMap == null) {
+      cacheMap = new WeakMap();
+      proxyCacheMap.set(selection, cacheMap);
+    }
+
+    let proxy = cacheMap.get(mapKey);
 
     if (proxy == null) {
       proxy = proxyFactory();
-      proxyMap.set(selection, proxy);
+      cacheMap.set(mapKey, proxy);
       selectionProxyMap.set(proxy, selection);
       proxySet.add(proxy);
     }

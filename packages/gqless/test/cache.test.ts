@@ -12,7 +12,7 @@ describe('accessorCache', () => {
       key: 'a',
     });
 
-    const obj = cache.getAccessor(selection, () => {
+    const obj = cache.getAccessor(selection, null, () => {
       return {
         a: 1,
       };
@@ -22,7 +22,7 @@ describe('accessorCache', () => {
       a: 1,
     });
 
-    const obj2 = cache.getAccessor(selection, () => {
+    const obj2 = cache.getAccessor(selection, null, () => {
       throw Error("This shouldn't be called");
     });
 
@@ -99,6 +99,7 @@ describe('accessorCache', () => {
       new Selection({
         key: 'root',
       }),
+      null,
       () => {
         return {
           root: true,
@@ -110,7 +111,7 @@ describe('accessorCache', () => {
       key: 'a',
     });
 
-    const accessorA = getAccessor(selectionA, () => {
+    const accessorA = getAccessor(selectionA, null, () => {
       return {
         a: 1,
       };
@@ -122,7 +123,7 @@ describe('accessorCache', () => {
       key: 'b',
     });
 
-    const accessorB = getAccessor(selectionB, () => {
+    const accessorB = getAccessor(selectionB, null, () => {
       return {
         b: 2,
       };

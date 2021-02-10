@@ -217,12 +217,12 @@ export function AccessorCreators<
   }
 
   function createAccessor(schemaType: Schema[string], selectionArg: Selection) {
-    const cacheValue = innerState.clientCache.getCacheFromSelection(
+    const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
       selectionArg
     );
     if (innerState.allowCache && cacheValue === null) return null;
 
-    const accessor = accessorCache.getAccessor(selectionArg, () => {
+    const accessor = accessorCache.getAccessor(selectionArg, cacheValue, () => {
       return new Proxy(
         fromPairs(
           Object.keys(schemaType).map((key) => {
