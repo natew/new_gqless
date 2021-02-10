@@ -55,6 +55,10 @@ export const createScheduler = (
   const errorsMap = new Map<Selection, gqlessError>();
 
   const pendingSelectionsGroups = new Set<Set<Selection>>();
+  const pendingSelectionsGroupsPromises = new Map<
+    Set<Selection>,
+    ResolvedLazyPromise
+  >();
 
   const scheduler = {
     resolving: null as null | ResolvingLazyPromise,
@@ -68,6 +72,7 @@ export const createScheduler = (
     },
     isFetching: false,
     pendingSelectionsGroups,
+    pendingSelectionsGroupsPromises,
   };
 
   const errorsListeners = new Set<ErrorSubscriptionFn>();
@@ -126,10 +131,12 @@ export const createScheduler = (
     const selectionsToFetch = new Set(globalInterceptor.fetchSelections);
 
     pendingSelectionsGroups.add(selectionsToFetch);
+    pendingSelectionsGroupsPromises.set(selectionsToFetch, lazyPromise.promise);
 
     resolveSelections(selectionsToFetch).then(
       () => {
         pendingSelectionsGroups.delete(selectionsToFetch);
+        pendingSelectionsGroupsPromises.delete(selectionsToFetch);
         if (scheduler.resolving === lazyPromise) scheduler.resolving = null;
         lazyPromise.resolve({
           selections: selectionsToFetch,
@@ -137,6 +144,7 @@ export const createScheduler = (
       },
       (error) => {
         pendingSelectionsGroups.delete(selectionsToFetch);
+        pendingSelectionsGroupsPromises.delete(selectionsToFetch);
         if (scheduler.resolving === lazyPromise) scheduler.resolving = null;
         lazyPromise.resolve({
           error,
@@ -148,7 +156,15 @@ export const createScheduler = (
 
   globalInterceptor.selectionAddListeners.add((selection) => {
     for (const group of pendingSelectionsGroups) {
-      if (group.has(selection)) return;
+      if (group.has(selection)) {
+        const promise = pendingSelectionsGroupsPromises.get(group);
+        if (promise) {
+          resolveListeners.forEach((subscription) => {
+            subscription(promise, selection);
+          });
+        }
+        return;
+      }
     }
 
     let lazyPromise: ResolvingLazyPromise;

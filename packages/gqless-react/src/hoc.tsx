@@ -43,7 +43,7 @@ export function createGraphqlHOC(
       (props: P): R;
       displayName: string;
     } = function WithGraphQL(props) {
-      const [selections] = useState(initSelectionsState);
+      const [componentSelections] = useState(initSelectionsState);
       let fetchingPromise = useRef<Promise<void> | null>(null);
 
       const forceUpdate = useDeferDispatch(useForceUpdate());
@@ -51,15 +51,17 @@ export function createGraphqlHOC(
       useIsomorphicLayoutEffect(() => {
         let isMounted = true;
         const unsubscribeFetch = eventHandler.onFetchSubscribe(
-          (fetchPromise) => {
+          (fetchPromise, promiseSelections) => {
+            if (
+              !promiseSelections.some((selection) =>
+                componentSelections.has(selection)
+              )
+            )
+              return;
+
             fetchPromise.then(
-              (data) => {
-                if (
-                  isMounted &&
-                  data.selections.some((selection) => selections.has(selection))
-                ) {
-                  forceUpdate();
-                }
+              () => {
+                if (isMounted) forceUpdate();
               },
               () => {}
             );
@@ -68,9 +70,7 @@ export function createGraphqlHOC(
 
         const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
           ({ selection }) => {
-            if (isMounted && selections.has(selection)) {
-              forceUpdate();
-            }
+            if (isMounted && componentSelections.has(selection)) forceUpdate();
           }
         );
 
@@ -79,20 +79,23 @@ export function createGraphqlHOC(
           unsubscribeFetch();
           unsubscribeCache();
         };
-      }, [selections]);
+      }, [componentSelections]);
 
       const interceptor = interceptorManager.createInterceptor();
 
       interceptor.selectionAddListeners.add((selection) => {
-        selections.add(selection);
+        componentSelections.add(selection);
       });
 
       interceptor.selectionCacheListeners.add((selection) => {
-        selections.add(selection);
+        componentSelections.add(selection);
       });
 
       const unsubscribe = scheduler.subscribeResolve((promise, selection) => {
-        if (fetchingPromise.current === null && selections.has(selection)) {
+        if (
+          fetchingPromise.current === null &&
+          componentSelections.has(selection)
+        ) {
           fetchingPromise.current = new Promise<void>((resolve, reject) => {
             promise.then(
               () => {

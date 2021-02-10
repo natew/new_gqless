@@ -20,7 +20,7 @@ export interface CacheChangeEventData {
 }
 
 interface OnFetchEventFn {
-  (data: Promise<FetchEventData>): void;
+  (data: Promise<FetchEventData>, selections: Selection[]): void;
 }
 
 interface OnCacheChangeEventFn {
@@ -39,9 +39,12 @@ export class EventHandler {
     });
   }
 
-  public sendFetchPromise(data: Promise<FetchEventData>) {
+  public sendFetchPromise(
+    data: Promise<FetchEventData>,
+    selections: Selection[]
+  ) {
     this.onFetchListeners.forEach((listener) => {
-      listener(data);
+      listener(data, selections);
     });
   }
 

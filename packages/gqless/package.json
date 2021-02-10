@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -20,7 +20,7 @@
     "playground": "tsdx test test/playground.test.ts --watch --no-coverage",
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
-    "start": "tsc-watch --noClear",
+    "start": "tsc-watch -m commonjs --noClear",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },

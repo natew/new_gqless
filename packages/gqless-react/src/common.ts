@@ -195,10 +195,6 @@ export function useBuildSelections(
 
 export type List<T> = Set<T> | Array<T>;
 
-export function toArrayIfNeeded<T>(list: List<T>): Array<T> {
-  return Array.isArray(list) ? list : Array.from(list);
-}
-
 export function toSetIfNeeded<T>(list: List<T>): Set<T> {
   return Array.isArray(list) ? new Set(list) : list;
 }
@@ -211,7 +207,7 @@ export function isSelectionIncluded(
 
   if (setSelectionList.has(selection)) return true;
 
-  for (const listValue of selection.selectionsList) {
+  for (const listValue of selectionList) {
     if (setSelectionList.has(listValue)) return true;
   }
 
@@ -222,8 +218,9 @@ export function isAnySelectionIncluded(
   selectionsToCheck: List<Selection>,
   selectionsList: List<Selection>
 ) {
-  for (const selection of toArrayIfNeeded(selectionsToCheck)) {
-    if (isSelectionIncluded(selection, selectionsList)) return true;
+  const setSelectionList = toSetIfNeeded(selectionsList);
+  for (const selection of selectionsToCheck) {
+    if (isSelectionIncluded(selection, setSelectionList)) return true;
   }
 
   return false;
@@ -233,11 +230,10 @@ export function isAnySelectionIncludedInMatrix(
   selectionsToCheck: List<Selection>,
   selectionsMatrix: List<List<Selection>>
 ) {
-  const selectionsGroups = toArrayIfNeeded(selectionsMatrix);
-  const selectionsToCheckArray = toArrayIfNeeded(selectionsToCheck);
+  const selectionsToCheckSet = toSetIfNeeded(selectionsToCheck);
 
-  for (const group of selectionsGroups) {
-    if (isAnySelectionIncluded(selectionsToCheckArray, group)) return true;
+  for (const group of selectionsMatrix) {
+    if (isAnySelectionIncluded(selectionsToCheckSet, group)) return true;
   }
 
   return false;

@@ -144,7 +144,7 @@ export function createResolvers(innerState: InnerClientState) {
     if (eventHandler.hasFetchSubscribers) {
       loggingPromise = createLazyPromise<FetchEventData>();
 
-      eventHandler.sendFetchPromise(loggingPromise.promise);
+      eventHandler.sendFetchPromise(loggingPromise.promise, selections);
     }
 
     try {

@@ -34,7 +34,7 @@ export function createUseQuery<
   const useQuery: UseQuery<GeneratedSchema> = function useQuery({
     suspense = defaultSuspense,
   } = {}) {
-    const [selections] = useState(initSelectionsState);
+    const [componentSelections] = useState(initSelectionsState);
 
     const fetchingPromise = useRef<Promise<void> | null>(null);
     const forceUpdate = useDeferDispatch(useForceUpdate());
@@ -42,15 +42,18 @@ export function createUseQuery<
     const interceptor = interceptorManager.createInterceptor();
 
     interceptor.selectionAddListeners.add((selection) => {
-      selections.add(selection);
+      componentSelections.add(selection);
     });
 
     interceptor.selectionCacheListeners.add((selection) => {
-      selections.add(selection);
+      componentSelections.add(selection);
     });
 
     const unsubscribe = scheduler.subscribeResolve((promise, selection) => {
-      if (fetchingPromise.current === null && selections.has(selection)) {
+      if (
+        fetchingPromise.current === null &&
+        componentSelections.has(selection)
+      ) {
         fetchingPromise.current = new Promise<void>((resolve, reject) => {
           promise.then(
             () => {
@@ -80,23 +83,27 @@ export function createUseQuery<
 
     useEffect(() => {
       let isMounted = true;
-      const unsubscribeFetch = eventHandler.onFetchSubscribe((fetchPromise) => {
-        fetchPromise.then(
-          (data) => {
-            if (
-              isMounted &&
-              data.selections.some((selection) => selections.has(selection))
-            ) {
-              forceUpdate();
-            }
-          },
-          () => {}
-        );
-      });
+      const unsubscribeFetch = eventHandler.onFetchSubscribe(
+        (fetchPromise, promiseSelections) => {
+          if (
+            !promiseSelections.some((selection) =>
+              componentSelections.has(selection)
+            )
+          )
+            return;
+
+          fetchPromise.then(
+            () => {
+              if (isMounted) forceUpdate();
+            },
+            () => {}
+          );
+        }
+      );
 
       const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
         ({ selection }) => {
-          if (isMounted && selections.has(selection)) {
+          if (isMounted && componentSelections.has(selection)) {
             forceUpdate();
           }
         }
@@ -107,7 +114,7 @@ export function createUseQuery<
         unsubscribeFetch();
         unsubscribeCache();
       };
-    }, [selections]);
+    }, [componentSelections]);
 
     if (suspense && fetchingPromise.current) {
       throw fetchingPromise.current;
