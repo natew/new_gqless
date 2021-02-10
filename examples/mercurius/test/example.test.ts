@@ -1,6 +1,7 @@
-import { selectFields } from '@dish/gqless';
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 import { waitForExpect } from 'test-utils';
+
+import { selectFields } from '@dish/gqless';
 
 import { app, codegen } from '../src';
 import {
@@ -10,6 +11,11 @@ import {
   query,
   resolved,
 } from '../src/generated/gqless';
+import {
+  arrayObjectArgsDocument,
+  multipleArgsDocument,
+  simpleStringDocument,
+} from '../src/generated/mercurius';
 
 const testClient = createMercuriusTestClient(app);
 
@@ -18,51 +24,17 @@ beforeAll(async () => {
 });
 
 test('works', async () => {
-  await testClient
-    .query(
-      `
-    query {
-        simpleString
-    }
-    `
-    )
-    .then((response) => {
-      expect(typeof response.data?.simpleString).toBe('string');
-    });
+  await testClient.query(simpleStringDocument).then((response) => {
+    expect(typeof response.data?.simpleString).toBe('string');
+  });
 
-  await testClient
-    .query(
-      `
-    query {
-      arrayObjectArgs(limit: 2) {
-        name
-        father {
-          name
-          father {
-            name
-          }
-        }
-      }
-    }
-  `
-    )
-    .then((resp) => {
-      expect(resp.errors).toBe(undefined);
-    });
+  await testClient.query(arrayObjectArgsDocument).then((resp) => {
+    expect(resp.errors).toBe(undefined);
+  });
 });
 
 test('multiple args', async () => {
-  const response = await testClient.query(`
-  query {
-    a1: objectWithArgs(who: "hello") {
-      zxc: name
-      abc: name
-    }
-    a2: objectWithArgs(who: "hello2") {
-      name
-    }
-  }
-  `);
+  const response = await testClient.query(multipleArgsDocument);
 
   expect(response).toEqual({
     data: {

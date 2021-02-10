@@ -11,12 +11,15 @@ export type SelectionConstructorArgs = {
   alias?: string;
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
+  union?: string;
 };
 
 export class Selection {
   key: string | number;
 
   type: SelectionType;
+
+  union?: string;
 
   args?: Readonly<Record<string, unknown>>;
   argTypes?: Readonly<Record<string, string>>;
@@ -35,12 +38,14 @@ export class Selection {
     argTypes,
     type,
     alias,
+    union,
   }: SelectionConstructorArgs) {
     this.key = key;
     this.args = args;
     this.argTypes = argTypes;
     this.type = type || prevSelection?.type || SelectionType.Query;
     this.alias = alias;
+    this.union = union;
 
     const pathKey = alias || key;
 

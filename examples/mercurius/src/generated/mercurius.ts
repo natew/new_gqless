@@ -5,6 +5,7 @@ import {
   GraphQLScalarType,
   GraphQLScalarTypeConfig,
 } from 'graphql';
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
@@ -19,6 +20,7 @@ export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   context: TContext,
   info: GraphQLResolveInfo
 ) => Promise<DeepPartial<TResult>> | DeepPartial<TResult>;
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
 } &
@@ -59,6 +61,7 @@ export type Query = {
   greetings: GreetingsEnum;
   giveGreetingsInput: Scalars['String'];
   number: Scalars['Int'];
+  union: Array<TestUnion>;
 };
 
 export type QuerystringWithArgsArgs = {
@@ -101,11 +104,29 @@ export type Human = {
   father: Human;
   fieldWithArgs: Scalars['Int'];
   sons?: Maybe<Array<Human>>;
+  union: Array<TestUnion>;
 };
 
 export type HumanfieldWithArgsArgs = {
   id: Scalars['Int'];
 };
+
+export type A = {
+  __typename?: 'A';
+  a: Scalars['String'];
+};
+
+export type B = {
+  __typename?: 'B';
+  b: Scalars['Int'];
+};
+
+export type C = {
+  __typename?: 'C';
+  c: GreetingsEnum;
+};
+
+export type TestUnion = A | B | C;
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -223,7 +244,13 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
-  Human: ResolverTypeWrapper<Human>;
+  Human: ResolverTypeWrapper<
+    Omit<Human, 'union'> & { union: Array<ResolversTypes['TestUnion']> }
+  >;
+  A: ResolverTypeWrapper<A>;
+  B: ResolverTypeWrapper<B>;
+  C: ResolverTypeWrapper<C>;
+  TestUnion: ResolversTypes['A'] | ResolversTypes['B'] | ResolversTypes['C'];
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 };
 
@@ -235,7 +262,16 @@ export type ResolversParentTypes = {
   Query: {};
   Int: Scalars['Int'];
   Mutation: {};
-  Human: Human;
+  Human: Omit<Human, 'union'> & {
+    union: Array<ResolversParentTypes['TestUnion']>;
+  };
+  A: A;
+  B: B;
+  C: C;
+  TestUnion:
+    | ResolversParentTypes['A']
+    | ResolversParentTypes['B']
+    | ResolversParentTypes['C'];
   Boolean: Scalars['Boolean'];
 };
 
@@ -302,6 +338,7 @@ export type QueryResolvers<
     RequireFields<QuerygiveGreetingsInputArgs, 'input'>
   >;
   number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  union?: Resolver<Array<ResolversTypes['TestUnion']>, ParentType, ContextType>;
 };
 
 export type MutationResolvers<
@@ -333,7 +370,39 @@ export type HumanResolvers<
     ParentType,
     ContextType
   >;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+  union?: Resolver<Array<ResolversTypes['TestUnion']>, ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['A'] = ResolversParentTypes['A']
+> = {
+  a?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type BResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['B'] = ResolversParentTypes['B']
+> = {
+  b?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['C'] = ResolversParentTypes['C']
+> = {
+  c?: Resolver<ResolversTypes['GreetingsEnum'], ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type TestUnionResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['TestUnion'] = ResolversParentTypes['TestUnion']
+> = {
+  resolveType: TypeResolveFn<'A' | 'B' | 'C', ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
@@ -341,6 +410,10 @@ export type Resolvers<ContextType = any> = {
   Query?: QueryResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Human?: HumanResolvers<ContextType>;
+  A?: AResolvers<ContextType>;
+  B?: BResolvers<ContextType>;
+  C?: CResolvers<ContextType>;
+  TestUnion?: TestUnionResolvers<ContextType>;
 };
 
 /**
@@ -379,8 +452,242 @@ export interface Loaders<
       TContext
     >;
     sons?: LoaderResolver<Maybe<Array<Human>>, Human, {}, TContext>;
+    union?: LoaderResolver<Array<TestUnion>, Human, {}, TContext>;
+  };
+
+  A?: {
+    a?: LoaderResolver<Scalars['String'], A, {}, TContext>;
+  };
+
+  B?: {
+    b?: LoaderResolver<Scalars['Int'], B, {}, TContext>;
+  };
+
+  C?: {
+    c?: LoaderResolver<GreetingsEnum, C, {}, TContext>;
   };
 }
+export type simpleStringQueryVariables = Exact<{ [key: string]: never }>;
+
+export type simpleStringQuery = { __typename?: 'Query' } & Pick<
+  Query,
+  'simpleString'
+> & {
+    union: Array<
+      | ({ __typename: 'A' } & Pick<A, 'a'>)
+      | ({ __typename: 'B' } & Pick<B, 'b'>)
+      | ({ __typename: 'C' } & Pick<C, 'c'>)
+    >;
+  };
+
+export type arrayObjectArgsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type arrayObjectArgsQuery = { __typename?: 'Query' } & {
+  arrayObjectArgs: Array<
+    { __typename?: 'Human' } & Pick<Human, 'name'> & {
+        father: { __typename?: 'Human' } & Pick<Human, 'name'> & {
+            father: { __typename?: 'Human' } & Pick<Human, 'name'>;
+          };
+      }
+  >;
+};
+
+export type multipleArgsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type multipleArgsQuery = { __typename?: 'Query' } & {
+  a1: { __typename?: 'Human' } & { zxc: Human['name']; abc: Human['name'] };
+  a2: { __typename?: 'Human' } & Pick<Human, 'name'>;
+};
+
+export const simpleStringDocument: DocumentNode<
+  simpleStringQuery,
+  simpleStringQueryVariables
+> = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'simpleString' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'simpleString' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'union' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                {
+                  kind: 'InlineFragment',
+                  typeCondition: {
+                    kind: 'NamedType',
+                    name: { kind: 'Name', value: 'A' },
+                  },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'a' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'InlineFragment',
+                  typeCondition: {
+                    kind: 'NamedType',
+                    name: { kind: 'Name', value: 'B' },
+                  },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'b' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'InlineFragment',
+                  typeCondition: {
+                    kind: 'NamedType',
+                    name: { kind: 'Name', value: 'C' },
+                  },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'c' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+export const arrayObjectArgsDocument: DocumentNode<
+  arrayObjectArgsQuery,
+  arrayObjectArgsQueryVariables
+> = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'arrayObjectArgs' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'arrayObjectArgs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'IntValue', value: '2' },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'father' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'father' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'name' },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+export const multipleArgsDocument: DocumentNode<
+  multipleArgsQuery,
+  multipleArgsQueryVariables
+> = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'multipleArgs' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'a1' },
+            name: { kind: 'Name', value: 'objectWithArgs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'who' },
+                value: { kind: 'StringValue', value: 'hello', block: false },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  alias: { kind: 'Name', value: 'zxc' },
+                  name: { kind: 'Name', value: 'name' },
+                },
+                {
+                  kind: 'Field',
+                  alias: { kind: 'Name', value: 'abc' },
+                  name: { kind: 'Name', value: 'name' },
+                },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'a2' },
+            name: { kind: 'Name', value: 'objectWithArgs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'who' },
+                value: { kind: 'StringValue', value: 'hello2', block: false },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>

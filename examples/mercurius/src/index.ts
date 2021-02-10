@@ -5,7 +5,7 @@ import mercuriusCodegen from 'mercurius-codegen';
 import { generate } from 'randomstring';
 import { gql } from 'test-utils';
 
-import { GreetingsEnum } from './generated/mercurius';
+import { GreetingsEnum, Human, TestUnion } from './generated/mercurius';
 
 export const app = Fastify({
   logger: {
@@ -13,9 +13,22 @@ export const app = Fastify({
   },
 });
 
-export const newHuman = ({ name }: { name?: string } = {}) => {
+const getUnion = (): TestUnion[] => [
+  {
+    a: 'asd',
+  },
+  {
+    b: 123,
+  },
+  {
+    c: GreetingsEnum.Hey,
+  },
+];
+
+export const newHuman = ({ name }: { name?: string } = {}): Partial<Human> => {
   return {
     name: name || generate(),
+    union: getUnion(),
   };
 };
 
@@ -47,6 +60,7 @@ app.register(Mercurius, {
       greetings: GreetingsEnum!
       giveGreetingsInput(input: GreetingsInput!): String!
       number: Int!
+      union: [TestUnion!]!
     }
     type Mutation {
       increment(n: Int!): Int!
@@ -56,7 +70,18 @@ app.register(Mercurius, {
       father: Human!
       fieldWithArgs(id: Int!): Int!
       sons: [Human!]
+      union: [TestUnion!]!
     }
+    type A {
+      a: String!
+    }
+    type B {
+      b: Int!
+    }
+    type C {
+      c: GreetingsEnum!
+    }
+    union TestUnion = A | B | C
   `,
   resolvers: {
     Query: {
@@ -96,6 +121,9 @@ app.register(Mercurius, {
       number() {
         return inc;
       },
+      union() {
+        return getUnion();
+      },
     },
     Mutation: {
       increment(_root, { n }) {
@@ -113,6 +141,13 @@ app.register(Mercurius, {
         return range(random(2, 3)).map(() => newHuman());
       },
     },
+    TestUnion: {
+      resolveType(obj) {
+        if ('a' in obj) return 'A';
+        if ('b' in obj) return 'B';
+        return 'C';
+      },
+    },
   },
 });
 
@@ -120,4 +155,5 @@ export const codegen = () =>
   mercuriusCodegen(app, {
     targetPath: './src/generated/mercurius.ts',
     silent: true,
+    operationsGlob: 'src/graphql/operations.gql',
   });
