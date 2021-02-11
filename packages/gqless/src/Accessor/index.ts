@@ -1,8 +1,12 @@
-import fromPairs from 'lodash/fromPairs';
 import { CacheNotFound } from '../Cache';
 import { InnerClientState } from '../Client/client';
 import { gqlessError } from '../Error';
-import { DeepPartial, parseSchemaType, Schema } from '../Schema';
+import {
+  DeepPartial,
+  parseSchemaType,
+  Schema,
+  SchemaUnionsKey,
+} from '../Schema';
 import { Selection, SelectionType } from '../Selection';
 import { isInteger } from '../Utils';
 
@@ -22,6 +26,35 @@ export function AccessorCreators<
     eventHandler,
   } = innerState;
 
+  type SchemaUnion = Record<string, string[]>;
+
+  // const SchemaUnions: Record<string, Record<string, Type>> = {};
+
+  const schemaUnions = Object.entries(schema[SchemaUnionsKey] || {}).reduce(
+    (acum, [unionName, unionTypes]) => {
+      const unionObj: Record<string, string[]> = {};
+
+      for (const unionTypeString of unionTypes) {
+        const unionType = schema[unionTypeString];
+
+        const typeFields = Object.keys(unionType || {});
+
+        for (const fieldName of typeFields) {
+          unionObj[fieldName] ||= [];
+
+          unionObj[fieldName].push(unionTypeString);
+        }
+      }
+
+      acum[unionName] = unionObj;
+
+      return acum;
+    },
+    {} as Record<string, SchemaUnion>
+  );
+
+  schemaUnions;
+
   const ProxySymbol = Symbol('gqless-proxy');
 
   const ResolveInfoSymbol = Symbol();
@@ -40,13 +73,13 @@ export function AccessorCreators<
 
       // An edge case hard to reproduce
       /* istanbul ignore if */
-      if (!accessorSelection) return undefined;
+      if (!accessorSelection) return;
 
       const selectionCache = innerState.clientCache.getCacheFromSelection(
         accessorSelection
       );
 
-      if (selectionCache === CacheNotFound) return undefined;
+      if (selectionCache === CacheNotFound) return;
 
       return selectionCache;
     } else return value;
@@ -216,7 +249,11 @@ export function AccessorCreators<
     return accessor;
   }
 
-  function createAccessor(schemaType: Schema[string], selectionArg: Selection) {
+  function createAccessor(
+    schemaType: Schema[string],
+    selectionArg: Selection,
+    _schemaUnion?: SchemaUnion
+  ) {
     const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
       selectionArg
     );
@@ -224,11 +261,10 @@ export function AccessorCreators<
 
     const accessor = accessorCache.getAccessor(selectionArg, cacheValue, () => {
       return new Proxy(
-        fromPairs(
-          Object.keys(schemaType).map((key) => {
-            return [key, ProxySymbol];
-          })
-        ) as Record<string, unknown>,
+        Object.keys(schemaType).reduce((acum, key) => {
+          acum[key] = ProxySymbol;
+          return acum;
+        }, {} as Record<string, unknown>),
         {
           set(_target, key: string, value: unknown) {
             if (!schemaType.hasOwnProperty(key)) {
@@ -302,6 +338,11 @@ export function AccessorCreators<
                 return cacheValue;
               }
 
+              const union = schemaUnions[pureType];
+              if (schemaUnions) {
+                union;
+              }
+
               const typeValue = schema[pureType];
               if (typeValue) {
                 const childAccessor = isArray
@@ -312,6 +353,8 @@ export function AccessorCreators<
 
                 return childAccessor;
               }
+
+              console.log(key, schemaType);
 
               throw new gqlessError(`GraphQL Type not found: ${pureType}`);
             };

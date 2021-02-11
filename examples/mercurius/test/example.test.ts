@@ -23,6 +23,8 @@ beforeAll(async () => {
   await codegen();
 });
 
+query.union.map((v) => v.__typename);
+
 test('works', async () => {
   await testClient.query(simpleStringDocument).then((response) => {
     expect(typeof response.data?.simpleString).toBe('string');

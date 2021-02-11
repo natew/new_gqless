@@ -4,13 +4,15 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm build -r --stream",
-    "dev": "rimraf packages/*/dist packages/*/*.tsbuildinfo && node dev.mjs",
+    "clean": "rimraf packages/*/dist packages/*/*.tsbuildinfo",
+    "dev": "pnpm clean && node dev.mjs",
     "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test -r --no-bail --no-sort --stream",
     "dev:react": "rimraf packages/gqless/dist packages/gqless/*.tsbuildinfo packages/gqless-react/dist packages/gqless-react/*.tsbuildinfo && pnpm -r --filter @dish/gqless start -- --onSuccess \"pnpm --filter gqless_refactor -r exec -- pnpm -r --filter @dish/gqless-react start:with:example\"",
     "dev:start": "pnpm start -r --no-bail --no-sort",
     "dev:test": "pnpm test:watch -r --no-bail --no-sort --stream",
     "publish:next": "pnpm i && pnpm test && pnpm -r publish --access public --tag next",
-    "test": "pnpm test -r --no-sort --no-bail --stream"
+    "test": "pnpm test -r --no-sort --no-bail --stream",
+    "dev:mercurius": "pnpm -r exec --filter @dish/gqless -- tsc -m commonjs && concurrently \"pnpm -r --filter mercurius-example test:watch\" \"pnpm -r --filter @dish/gqless start\""
   },
   "husky": {
     "hooks": {

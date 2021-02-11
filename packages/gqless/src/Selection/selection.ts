@@ -11,7 +11,7 @@ export type SelectionConstructorArgs = {
   alias?: string;
   args?: Record<string, unknown>;
   argTypes?: Record<string, string>;
-  union?: string;
+  unions?: string[];
 };
 
 export class Selection {
@@ -19,7 +19,7 @@ export class Selection {
 
   type: SelectionType;
 
-  union?: string;
+  unions?: string[];
 
   args?: Readonly<Record<string, unknown>>;
   argTypes?: Readonly<Record<string, string>>;
@@ -38,14 +38,14 @@ export class Selection {
     argTypes,
     type,
     alias,
-    union,
+    unions,
   }: SelectionConstructorArgs) {
     this.key = key;
     this.args = args;
     this.argTypes = argTypes;
     this.type = type || prevSelection?.type || SelectionType.Query;
     this.alias = alias;
-    this.union = union;
+    this.unions = unions;
 
     const pathKey = alias || key;
 
