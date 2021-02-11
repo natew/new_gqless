@@ -160,7 +160,7 @@ export const createTestClient = async (
       newNotification: void;
     };
   }>({
-    schema: merge(generatedSchema, addedToGeneratedSchema),
+    schema: merge(generatedSchema, addedToGeneratedSchema) as Schema,
     scalarsEnumsHash,
     queryFetcher,
   });
