@@ -1,4 +1,4 @@
-import { ScalarsEnumsHash } from '@dish/gqless';
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -31,10 +31,10 @@ export interface GreetingsInput {
 }
 
 export const scalarsEnumsHash: ScalarsEnumsHash = {
-  ExampleScalar: true,
-  GreetingsEnum: true,
   String: true,
   Int: true,
+  ExampleScalar: true,
+  GreetingsEnum: true,
   Boolean: true,
 };
 export const generatedSchema = {
@@ -61,6 +61,7 @@ export const generatedSchema = {
       __args: { input: 'GreetingsInput!' },
     },
     number: { __type: 'Int!' },
+    union: { __type: '[TestUnion!]!' },
   },
   mutation: {
     __typename: { __type: 'String!' },
@@ -78,7 +79,13 @@ export const generatedSchema = {
     father: { __type: 'Human!' },
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
     sons: { __type: '[Human!]' },
+    union: { __type: '[TestUnion!]!' },
+    args: { __type: 'Int', __args: { a: 'String' } },
   },
+  A: { __typename: { __type: 'String!' }, a: { __type: 'String!' } },
+  B: { __typename: { __type: 'String!' }, b: { __type: 'Int!' } },
+  C: { __typename: { __type: 'String!' }, c: { __type: 'GreetingsEnum!' } },
+  [SchemaUnionsKey]: { TestUnion: ['A', 'B', 'C'] },
 } as const;
 
 export interface Query {
@@ -104,6 +111,7 @@ export interface Query {
     input: GreetingsInput;
   }) => ScalarsEnums['String'];
   number: ScalarsEnums['Int'];
+  union: Array<TestUnion>;
 }
 
 export interface Mutation {
@@ -115,12 +123,37 @@ export interface Subscription {
   __typename: 'Subscription';
 }
 
-export interface Human {
+export interface Human extends NamedEntity {
   __typename: 'Human';
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
   sons?: Maybe<Array<Human>>;
+  union: Array<TestUnion>;
+  args: (args?: {
+    a?: Maybe<ScalarsEnums['String']>;
+  }) => Maybe<ScalarsEnums['Int']>;
+}
+
+export interface A {
+  __typename: 'A';
+  a: ScalarsEnums['String'];
+}
+
+export interface B {
+  __typename: 'B';
+  b: ScalarsEnums['Int'];
+}
+
+export interface C {
+  __typename: 'C';
+  c: ScalarsEnums['GreetingsEnum'];
+}
+
+type TestUnion = A | B | C;
+
+export interface NamedEntity {
+  name: ScalarsEnums['String'];
 }
 
 export interface GeneratedSchema {

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CLI behavior final message: basic functionality with cli final messsage - schema 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -156,7 +156,7 @@ export * from './schema.generated';
 `;
 
 exports[`basic inspectWriteGenerate functionality: basic inspectWriteGenerate schema 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -215,7 +215,7 @@ export interface ScalarsEnums extends MakeNullable<Scalars> {}
 exports[`inspect headers specify headers to inspectWriteGenerate: specify headers 1`] = `
 "// This should be included
 
-import { ScalarsEnumsHash } from '@dish/gqless';
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -323,7 +323,7 @@ export * from './schema.generated';
 exports[`specify generateOptions to inspectWriteGenerate: generateOptions schema 1`] = `
 "// This should be included
 
-import { ScalarsEnumsHash } from '@dish/gqless';
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {

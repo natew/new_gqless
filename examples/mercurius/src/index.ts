@@ -35,6 +35,10 @@ export const newHuman = ({ name }: { name?: string } = {}): Partial<Human> => {
 let inc = 0;
 app.register(Mercurius, {
   schema: gql`
+    interface NamedEntity {
+      name: String!
+      args(a: String): Int
+    }
     scalar ExampleScalar
 
     enum GreetingsEnum {
@@ -65,12 +69,13 @@ app.register(Mercurius, {
     type Mutation {
       increment(n: Int!): Int!
     }
-    type Human {
+    type Human implements NamedEntity {
       name: String!
       father: Human!
       fieldWithArgs(id: Int!): Int!
       sons: [Human!]
       union: [TestUnion!]!
+      args(a: String): Int
     }
     type A {
       a: String!

@@ -35,6 +35,15 @@ export type Scalars = {
   ExampleScalar: any;
 };
 
+export type NamedEntity = {
+  name: Scalars['String'];
+  args?: Maybe<Scalars['Int']>;
+};
+
+export type NamedEntityargsArgs = {
+  a?: Maybe<Scalars['String']>;
+};
+
 export enum GreetingsEnum {
   Hello = 'Hello',
   Hi = 'Hi',
@@ -98,17 +107,22 @@ export type MutationincrementArgs = {
   n: Scalars['Int'];
 };
 
-export type Human = {
+export type Human = NamedEntity & {
   __typename?: 'Human';
   name: Scalars['String'];
   father: Human;
   fieldWithArgs: Scalars['Int'];
   sons?: Maybe<Array<Human>>;
   union: Array<TestUnion>;
+  args?: Maybe<Scalars['Int']>;
 };
 
 export type HumanfieldWithArgsArgs = {
   id: Scalars['Int'];
+};
+
+export type HumanargsArgs = {
+  a?: Maybe<Scalars['String']>;
 };
 
 export type A = {
@@ -237,12 +251,13 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  NamedEntity: ResolversTypes['Human'];
+  String: ResolverTypeWrapper<Scalars['String']>;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
   ExampleScalar: ResolverTypeWrapper<Scalars['ExampleScalar']>;
   GreetingsEnum: GreetingsEnum;
   GreetingsInput: GreetingsInput;
-  String: ResolverTypeWrapper<Scalars['String']>;
   Query: ResolverTypeWrapper<{}>;
-  Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
   Human: ResolverTypeWrapper<
     Omit<Human, 'union'> & { union: Array<ResolversTypes['TestUnion']> }
@@ -256,11 +271,12 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  NamedEntity: ResolversParentTypes['Human'];
+  String: Scalars['String'];
+  Int: Scalars['Int'];
   ExampleScalar: Scalars['ExampleScalar'];
   GreetingsInput: GreetingsInput;
-  String: Scalars['String'];
   Query: {};
-  Int: Scalars['Int'];
   Mutation: {};
   Human: Omit<Human, 'union'> & {
     union: Array<ResolversParentTypes['TestUnion']>;
@@ -273,6 +289,20 @@ export type ResolversParentTypes = {
     | ResolversParentTypes['B']
     | ResolversParentTypes['C'];
   Boolean: Scalars['Boolean'];
+};
+
+export type NamedEntityResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['NamedEntity'] = ResolversParentTypes['NamedEntity']
+> = {
+  resolveType: TypeResolveFn<'Human', ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  args?: Resolver<
+    Maybe<ResolversTypes['Int']>,
+    ParentType,
+    ContextType,
+    RequireFields<NamedEntityargsArgs, never>
+  >;
 };
 
 export interface ExampleScalarScalarConfig
@@ -371,6 +401,12 @@ export type HumanResolvers<
     ContextType
   >;
   union?: Resolver<Array<ResolversTypes['TestUnion']>, ParentType, ContextType>;
+  args?: Resolver<
+    Maybe<ResolversTypes['Int']>,
+    ParentType,
+    ContextType,
+    RequireFields<HumanargsArgs, never>
+  >;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -406,6 +442,7 @@ export type TestUnionResolvers<
 };
 
 export type Resolvers<ContextType = any> = {
+  NamedEntity?: NamedEntityResolvers<ContextType>;
   ExampleScalar?: GraphQLScalarType;
   Query?: QueryResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
@@ -453,6 +490,12 @@ export interface Loaders<
     >;
     sons?: LoaderResolver<Maybe<Array<Human>>, Human, {}, TContext>;
     union?: LoaderResolver<Array<TestUnion>, Human, {}, TContext>;
+    args?: LoaderResolver<
+      Maybe<Scalars['Int']>,
+      Human,
+      HumanargsArgs,
+      TContext
+    >;
   };
 
   A?: {

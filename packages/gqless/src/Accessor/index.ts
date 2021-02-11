@@ -313,7 +313,7 @@ export function AccessorCreators<
                 return childAccessor;
               }
 
-              throw new gqlessError('GraphQL Type not found!');
+              throw new gqlessError(`GraphQL Type not found: ${pureType}`);
             };
 
             if (__args) {

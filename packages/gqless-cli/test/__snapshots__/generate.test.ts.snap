@@ -3,7 +3,7 @@
 exports[`basic functionality works: generate_code 1`] = `
 "// This should be included
 
-import { ScalarsEnumsHash } from '@dish/gqless';
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -82,7 +82,7 @@ exports[`basic functionality works: generate_scalarsEnumHash 1`] = `
 `;
 
 exports[`custom scalars works: generate_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -164,7 +164,7 @@ exports[`custom scalars works: generate_customScalars_scalarsEnumHash 1`] = `
 `;
 
 exports[`feature complete app generate works: featureComplete_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -248,6 +248,7 @@ export const generatedSchema = {
     __typename: { __type: 'String!' },
     name: { __type: 'String!' },
   },
+  [SchemaUnionsKey]: { HumanType: ['Human', 'OtherHuman'] },
 } as const;
 
 export interface Query {
@@ -298,6 +299,8 @@ export interface OtherHuman {
   name: ScalarsEnums['String'];
 }
 
+type HumanType = Human | OtherHuman;
+
 export interface GeneratedSchema {
   query: Query;
   mutation: Mutation;
@@ -319,7 +322,7 @@ exports[`feature complete app generate works: featureComplete_generatedSchema 1`
 exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
 
 exports[`mutation generates mutation: mutation_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -414,7 +417,7 @@ Object {
 `;
 
 exports[`subscription generates subscription: subscription_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {

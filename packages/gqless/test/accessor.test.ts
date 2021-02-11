@@ -83,7 +83,7 @@ describe('accessor undefined paths', () => {
     expect(() => {
       //@ts-expect-error
       query.other;
-    }).toThrow('GraphQL Type not found!');
+    }).toThrow('GraphQL Type not found: error');
 
     expect(
       //@ts-expect-error

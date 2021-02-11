@@ -1,5 +1,17 @@
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import fkill from 'fkill';
+
+execSync('pnpm -r exec --filter @dish/gqless -- tsc -m commonjs', {
+  stdio: 'inherit',
+});
+
+execSync('pnpm -r --filter test-utils build', {
+  stdio: 'inherit',
+});
+
+execSync('pnpm -r --filter @dish/react-ssr-prepass build', {
+  stdio: 'inherit',
+});
 
 const processes = ['pnpm dev:start', 'pnpm dev:test'].map((script) => {
   return spawn(script, {

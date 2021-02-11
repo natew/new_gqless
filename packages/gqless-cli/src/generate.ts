@@ -1,16 +1,24 @@
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSchema,
+  GraphQLUnionType,
   parse,
   printSchema,
 } from 'graphql';
 import fromPairs from 'lodash/fromPairs';
 import { format, Options as PrettierOptions, resolveConfig } from 'prettier';
 
-import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '@dish/gqless';
+import {
+  parseSchemaType,
+  ScalarsEnumsHash,
+  Schema,
+  SchemaUnionsKey,
+  Type,
+} from '@dish/gqless';
 import { codegen } from '@graphql-codegen/core';
 import * as typescriptPlugin from '@graphql-codegen/typescript';
 
@@ -76,8 +84,19 @@ export async function generate(
   const parseScalarType = (type: GraphQLScalarType) => {
     scalarsEnumsHash[type.name] = true;
   };
+
+  const objectTypeInterfacesMap = new Map<string, string[]>();
+
   const parseObjectType = (type: GraphQLObjectType, typeName = type.name) => {
     const fields = type.getFields();
+    const interfaces = type.getInterfaces();
+
+    if (interfaces.length) {
+      objectTypeInterfacesMap.set(
+        type.name,
+        interfaces.map((v) => v.name)
+      );
+    }
 
     const schemaType: Record<string, Type> = {
       __typename: { __type: 'String!' },
@@ -100,6 +119,19 @@ export async function generate(
     generatedSchema[typeName] = schemaType;
   };
 
+  const unionsMap = new Map<string, string[]>();
+
+  const parseUnionType = (type: GraphQLUnionType) => {
+    const unionTypes = type.getTypes();
+
+    const list: string[] = [];
+    unionsMap.set(type.name, list);
+
+    for (const objectType of unionTypes) {
+      list.push(objectType.name);
+    }
+  };
+
   const parseInputType = (type: GraphQLInputObjectType) => {
     inputTypeNames.add(type.name);
     const fields = type.getFields();
@@ -115,6 +147,33 @@ export async function generate(
     generatedSchema[type.name] = schemaType;
   };
 
+  type InterfaceMapValue = {
+    fieldName: string;
+  } & Type;
+  const interfacesMap = new Map<string, InterfaceMapValue[]>();
+
+  const parseInterfaceType = (type: GraphQLInterfaceType) => {
+    const fields = type.getFields();
+
+    const list = Object.entries(fields).map(([fieldName, gqlType]) => {
+      const interfaceValue: InterfaceMapValue = {
+        fieldName,
+        __type: gqlType.type.toString(),
+      };
+
+      if (gqlType.args.length) {
+        interfaceValue.__args = fromPairs(
+          gqlType.args.map((arg) => {
+            return [arg.name, arg.type.toString()];
+          })
+        );
+      }
+
+      return interfaceValue;
+    });
+    interfacesMap.set(type.name, list);
+  };
+
   config.types.forEach((type) => {
     if (
       type.name.startsWith('__') ||
@@ -124,12 +183,16 @@ export async function generate(
     )
       return;
 
-    if (type instanceof GraphQLEnumType) {
-      parseEnumType(type);
-    } else if (type instanceof GraphQLScalarType) {
+    if (type instanceof GraphQLScalarType) {
       parseScalarType(type);
     } else if (type instanceof GraphQLObjectType) {
       parseObjectType(type);
+    } else if (type instanceof GraphQLInterfaceType) {
+      parseInterfaceType(type);
+    } else if (type instanceof GraphQLUnionType) {
+      parseUnionType(type);
+    } else if (type instanceof GraphQLEnumType) {
+      parseEnumType(type);
     } else if (type instanceof GraphQLInputObjectType) {
       parseInputType(type);
     }
@@ -146,6 +209,11 @@ export async function generate(
 
   if (subscriptionType) {
     parseObjectType(subscriptionType, 'subscription');
+  }
+
+  const unionsMapObj = Object.fromEntries(unionsMap);
+  if (unionsMap.size) {
+    generatedSchema[SchemaUnionsKey] = unionsMapObj;
   }
 
   function parseFinalType({
@@ -194,9 +262,13 @@ export async function generate(
 
       if (inputTypeNames.has(typeName)) return acum;
 
+      const objectTypeInterfaces = objectTypeInterfacesMap.get(typeName);
+
       acum += `
 
-      export interface ${typeName} { 
+      export interface ${typeName} ${
+        objectTypeInterfaces ? 'extends ' + objectTypeInterfaces.join(', ') : ''
+      }{ 
         __typename: "${typeName}"; ${Object.entries(typeValue).reduce(
         (acum, [fieldKey, fieldValue]) => {
           if (fieldKey === '__typename') return acum;
@@ -245,6 +317,66 @@ export async function generate(
     },
     ''
   );
+
+  if (unionsMap.size) {
+    typescriptTypes += `
+    ${Array.from(unionsMap.entries()).reduce((acum, [unionName, types]) => {
+      acum += `type ${unionName} = ${types.join(' | ')}\n`;
+
+      return acum;
+    }, '')}
+    `;
+  }
+
+  if (interfacesMap.size) {
+    typescriptTypes += `
+    ${Array.from(interfacesMap.entries()).reduce(
+      (acum, [interfaceName, fields]) => {
+        acum += `export interface ${interfaceName} {
+        ${fields.reduce((fieldAcum, { __type, fieldName, __args }) => {
+          const fieldValueProps = parseSchemaType(__type);
+          const typeToReturn = parseFinalType(fieldValueProps);
+
+          if (__args) {
+            const argsEntries = Object.entries(__args);
+            let onlyNullableArgs = true;
+            const argTypes = argsEntries.reduce(
+              (acum, [argKey, argValue], index) => {
+                const argValueProps = parseSchemaType(argValue);
+                const connector = argValueProps.isNullable ? '?:' : ':';
+
+                if (!argValueProps.isNullable) {
+                  onlyNullableArgs = false;
+                }
+
+                const argTypeValue = parseFinalType(argValueProps);
+
+                acum += `${argKey}${connector} ${argTypeValue}`;
+                if (index < argsEntries.length - 1) {
+                  acum += '; ';
+                }
+                return acum;
+              },
+              ''
+            );
+            const argsConnector = onlyNullableArgs ? '?:' : ':';
+            acum += `
+            ${fieldName}: (args${argsConnector} {${argTypes}}) => ${typeToReturn}`;
+          } else {
+            const connector = fieldValueProps.isNullable ? '?:' : ':';
+            fieldAcum += `
+            ${fieldName}${connector} ${typeToReturn}`;
+          }
+
+          return fieldAcum;
+        }, '')}
+      }`;
+        return acum;
+      },
+      ''
+    )}
+    `;
+  }
 
   typescriptTypes += `
     export interface GeneratedSchema {
@@ -299,14 +431,19 @@ export async function generate(
     `
   ${preImport}
 
-  import { ScalarsEnumsHash } from "@dish/gqless";
+  import { ScalarsEnumsHash, SchemaUnionsKey } from "@dish/gqless";
 
   ${await codegenResult}
 
   export const scalarsEnumsHash: ScalarsEnumsHash = ${JSON.stringify(
     scalarsEnumsHash
   )};
-  export const generatedSchema = ${JSON.stringify(generatedSchema)} as const;
+  export const generatedSchema = {${Object.entries(generatedSchema).reduceRight(
+    (acum, [key, value]) => {
+      return `${JSON.stringify(key)}:${JSON.stringify(value)}, ${acum}`;
+    },
+    unionsMap.size ? `[SchemaUnionsKey]: ${JSON.stringify(unionsMapObj)}` : ''
+  )}} as const;
 
   ${typescriptTypes}
     `,
