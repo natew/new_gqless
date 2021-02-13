@@ -45,9 +45,13 @@ export const buildQuery = (
     if (setSelections[selection.noIndexSelectionsString]) continue;
     setSelections[selection.noIndexSelectionsString] = true;
 
-    lodashSet(
-      selectionTree,
-      selection.noIndexSelections.map((selectionValue) => {
+    const selectionBranches: string[][] = [];
+
+    function createSelectionBranch(
+      selections: readonly Selection[],
+      initialValue: string[] = []
+    ) {
+      return selections.reduce((acum, selectionValue, index) => {
         const argsLength = selectionValue.args
           ? Object.keys(selectionValue.args).length
           : 0;
@@ -56,43 +60,67 @@ export const buildQuery = (
           ? `${selectionValue.alias}: ${selectionValue.key}`
           : selectionValue.key;
 
+        let leafValue: string;
+
         if (selectionValue.args && selectionValue.argTypes && argsLength) {
-          return `${selectionKey}(${Object.entries(selectionValue.args).reduce(
-            (acum, [key, value], index) => {
-              const variableMapKey = `${
-                selectionValue.argTypes![key]
-              }-${key}-${JSON.stringify(value)}`;
+          leafValue = `${selectionKey}(${Object.entries(
+            selectionValue.args
+          ).reduce((acum, [key, value], index) => {
+            const variableMapKey = `${
+              selectionValue.argTypes![key]
+            }-${key}-${JSON.stringify(value)}`;
 
-              variablesMapKeyValue[variableMapKey] = value;
+            variablesMapKeyValue[variableMapKey] = value;
 
-              const variableMapValue = variablesMap.get(variableMapKey);
+            const variableMapValue = variablesMap.get(variableMapKey);
 
-              if (variableMapValue) {
-                acum += `${key}:$${variableMapValue}`;
-              } else {
-                const newVariableValue = `${key}${variableId++}`;
-                const newVariableType = selectionValue.argTypes![key];
+            if (variableMapValue) {
+              acum += `${key}:$${variableMapValue}`;
+            } else {
+              const newVariableValue = `${key}${variableId++}`;
+              const newVariableType = selectionValue.argTypes![key];
 
-                variableTypes[newVariableValue] = newVariableType;
-                variablesMap.set(variableMapKey, newVariableValue);
+              variableTypes[newVariableValue] = newVariableType;
+              variablesMap.set(variableMapKey, newVariableValue);
 
-                acum += `${key}:$${newVariableValue}`;
-              }
+              acum += `${key}:$${newVariableValue}`;
+            }
 
-              if (index < argsLength - 1) {
-                acum += ',';
-              }
+            if (index < argsLength - 1) {
+              acum += ',';
+            }
 
-              return acum;
-            },
-            ''
-          )})`;
+            return acum;
+          }, '')})`;
+        } else {
+          leafValue = selectionKey + '';
         }
 
-        return selectionKey;
-      }),
-      true
-    );
+        const selectionUnions = selectionValue.unions;
+
+        if (selectionUnions) {
+          for (const union of selectionUnions.slice(1)) {
+            const newAcum = [...acum, `... on ${union}`, leafValue];
+
+            selectionBranches.push(
+              createSelectionBranch(selections.slice(index + 1), newAcum)
+            );
+          }
+
+          acum.push(`... on ${selectionUnions[0]}`, leafValue);
+        } else {
+          acum.push(leafValue);
+        }
+
+        return acum;
+      }, initialValue);
+    }
+
+    selectionBranches.push(createSelectionBranch(selection.noIndexSelections));
+
+    for (const branch of selectionBranches) {
+      lodashSet(selectionTree, branch, true);
+    }
   }
 
   let variables: Record<string, unknown> | undefined;

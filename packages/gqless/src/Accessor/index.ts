@@ -306,20 +306,18 @@ export function AccessorCreators<
     );
     if (innerState.allowCache && cacheValue === null) return null;
 
-    const typenameSelection = selectionManager.getSelection({
-      key: '__typename',
-      prevSelection: selectionArg,
-    });
-
     function getUnionTypename() {
       const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
         selectionArg
       );
-      if (isValidCacheObject(cacheValue)) {
-        return cacheValue.__typename;
-      }
+      if (isValidCacheObject(cacheValue)) return cacheValue.__typename;
 
-      interceptorManager.addSelection(typenameSelection);
+      interceptorManager.addSelection(
+        selectionManager.getSelection({
+          key: '__typename',
+          prevSelection: selectionArg,
+        })
+      );
       return null;
     }
 
@@ -476,6 +474,7 @@ export function AccessorCreators<
                   prevSelection: selectionArg,
                   args: args != null ? args.argValues : undefined,
                   argTypes: args != null ? args.argTypes : undefined,
+                  unions,
                 });
 
                 // For the subscribers of data changes
