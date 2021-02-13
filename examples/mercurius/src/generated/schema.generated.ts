@@ -82,9 +82,23 @@ export const generatedSchema = {
     union: { __type: '[TestUnion!]!' },
     args: { __type: 'Int', __args: { a: 'String' } },
   },
-  A: { __typename: { __type: 'String!' }, a: { __type: 'String!' } },
-  B: { __typename: { __type: 'String!' }, b: { __type: 'Int!' } },
-  C: { __typename: { __type: 'String!' }, c: { __type: 'GreetingsEnum!' } },
+  A: {
+    __typename: { __type: 'String!' },
+    a: { __type: 'String!' },
+    common: { __type: 'Int', __args: { a: 'String' } },
+    z: { __type: 'String' },
+  },
+  B: {
+    __typename: { __type: 'String!' },
+    b: { __type: 'Int!' },
+    common: { __type: 'String', __args: { b: 'Int' } },
+    z: { __type: 'String' },
+  },
+  C: {
+    __typename: { __type: 'String!' },
+    c: { __type: 'GreetingsEnum!' },
+    z: { __type: 'String' },
+  },
   [SchemaUnionsKey]: { TestUnion: ['A', 'B', 'C'] },
 } as const;
 
@@ -138,16 +152,25 @@ export interface Human extends NamedEntity {
 export interface A {
   __typename: 'A';
   a: ScalarsEnums['String'];
+  common: (args?: {
+    a?: Maybe<ScalarsEnums['String']>;
+  }) => Maybe<ScalarsEnums['Int']>;
+  z?: Maybe<ScalarsEnums['String']>;
 }
 
 export interface B {
   __typename: 'B';
   b: ScalarsEnums['Int'];
+  common: (args?: {
+    b?: Maybe<ScalarsEnums['Int']>;
+  }) => Maybe<ScalarsEnums['String']>;
+  z?: Maybe<ScalarsEnums['String']>;
 }
 
 export interface C {
   __typename: 'C';
   c: ScalarsEnums['GreetingsEnum'];
+  z?: Maybe<ScalarsEnums['String']>;
 }
 
 type TestUnion = A | B | C;

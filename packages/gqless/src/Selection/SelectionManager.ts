@@ -68,19 +68,21 @@ export function createSelectionManager() {
     args,
     argTypes,
     type,
+    unions,
   }: Pick<
     SelectionConstructorArgs,
-    'key' | 'prevSelection' | 'args' | 'argTypes' | 'type'
+    'key' | 'prevSelection' | 'args' | 'argTypes' | 'type' | 'unions'
   >) {
     let alias: string | undefined;
-    let cacheKey = key.toString();
+    let cacheKey = key + '';
+    const unionsString = unions ? ';' + unions.join(';') : '';
     if (args && argTypes) {
       alias = getVariableAlias(key, args, argTypes);
-      cacheKey = alias;
+      cacheKey = alias + unionsString;
     }
 
     if (prevSelection) {
-      cacheKey = prevSelection.pathString + '.' + cacheKey;
+      cacheKey = prevSelection.pathString + '.' + cacheKey + unionsString;
     }
 
     let selection = selectionCache.get(cacheKey);
@@ -93,6 +95,7 @@ export function createSelectionManager() {
         argTypes,
         alias,
         type,
+        unions,
       });
       selectionCache.set(cacheKey, selection);
     }

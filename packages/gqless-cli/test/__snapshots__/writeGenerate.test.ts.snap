@@ -82,16 +82,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface GeneratedSchema {
@@ -141,16 +141,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface GeneratedSchema {

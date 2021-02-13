@@ -23,7 +23,11 @@ beforeAll(async () => {
   await codegen();
 });
 
-query.union.map((v) => v.__typename);
+resolved(() => query.union.map((v) => v.__typename === 'A' && v.a)).then(
+  (data) => {
+    console.log(111, data);
+  }
+);
 
 test('works', async () => {
   await testClient.query(simpleStringDocument).then((response) => {

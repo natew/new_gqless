@@ -3,7 +3,6 @@ import type { ExecutionResult } from 'graphql';
 export interface Type {
   __args?: Record<string, string>;
   __type: string;
-  __union?: string;
 }
 
 export const SchemaUnionsKey = Symbol('unionsKey');

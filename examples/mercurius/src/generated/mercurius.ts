@@ -128,16 +128,29 @@ export type HumanargsArgs = {
 export type A = {
   __typename?: 'A';
   a: Scalars['String'];
+  common?: Maybe<Scalars['Int']>;
+  z?: Maybe<Scalars['String']>;
+};
+
+export type AcommonArgs = {
+  a?: Maybe<Scalars['String']>;
 };
 
 export type B = {
   __typename?: 'B';
   b: Scalars['Int'];
+  common?: Maybe<Scalars['String']>;
+  z?: Maybe<Scalars['String']>;
+};
+
+export type BcommonArgs = {
+  b?: Maybe<Scalars['Int']>;
 };
 
 export type C = {
   __typename?: 'C';
   c: GreetingsEnum;
+  z?: Maybe<Scalars['String']>;
 };
 
 export type TestUnion = A | B | C;
@@ -415,6 +428,13 @@ export type AResolvers<
   ParentType extends ResolversParentTypes['A'] = ResolversParentTypes['A']
 > = {
   a?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  common?: Resolver<
+    Maybe<ResolversTypes['Int']>,
+    ParentType,
+    ContextType,
+    RequireFields<AcommonArgs, never>
+  >;
+  z?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -423,6 +443,13 @@ export type BResolvers<
   ParentType extends ResolversParentTypes['B'] = ResolversParentTypes['B']
 > = {
   b?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  common?: Resolver<
+    Maybe<ResolversTypes['String']>,
+    ParentType,
+    ContextType,
+    RequireFields<BcommonArgs, never>
+  >;
+  z?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -431,6 +458,7 @@ export type CResolvers<
   ParentType extends ResolversParentTypes['C'] = ResolversParentTypes['C']
 > = {
   c?: Resolver<ResolversTypes['GreetingsEnum'], ParentType, ContextType>;
+  z?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -500,14 +528,19 @@ export interface Loaders<
 
   A?: {
     a?: LoaderResolver<Scalars['String'], A, {}, TContext>;
+    common?: LoaderResolver<Maybe<Scalars['Int']>, A, AcommonArgs, TContext>;
+    z?: LoaderResolver<Maybe<Scalars['String']>, A, {}, TContext>;
   };
 
   B?: {
     b?: LoaderResolver<Scalars['Int'], B, {}, TContext>;
+    common?: LoaderResolver<Maybe<Scalars['String']>, B, BcommonArgs, TContext>;
+    z?: LoaderResolver<Maybe<Scalars['String']>, B, {}, TContext>;
   };
 
   C?: {
     c?: LoaderResolver<GreetingsEnum, C, {}, TContext>;
+    z?: LoaderResolver<Maybe<Scalars['String']>, C, {}, TContext>;
   };
 }
 export type simpleStringQueryVariables = Exact<{ [key: string]: never }>;

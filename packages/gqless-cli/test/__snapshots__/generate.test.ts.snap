@@ -33,16 +33,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface GeneratedSchema {
@@ -114,16 +114,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   hello: ScalarsEnums['Custom'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface GeneratedSchema {
@@ -252,7 +252,7 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   simpleString: ScalarsEnums['String'];
   stringWithArgs: (args: {
     hello: ScalarsEnums['String'];
@@ -279,23 +279,23 @@ export interface Query {
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
   increment: (args: { n: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface Human {
-  __typename: 'Human';
+  __typename: 'Human' | null;
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface OtherHuman {
-  __typename: 'OtherHuman';
+  __typename: 'OtherHuman' | null;
   name: ScalarsEnums['String'];
 }
 
@@ -355,19 +355,19 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
   helloMutation: (args: {
     hello: ScalarsEnums['String'];
   }) => ScalarsEnums['String'];
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface GeneratedSchema {
@@ -450,16 +450,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
   newNotification: ScalarsEnums['String'];
 }
 

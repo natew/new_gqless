@@ -79,12 +79,17 @@ app.register(Mercurius, {
     }
     type A {
       a: String!
+      common(a: String): Int
+      z: String
     }
     type B {
       b: Int!
+      common(b: Int): String
+      z: String
     }
     type C {
       c: GreetingsEnum!
+      z: String
     }
     union TestUnion = A | B | C
   `,

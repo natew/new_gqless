@@ -29,6 +29,7 @@ export class Selection {
   pathString: string;
 
   noIndexSelections: readonly Selection[];
+  noIndexSelectionsString: string;
   selectionsList: readonly Selection[];
 
   constructor({
@@ -63,5 +64,11 @@ export class Selection {
 
     this.noIndexSelections =
       typeof key === 'string' ? this.selectionsList : prevIndexSelections;
+
+    const prevNoIndexString = prevSelection?.noIndexSelectionsString || '';
+    this.noIndexSelectionsString =
+      typeof key === 'number'
+        ? prevNoIndexString
+        : prevNoIndexString + '.' + key;
   }
 }

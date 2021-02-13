@@ -269,7 +269,7 @@ export async function generate(
       export interface ${typeName} ${
         objectTypeInterfaces ? 'extends ' + objectTypeInterfaces.join(', ') : ''
       }{ 
-        __typename: "${typeName}"; ${Object.entries(typeValue).reduce(
+        __typename: "${typeName}" | null; ${Object.entries(typeValue).reduce(
         (acum, [fieldKey, fieldValue]) => {
           if (fieldKey === '__typename') return acum;
 
