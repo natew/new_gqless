@@ -52,6 +52,7 @@ export function AccessorCreators<
       {
         list: { objectTypeName: string; type: Record<string, Type> }[];
         typesNames: string[];
+        combinedTypes: Record<string, Type>;
       }
     >;
   };
@@ -66,11 +67,19 @@ export function AccessorCreators<
         const objectType = schema[objectTypeName];
         if (objectType) {
           for (const objectTypeFieldName of Object.keys(objectType)) {
-            fieldsMap[objectTypeFieldName] ||= { list: [], typesNames: [] };
+            fieldsMap[objectTypeFieldName] ||= {
+              list: [],
+              typesNames: [],
+              combinedTypes: {},
+            };
             fieldsMap[objectTypeFieldName].list.push({
               type: objectType,
               objectTypeName,
             });
+            Object.assign(
+              fieldsMap[objectTypeFieldName].combinedTypes,
+              objectType
+            );
             fieldsSet.add(objectTypeFieldName);
           }
 
@@ -200,7 +209,8 @@ export function AccessorCreators<
 
   function createArrayAccessor(
     schemaType: Schema[string],
-    selectionArg: Selection
+    selectionArg: Selection,
+    unions?: string[]
   ) {
     const arrayCacheValue = innerState.clientCache.getCacheFromSelection(
       selectionArg
@@ -275,7 +285,11 @@ export function AccessorCreators<
                 return arrayCacheValue[index];
               }
 
-              const childAccessor = createAccessor(schemaType, selection);
+              const childAccessor = createAccessor(
+                schemaType,
+                selection,
+                unions
+              );
 
               accessorCache.addAccessorChild(accessor, childAccessor);
 
@@ -295,6 +309,100 @@ export function AccessorCreators<
     return (
       typeof v === 'object' && v !== null && typeof v.__typename === 'string'
     );
+  }
+
+  function createArrayUnionAccessor(
+    schemaUnion: SchemaUnion,
+    selectionArg: Selection
+  ) {
+    const arrayCacheValue = innerState.clientCache.getCacheFromSelection(
+      selectionArg
+    );
+
+    if (innerState.allowCache && arrayCacheValue === null) return null;
+
+    const proxyValue: unknown[] =
+      arrayCacheValue === CacheNotFound || !Array.isArray(arrayCacheValue)
+        ? proxySymbolArray
+        : arrayCacheValue;
+
+    const accessor = accessorCache.getArrayAccessor(
+      selectionArg,
+      proxyValue,
+      () => {
+        return new Proxy(proxyValue, {
+          set(_target, key: string, value: unknown) {
+            let index: number | undefined;
+
+            try {
+              index = parseInt(key);
+            } catch (err) {}
+
+            if (isInteger(index)) {
+              const selection = selectionManager.getSelection({
+                key: index,
+                prevSelection: selectionArg,
+              });
+
+              const data = extractDataFromProxy(value);
+
+              innerState.clientCache.setCacheFromSelection(selection, data);
+
+              eventHandler.sendCacheChange({
+                selection,
+                data,
+              });
+
+              return true;
+            }
+
+            throw TypeError('Invalid array assignation');
+          },
+          get(target, key: string, receiver) {
+            if (key === 'toJSON')
+              return () =>
+                innerState.clientCache.getCacheFromSelection(selectionArg, []);
+
+            let index: number | undefined;
+
+            try {
+              index = parseInt(key);
+            } catch (err) {}
+
+            if (isInteger(index)) {
+              const selection = selectionManager.getSelection({
+                key: index,
+                prevSelection: selectionArg,
+              });
+
+              // For the subscribers of data changes
+              interceptorManager.addSelectionCache(selection);
+
+              if (
+                innerState.allowCache &&
+                arrayCacheValue !== CacheNotFound &&
+                arrayCacheValue[index] == null
+              ) {
+                /**
+                 * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
+                 */
+                return arrayCacheValue[index];
+              }
+
+              const childAccessor = createUnionAccessor(schemaUnion, selection);
+
+              accessorCache.addAccessorChild(accessor, childAccessor);
+
+              return childAccessor;
+            }
+
+            return Reflect.get(target, key, receiver);
+          },
+        });
+      }
+    );
+
+    return accessor;
   }
 
   function createUnionAccessor(
@@ -323,8 +431,23 @@ export function AccessorCreators<
 
     const accessor = accessorCache.getAccessor(selectionArg, cacheValue, () => {
       return new Proxy(fieldsProxy, {
-        set() {
-          // TODO
+        set(_target, key: string, value: unknown) {
+          if (!fieldsProxy.hasOwnProperty(key))
+            throw TypeError('Invalid proxy assignation');
+
+          const targetSelection = selectionManager.getSelection({
+            key,
+            prevSelection: selectionArg,
+          });
+
+          const data = extractDataFromProxy(value);
+
+          innerState.clientCache.setCacheFromSelection(targetSelection, data);
+          eventHandler.sendCacheChange({
+            data,
+            selection: targetSelection,
+          });
+
           return true;
         },
         get(target, key: string, receiver) {
@@ -347,25 +470,22 @@ export function AccessorCreators<
               unionTypeName,
             ];
           } else {
-            const { list: typesList, typesNames } = fieldsMap[key];
-
-            selectionUnions = typesNames;
-
-            if (!typesList) return;
-
             // TODO: Long term fix, this doesn't work if there is fields types/naming conflicts
-            objectType = typesList[0].type;
+            ({
+              combinedTypes: objectType,
+              typesNames: selectionUnions,
+            } = fieldsMap[key]);
           }
 
-          const proxy: Record<string, unknown> | null = createAccessor(
+          const proxy = createAccessor(
             objectType,
             selectionArg,
             selectionUnions
-          ) as any;
+          );
 
           if (!proxy) return;
 
-          return proxy[key];
+          return Reflect.get(proxy, key);
         },
       });
     });
@@ -510,18 +630,17 @@ export function AccessorCreators<
                 let schemaUnion: SchemaUnion | undefined;
                 const typeValue = schema[pureType];
                 if (typeValue) {
-                  const childAccessor = isArray
-                    ? createArrayAccessor(typeValue, selection)
-                    : createAccessor(typeValue, selection);
+                  const childAccessor = (isArray
+                    ? createArrayAccessor
+                    : createAccessor)(typeValue, selection);
 
                   accessorCache.addAccessorChild(accessor, childAccessor);
 
                   return childAccessor;
                 } else if ((schemaUnion = schemaUnions[pureType])) {
-                  const childAccessor = createUnionAccessor(
-                    schemaUnion,
-                    selection
-                  );
+                  const childAccessor = (isArray
+                    ? createArrayUnionAccessor
+                    : createUnionAccessor)(schemaUnion, selection);
 
                   accessorCache.addAccessorChild(accessor, childAccessor);
 

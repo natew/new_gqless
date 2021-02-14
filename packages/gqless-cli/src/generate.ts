@@ -9,7 +9,6 @@ import {
   parse,
   printSchema,
 } from 'graphql';
-import fromPairs from 'lodash/fromPairs';
 import { format, Options as PrettierOptions, resolveConfig } from 'prettier';
 
 import {
@@ -37,8 +36,12 @@ export async function generate(
   schema: GraphQLSchema,
   { preImport = '', scalars }: GenerateOptions = {}
 ) {
-  const prettierConfig = resolveConfig(process.cwd());
-  const codegenResult = codegen({
+  const prettierConfigPromise = resolveConfig(process.cwd()).then((config) =>
+    Object.assign({}, config, {
+      parser: 'typescript',
+    } as PrettierOptions)
+  );
+  const codegenResultPromise = codegen({
     schema: parse(printSchema(schema)),
     config: {} as typescriptPlugin.TypeScriptPluginConfig,
     documents: [],
@@ -108,11 +111,10 @@ export async function generate(
       };
 
       if (value.args.length) {
-        schemaType[key].__args = fromPairs(
-          value.args.map((arg) => {
-            return [arg.name, arg.type.toString()];
-          })
-        );
+        schemaType[key].__args = value.args.reduce((acum, arg) => {
+          acum[arg.name] = arg.type.toString();
+          return acum;
+        }, {} as Record<string, string>);
       }
     });
 
@@ -162,11 +164,10 @@ export async function generate(
       };
 
       if (gqlType.args.length) {
-        interfaceValue.__args = fromPairs(
-          gqlType.args.map((arg) => {
-            return [arg.name, arg.type.toString()];
-          })
-        );
+        interfaceValue.__args = gqlType.args.reduce((acum, arg) => {
+          acum[arg.name] = arg.type.toString();
+          return acum;
+        }, {} as Record<string, string>);
       }
 
       return interfaceValue;
@@ -241,6 +242,8 @@ export async function generate(
     return typeToReturn.join('');
   }
 
+  const objectTypeTSTypes = new Map<string, Map<string, string>>();
+
   let typescriptTypes = Object.entries(generatedSchema).reduce(
     (acum, [typeKey, typeValue]) => {
       const typeName = (() => {
@@ -262,6 +265,9 @@ export async function generate(
 
       if (inputTypeNames.has(typeName)) return acum;
 
+      const objectTypeMap = new Map<string, string>();
+      objectTypeTSTypes.set(typeName, objectTypeMap);
+
       const objectTypeInterfaces = objectTypeInterfacesMap.get(typeName);
 
       acum += `
@@ -271,10 +277,14 @@ export async function generate(
       }{ 
         __typename: "${typeName}" | null; ${Object.entries(typeValue).reduce(
         (acum, [fieldKey, fieldValue]) => {
-          if (fieldKey === '__typename') return acum;
+          if (fieldKey === '__typename') {
+            objectTypeMap.set(fieldKey, `: "${typeName}" | null`);
+            return acum;
+          }
 
           const fieldValueProps = parseSchemaType(fieldValue.__type);
           const typeToReturn = parseFinalType(fieldValueProps);
+          let finalType: string;
           if (fieldValue.__args) {
             const argsEntries = Object.entries(fieldValue.__args);
             let onlyNullableArgs = true;
@@ -298,13 +308,15 @@ export async function generate(
               ''
             );
             const argsConnector = onlyNullableArgs ? '?:' : ':';
-            acum += `
-            ${fieldKey}: (args${argsConnector} {${argTypes}}) => ${typeToReturn}`;
+            finalType = `: (args${argsConnector} {${argTypes}}) => ${typeToReturn}`;
           } else {
             const connector = fieldValueProps.isNullable ? '?:' : ':';
-            acum += `
-            ${fieldKey}${connector} ${typeToReturn}`;
+            finalType = `${connector} ${typeToReturn}`;
           }
+
+          objectTypeMap.set(fieldKey, finalType);
+
+          acum += '\n' + fieldKey + finalType;
 
           return acum;
         },
@@ -321,7 +333,35 @@ export async function generate(
   if (unionsMap.size) {
     typescriptTypes += `
     ${Array.from(unionsMap.entries()).reduce((acum, [unionName, types]) => {
-      acum += `type ${unionName} = ${types.join(' | ')}\n`;
+      const allUnionFields = new Set<string>();
+      types.forEach((typeName) => {
+        const typeMap = objectTypeTSTypes.get(typeName);
+        if (typeMap) {
+          typeMap.forEach((_value, fieldName) => allUnionFields.add(fieldName));
+        }
+      });
+      const allUnionFieldsArray = Array.from(allUnionFields).sort();
+
+      acum += `export type ${unionName} = ${
+        types
+          .reduce((acumTypes, typeName) => {
+            const typeMap = objectTypeTSTypes.get(typeName);
+
+            if (typeMap) {
+              acumTypes.push(
+                `{ ${allUnionFieldsArray
+                  .map((fieldName) => {
+                    const foundType = typeMap.get(fieldName);
+
+                    return `${fieldName}${foundType || '?: undefined'};`;
+                  })
+                  .join('')} }`
+              );
+            }
+            return acumTypes;
+          }, [] as string[])
+          .join(' | ') || '{}'
+      };`;
 
       return acum;
     }, '')}
@@ -423,9 +463,10 @@ export async function generate(
       };
     `;
 
-  const formatConfig = Object.assign({}, await prettierConfig, {
-    parser: 'typescript',
-  } as PrettierOptions);
+  const [codegenResult, formatConfig] = await Promise.all([
+    codegenResultPromise,
+    prettierConfigPromise,
+  ]);
 
   const schemaCode = format(
     `
@@ -433,7 +474,7 @@ export async function generate(
 
   import { ScalarsEnumsHash, SchemaUnionsKey } from "@dish/gqless";
 
-  ${await codegenResult}
+  ${codegenResult}
 
   export const scalarsEnumsHash: ScalarsEnumsHash = ${JSON.stringify(
     scalarsEnumsHash
@@ -463,7 +504,6 @@ export async function generate(
 
   export * from "./schema.generated";
   `,
-
     formatConfig
   );
   return {

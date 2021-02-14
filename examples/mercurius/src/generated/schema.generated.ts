@@ -103,7 +103,7 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   simpleString: ScalarsEnums['String'];
   stringWithArgs: (args: {
     hello: ScalarsEnums['String'];
@@ -129,16 +129,16 @@ export interface Query {
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
   increment: (args: { n: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface Human extends NamedEntity {
-  __typename: 'Human';
+  __typename: 'Human' | null;
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
@@ -150,7 +150,7 @@ export interface Human extends NamedEntity {
 }
 
 export interface A {
-  __typename: 'A';
+  __typename: 'A' | null;
   a: ScalarsEnums['String'];
   common: (args?: {
     a?: Maybe<ScalarsEnums['String']>;
@@ -159,7 +159,7 @@ export interface A {
 }
 
 export interface B {
-  __typename: 'B';
+  __typename: 'B' | null;
   b: ScalarsEnums['Int'];
   common: (args?: {
     b?: Maybe<ScalarsEnums['Int']>;
@@ -168,12 +168,40 @@ export interface B {
 }
 
 export interface C {
-  __typename: 'C';
+  __typename: 'C' | null;
   c: ScalarsEnums['GreetingsEnum'];
   z?: Maybe<ScalarsEnums['String']>;
 }
 
-type TestUnion = A | B | C;
+export type TestUnion =
+  | {
+      __typename: 'A' | null;
+      a: ScalarsEnums['String'];
+      b?: undefined;
+      c?: undefined;
+      common: (args?: {
+        a?: Maybe<ScalarsEnums['String']>;
+      }) => Maybe<ScalarsEnums['Int']>;
+      z?: Maybe<ScalarsEnums['String']>;
+    }
+  | {
+      __typename: 'B' | null;
+      a?: undefined;
+      b: ScalarsEnums['Int'];
+      c?: undefined;
+      common: (args?: {
+        b?: Maybe<ScalarsEnums['Int']>;
+      }) => Maybe<ScalarsEnums['String']>;
+      z?: Maybe<ScalarsEnums['String']>;
+    }
+  | {
+      __typename: 'C' | null;
+      a?: undefined;
+      b?: undefined;
+      c: ScalarsEnums['GreetingsEnum'];
+      common?: undefined;
+      z?: Maybe<ScalarsEnums['String']>;
+    };
 
 export interface NamedEntity {
   name: ScalarsEnums['String'];
