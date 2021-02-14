@@ -11,6 +11,34 @@ import {
 import { Selection, SelectionType } from '../Selection';
 import { isInteger } from '../Utils';
 
+const ProxySymbol = Symbol('gqless-proxy');
+
+class SchemaUnion {
+  /** union name */
+  name!: string;
+  types!: Record<
+    /** object type name */
+    string,
+    /** schema type of object type */
+    Record<string, Type>
+  >;
+  /**
+   * Proxy target, pre-made for performance
+   */
+  fieldsProxy!: Record<string, typeof ProxySymbol>;
+  fieldsMap!: Record<
+    /** field name */
+    string,
+    /** list of object types (with it's schema type)
+     * that has the field name */
+    {
+      list: { objectTypeName: string; type: Record<string, Type> }[];
+      typesNames: string[];
+      combinedTypes: Record<string, Type>;
+    }
+  >;
+}
+
 export function AccessorCreators<
   GeneratedSchema extends {
     query: {};
@@ -18,8 +46,6 @@ export function AccessorCreators<
     subscription: {};
   } = never
 >(innerState: InnerClientState) {
-  const ProxySymbol = Symbol('gqless-proxy');
-
   const {
     accessorCache,
     selectionManager,
@@ -30,32 +56,6 @@ export function AccessorCreators<
   } = innerState;
 
   const unionObjectTypesForSelections: Record<string, [string]> = {};
-
-  type SchemaUnion = {
-    /** union name */
-    name: string;
-    types: Record<
-      /** object type name */
-      string,
-      /** schema type of object type */
-      Record<string, Type>
-    >;
-    /**
-     * Proxy target, pre-made for performance
-     */
-    fieldsProxy: Record<string, typeof ProxySymbol>;
-    fieldsMap: Record<
-      /** field name */
-      string,
-      /** list of object types (with it's schema type)
-       * that has the field name */
-      {
-        list: { objectTypeName: string; type: Record<string, Type> }[];
-        typesNames: string[];
-        combinedTypes: Record<string, Type>;
-      }
-    >;
-  };
 
   const schemaUnions = Object.entries(schema[SchemaUnionsKey] || {}).reduce(
     (acum, [name, unionTypes]) => {
@@ -94,7 +94,7 @@ export function AccessorCreators<
         );
       }
 
-      acum[name] = {
+      acum[name] = Object.assign(new SchemaUnion(), {
         name,
         types,
         fieldsProxy: Array.from(fieldsSet).reduce((fieldsAcum, fieldName) => {
@@ -102,7 +102,8 @@ export function AccessorCreators<
           return fieldsAcum;
         }, {} as SchemaUnion['fieldsProxy']),
         fieldsMap,
-      };
+      });
+
       return acum;
     },
     {} as Record<string, SchemaUnion>
@@ -208,7 +209,7 @@ export function AccessorCreators<
   }
 
   function createArrayAccessor(
-    schemaType: Schema[string],
+    schemaValue: Schema[string] | SchemaUnion,
     selectionArg: Selection,
     unions?: string[]
   ) {
@@ -286,7 +287,7 @@ export function AccessorCreators<
               }
 
               const childAccessor = createAccessor(
-                schemaType,
+                schemaValue,
                 selection,
                 unions
               );
@@ -301,194 +302,6 @@ export function AccessorCreators<
         });
       }
     );
-
-    return accessor;
-  }
-
-  function isValidCacheObject(v: any): v is { __typename: string } {
-    return (
-      typeof v === 'object' && v !== null && typeof v.__typename === 'string'
-    );
-  }
-
-  function createArrayUnionAccessor(
-    schemaUnion: SchemaUnion,
-    selectionArg: Selection
-  ) {
-    const arrayCacheValue = innerState.clientCache.getCacheFromSelection(
-      selectionArg
-    );
-
-    if (innerState.allowCache && arrayCacheValue === null) return null;
-
-    const proxyValue: unknown[] =
-      arrayCacheValue === CacheNotFound || !Array.isArray(arrayCacheValue)
-        ? proxySymbolArray
-        : arrayCacheValue;
-
-    const accessor = accessorCache.getArrayAccessor(
-      selectionArg,
-      proxyValue,
-      () => {
-        return new Proxy(proxyValue, {
-          set(_target, key: string, value: unknown) {
-            let index: number | undefined;
-
-            try {
-              index = parseInt(key);
-            } catch (err) {}
-
-            if (isInteger(index)) {
-              const selection = selectionManager.getSelection({
-                key: index,
-                prevSelection: selectionArg,
-              });
-
-              const data = extractDataFromProxy(value);
-
-              innerState.clientCache.setCacheFromSelection(selection, data);
-
-              eventHandler.sendCacheChange({
-                selection,
-                data,
-              });
-
-              return true;
-            }
-
-            throw TypeError('Invalid array assignation');
-          },
-          get(target, key: string, receiver) {
-            if (key === 'toJSON')
-              return () =>
-                innerState.clientCache.getCacheFromSelection(selectionArg, []);
-
-            let index: number | undefined;
-
-            try {
-              index = parseInt(key);
-            } catch (err) {}
-
-            if (isInteger(index)) {
-              const selection = selectionManager.getSelection({
-                key: index,
-                prevSelection: selectionArg,
-              });
-
-              // For the subscribers of data changes
-              interceptorManager.addSelectionCache(selection);
-
-              if (
-                innerState.allowCache &&
-                arrayCacheValue !== CacheNotFound &&
-                arrayCacheValue[index] == null
-              ) {
-                /**
-                 * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
-                 */
-                return arrayCacheValue[index];
-              }
-
-              const childAccessor = createUnionAccessor(schemaUnion, selection);
-
-              accessorCache.addAccessorChild(accessor, childAccessor);
-
-              return childAccessor;
-            }
-
-            return Reflect.get(target, key, receiver);
-          },
-        });
-      }
-    );
-
-    return accessor;
-  }
-
-  function createUnionAccessor(
-    { fieldsProxy, types: unionTypes, fieldsMap }: SchemaUnion,
-    selectionArg: Selection
-  ) {
-    const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
-      selectionArg
-    );
-    if (innerState.allowCache && cacheValue === null) return null;
-
-    function getUnionTypename() {
-      const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
-        selectionArg
-      );
-      if (isValidCacheObject(cacheValue)) return cacheValue.__typename;
-
-      interceptorManager.addSelection(
-        selectionManager.getSelection({
-          key: '__typename',
-          prevSelection: selectionArg,
-        })
-      );
-      return null;
-    }
-
-    const accessor = accessorCache.getAccessor(selectionArg, cacheValue, () => {
-      return new Proxy(fieldsProxy, {
-        set(_target, key: string, value: unknown) {
-          if (!fieldsProxy.hasOwnProperty(key))
-            throw TypeError('Invalid proxy assignation');
-
-          const targetSelection = selectionManager.getSelection({
-            key,
-            prevSelection: selectionArg,
-          });
-
-          const data = extractDataFromProxy(value);
-
-          innerState.clientCache.setCacheFromSelection(targetSelection, data);
-          eventHandler.sendCacheChange({
-            data,
-            selection: targetSelection,
-          });
-
-          return true;
-        },
-        get(target, key: string, receiver) {
-          if (key === 'toJSON')
-            return () =>
-              innerState.clientCache.getCacheFromSelection(selectionArg, {});
-
-          if (!fieldsProxy.hasOwnProperty(key))
-            return Reflect.get(target, key, receiver);
-
-          let unionTypeName = getUnionTypename();
-
-          let objectType: Record<string, Type>;
-
-          let selectionUnions: string[];
-
-          if (unionTypeName) {
-            objectType = unionTypes[unionTypeName];
-            selectionUnions = unionObjectTypesForSelections[unionTypeName] || [
-              unionTypeName,
-            ];
-          } else {
-            // TODO: Long term fix, this doesn't work if there is fields types/naming conflicts
-            ({
-              combinedTypes: objectType,
-              typesNames: selectionUnions,
-            } = fieldsMap[key]);
-          }
-
-          const proxy = createAccessor(
-            objectType,
-            selectionArg,
-            selectionUnions
-          );
-
-          if (!proxy) return;
-
-          return Reflect.get(proxy, key);
-        },
-      });
-    });
 
     return accessor;
   }
@@ -529,7 +342,7 @@ export function AccessorCreators<
   }
 
   function createAccessor(
-    schemaType: Schema[string],
+    schemaValue: Schema[string] | SchemaUnion,
     selectionArg: Selection,
     unions?: string[]
   ) {
@@ -538,51 +351,95 @@ export function AccessorCreators<
     );
     if (innerState.allowCache && cacheValue === null) return null;
 
+    function getTypename(): string | void {
+      const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
+        selectionArg
+      );
+      let typename: string;
+      if (
+        typeof cacheValue === 'object' &&
+        cacheValue !== null &&
+        (typename = Reflect.get(cacheValue, '__typename'))
+      )
+        return typename;
+
+      interceptorManager.addSelection(
+        selectionManager.getSelection({
+          key: '__typename',
+          prevSelection: selectionArg,
+        })
+      );
+    }
+
     const accessor = accessorCache.getAccessor(
       selectionArg,
       getCacheValueReference(cacheValue, unions),
       () => {
-        return new Proxy(
-          Object.keys(schemaType).reduce((acum, key) => {
-            acum[key] = ProxySymbol;
-            return acum;
-          }, {} as Record<string, unknown>),
-          {
-            set(_target, key: string, value: unknown) {
-              if (!schemaType.hasOwnProperty(key))
-                throw TypeError('Invalid proxy assignation');
+        const proxyValue =
+          schemaValue instanceof SchemaUnion
+            ? schemaValue.fieldsProxy
+            : Object.keys(schemaValue).reduce((acum, key) => {
+                acum[key] = ProxySymbol;
+                return acum;
+              }, {} as Record<string, unknown>);
+        return new Proxy(proxyValue, {
+          set(_target, key: string, value: unknown) {
+            if (!proxyValue.hasOwnProperty(key))
+              throw TypeError('Invalid proxy assignation');
 
-              const targetSelection = selectionManager.getSelection({
-                key,
-                prevSelection: selectionArg,
-                unions,
-              });
+            const targetSelection = selectionManager.getSelection({
+              key,
+              prevSelection: selectionArg,
+              unions,
+            });
 
-              const data = extractDataFromProxy(value);
+            const data = extractDataFromProxy(value);
 
-              innerState.clientCache.setCacheFromSelection(
-                targetSelection,
-                data
+            innerState.clientCache.setCacheFromSelection(targetSelection, data);
+            eventHandler.sendCacheChange({
+              data,
+              selection: targetSelection,
+            });
+
+            return true;
+          },
+          get(target, key: string, receiver) {
+            if (key === 'toJSON')
+              return () =>
+                innerState.clientCache.getCacheFromSelection(selectionArg, {});
+
+            if (!proxyValue.hasOwnProperty(key))
+              return Reflect.get(target, key, receiver);
+
+            if (schemaValue instanceof SchemaUnion) {
+              let unionTypeName = getTypename();
+
+              let objectType: Record<string, Type>;
+
+              let selectionUnions: string[];
+
+              if (unionTypeName) {
+                objectType = schemaValue.types[unionTypeName];
+                selectionUnions = unionObjectTypesForSelections[
+                  unionTypeName
+                ] || [unionTypeName];
+              } else {
+                // TODO: Long term fix, this doesn't work if there is fields types/naming conflicts
+                ({
+                  combinedTypes: objectType,
+                  typesNames: selectionUnions,
+                } = schemaValue.fieldsMap[key]);
+              }
+
+              const proxy = createAccessor(
+                objectType,
+                selectionArg,
+                selectionUnions
               );
-              eventHandler.sendCacheChange({
-                data,
-                selection: targetSelection,
-              });
 
-              return true;
-            },
-            get(target, key: string, receiver) {
-              if (key === 'toJSON')
-                return () =>
-                  innerState.clientCache.getCacheFromSelection(
-                    selectionArg,
-                    {}
-                  );
-
-              if (!schemaType.hasOwnProperty(key))
-                return Reflect.get(target, key, receiver);
-
-              const { __type, __args } = schemaType[key];
+              return proxy && Reflect.get(proxy, key);
+            } else {
+              const { __type, __args } = schemaValue[key];
               const { pureType, isArray } = parseSchemaType(__type);
 
               const resolve = (args?: {
@@ -627,8 +484,7 @@ export function AccessorCreators<
                   return cacheValue;
                 }
 
-                let schemaUnion: SchemaUnion | undefined;
-                const typeValue = schema[pureType];
+                const typeValue = schema[pureType] || schemaUnions[pureType];
                 if (typeValue) {
                   const childAccessor = (isArray
                     ? createArrayAccessor
@@ -637,19 +493,11 @@ export function AccessorCreators<
                   accessorCache.addAccessorChild(accessor, childAccessor);
 
                   return childAccessor;
-                } else if ((schemaUnion = schemaUnions[pureType])) {
-                  const childAccessor = (isArray
-                    ? createArrayUnionAccessor
-                    : createUnionAccessor)(schemaUnion, selection);
-
-                  accessorCache.addAccessorChild(accessor, childAccessor);
-
-                  return childAccessor;
                 }
 
                 throw new gqlessError(
                   `GraphQL Type not found: ${pureType}, available fields: "${Object.keys(
-                    schemaType
+                    schemaValue
                   ).join(' | ')}"`
                 );
               };
@@ -675,9 +523,9 @@ export function AccessorCreators<
               }
 
               return resolve();
-            },
-          }
-        );
+            }
+          },
+        });
       }
     );
     return accessor;

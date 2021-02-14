@@ -19,6 +19,4 @@ export function createLazyPromise<T = void>(): LazyPromise<T> {
   };
 }
 
-export function isInteger(v: any): v is number {
-  return Number.isInteger(v);
-}
+export const isInteger = (v: any): v is number => Number.isInteger(v);
