@@ -299,7 +299,19 @@ export interface OtherHuman {
   name: ScalarsEnums['String'];
 }
 
-type HumanType = Human | OtherHuman;
+export type HumanType =
+  | {
+      __typename: 'Human' | null;
+      father: Human;
+      fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
+      name: ScalarsEnums['String'];
+    }
+  | {
+      __typename: 'OtherHuman' | null;
+      father?: undefined;
+      fieldWithArgs?: undefined;
+      name: ScalarsEnums['String'];
+    };
 
 export interface GeneratedSchema {
   query: Query;

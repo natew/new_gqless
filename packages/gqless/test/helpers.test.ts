@@ -14,6 +14,7 @@ describe('selectFields', () => {
     });
 
     expect(data).toEqual({
+      __typename: 'Human',
       name: 'foo',
       father: null,
       nullFather: null,
@@ -35,8 +36,10 @@ describe('selectFields', () => {
     });
 
     expect(data).toEqual({
+      __typename: 'Human',
       name: 'foo',
       father: {
+        __typename: 'Human',
         name: 'default',
         father: null,
         nullFather: null,
@@ -45,12 +48,14 @@ describe('selectFields', () => {
       nullFather: null,
       sons: [
         {
+          __typename: 'Human',
           name: 'default',
           father: null,
           nullFather: null,
           sons: [null],
         },
         {
+          __typename: 'Human',
           name: 'default',
           father: null,
           nullFather: null,
@@ -94,6 +99,7 @@ describe('selectFields', () => {
 
     expect(data).toEqual({
       father: {
+        __typename: 'Human',
         name: 'default',
         father: null,
         nullFather: null,
@@ -117,8 +123,10 @@ describe('selectFields', () => {
 
     expect(data).toEqual({
       father: {
+        __typename: 'Human',
         name: 'default',
         father: {
+          __typename: 'Human',
           name: 'default',
           father: null,
           sons: [null],
@@ -127,12 +135,14 @@ describe('selectFields', () => {
         nullFather: null,
         sons: [
           {
+            __typename: 'Human',
             name: 'default',
             father: null,
             nullFather: null,
             sons: [null],
           },
           {
+            __typename: 'Human',
             name: 'default',
             father: null,
             nullFather: null,
@@ -169,12 +179,19 @@ describe('selectFields', () => {
 
     expect(data).toEqual([
       {
+        __typename: 'Human',
         father: null,
         nullFather: null,
         sons: [null],
         name: 'default',
       },
-      { father: null, nullFather: null, sons: [null], name: 'default' },
+      {
+        __typename: 'Human',
+        father: null,
+        nullFather: null,
+        sons: [null],
+        name: 'default',
+      },
     ]);
   });
 
@@ -197,8 +214,20 @@ describe('selectFields', () => {
 
     expect(data).toEqual({
       sons: [
-        { name: 'default', father: null, nullFather: null, sons: [null] },
-        { name: 'default', father: null, nullFather: null, sons: [null] },
+        {
+          __typename: 'Human',
+          name: 'default',
+          father: null,
+          nullFather: null,
+          sons: [null],
+        },
+        {
+          __typename: 'Human',
+          name: 'default',
+          father: null,
+          nullFather: null,
+          sons: [null],
+        },
       ],
     });
   });
@@ -213,8 +242,10 @@ describe('selectFields', () => {
     expect(data).toEqual({
       sons: [
         {
+          __typename: 'Human',
           name: 'default',
           father: {
+            __typename: 'Human',
             name: 'default',
             father: null,
             nullFather: null,
@@ -222,13 +253,27 @@ describe('selectFields', () => {
           },
           nullFather: null,
           sons: [
-            { name: 'default', father: null, nullFather: null, sons: [null] },
-            { name: 'default', father: null, nullFather: null, sons: [null] },
+            {
+              __typename: 'Human',
+              name: 'default',
+              father: null,
+              nullFather: null,
+              sons: [null],
+            },
+            {
+              __typename: 'Human',
+              name: 'default',
+              father: null,
+              nullFather: null,
+              sons: [null],
+            },
           ],
         },
         {
+          __typename: 'Human',
           name: 'default',
           father: {
+            __typename: 'Human',
             name: 'default',
             father: null,
             nullFather: null,
@@ -236,8 +281,20 @@ describe('selectFields', () => {
           },
           nullFather: null,
           sons: [
-            { name: 'default', father: null, nullFather: null, sons: [null] },
-            { name: 'default', father: null, nullFather: null, sons: [null] },
+            {
+              __typename: 'Human',
+              name: 'default',
+              father: null,
+              nullFather: null,
+              sons: [null],
+            },
+            {
+              __typename: 'Human',
+              name: 'default',
+              father: null,
+              nullFather: null,
+              sons: [null],
+            },
           ],
         },
       ],
@@ -252,7 +309,13 @@ describe('selectFields', () => {
     });
 
     expect(data).toEqual({
-      father: { name: 'default', father: null, nullFather: null, sons: [null] },
+      father: {
+        __typename: 'Human',
+        name: 'default',
+        father: null,
+        nullFather: null,
+        sons: [null],
+      },
     });
   });
 
@@ -265,8 +328,10 @@ describe('selectFields', () => {
 
     expect(data).toEqual({
       father: {
+        __typename: 'Human',
         name: 'default',
         father: {
+          __typename: 'Human',
           name: 'default',
           father: null,
           nullFather: null,
@@ -274,8 +339,20 @@ describe('selectFields', () => {
         },
         nullFather: null,
         sons: [
-          { name: 'default', father: null, nullFather: null, sons: [null] },
-          { name: 'default', father: null, nullFather: null, sons: [null] },
+          {
+            __typename: 'Human',
+            name: 'default',
+            father: null,
+            nullFather: null,
+            sons: [null],
+          },
+          {
+            __typename: 'Human',
+            name: 'default',
+            father: null,
+            nullFather: null,
+            sons: [null],
+          },
         ],
       },
     });
