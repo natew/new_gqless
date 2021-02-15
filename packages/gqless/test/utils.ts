@@ -3,15 +3,47 @@ import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '@dish/gqless-cli';
 
-import { createClient, DeepPartial, QueryFetcher, Schema } from '../src';
+import {
+  createClient,
+  DeepPartial,
+  QueryFetcher,
+  Schema,
+  SchemaUnionsKey,
+} from '../src';
 
 export type Maybe<T> = T | null;
 export type Human = {
+  __typename: 'Human';
   name: string;
   father: Human;
   nullFather?: Maybe<Human>;
   sons: Human[];
+  dogs: Dog[];
 };
+export type Dog = {
+  __typename: 'Dog';
+  name: string;
+  owner?: Human;
+};
+export type Species =
+  | {
+      __typename: 'Human';
+      name: string;
+      father: Human;
+      nullFather?: Maybe<Human>;
+      sons: Human[];
+      dogs: Dog[];
+      owner?: undefined;
+    }
+  | {
+      __typename: 'Dog';
+      name: string;
+      owner?: Human;
+      father?: undefined;
+      nullFather?: undefined;
+      sons?: undefined;
+      dogs?: undefined;
+    };
 
 export interface TestClientConfig {
   artificialDelay?: number;
@@ -21,9 +53,18 @@ export const createTestClient = async (
   queryFetcher?: QueryFetcher,
   config?: TestClientConfig
 ) => {
+  const dogs: { name: string }[] = [
+    {
+      name: 'a',
+    },
+    {
+      name: 'b',
+    },
+  ];
   const createHuman = (name?: string) => {
     return {
       name: name || 'default',
+      dogs,
     };
   };
   let nFetchCalls = 0;
@@ -39,6 +80,7 @@ export const createTestClient = async (
         nullArray: [Human]
         nullStringArray: [String]
         time: String!
+        species: [Species!]!
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
@@ -52,7 +94,13 @@ export const createTestClient = async (
         father: Human!
         nullFather: Human
         sons: [Human!]!
+        dogs: [Dog!]!
       }
+      type Dog {
+        name: String!
+        owner: Human
+      }
+      union Species = Human | Dog
     `,
     resolvers: {
       Query: {
@@ -83,6 +131,14 @@ export const createTestClient = async (
         time() {
           return new Date().toISOString();
         },
+        species() {
+          return [createHuman(), ...dogs];
+        },
+      },
+      Dog: {
+        owner({ name }: { name: string }) {
+          return createHuman(name + '-owner');
+        },
       },
       Mutation: {
         sendNotification(_root, { message }: { message: string }, ctx) {
@@ -111,6 +167,15 @@ export const createTestClient = async (
         sons() {
           return [createHuman(), createHuman()];
         },
+        dogs() {
+          return dogs;
+        },
+      },
+      Species: {
+        resolveType(v: Species) {
+          if ('father' in v) return 'Human';
+          return 'Dog';
+        },
       },
     },
     async context() {
@@ -132,6 +197,15 @@ export const createTestClient = async (
     server.graphql.schema
   );
 
+  const [existingUnionKey] = Object.getOwnPropertySymbols(generatedSchema);
+
+  if (existingUnionKey)
+    Reflect.set(
+      generatedSchema,
+      SchemaUnionsKey,
+      Reflect.get(generatedSchema, existingUnionKey)
+    );
+
   if (queryFetcher == null) {
     queryFetcher = (query, variables) => {
       return mercuriusTestClient.query(query, {
@@ -151,6 +225,7 @@ export const createTestClient = async (
       throw?: boolean;
       throw2?: boolean;
       time: string;
+      species: Array<Species>;
     };
     mutation: {
       sendNotification(args: { message: string }): boolean;

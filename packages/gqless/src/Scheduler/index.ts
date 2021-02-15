@@ -145,7 +145,10 @@ export const createScheduler = (
       (error) => {
         pendingSelectionsGroups.delete(selectionsToFetch);
         pendingSelectionsGroupsPromises.delete(selectionsToFetch);
+
+        /* istanbul ignore else */
         if (scheduler.resolving === lazyPromise) scheduler.resolving = null;
+
         lazyPromise.resolve({
           error,
           selections: selectionsToFetch,
@@ -158,6 +161,7 @@ export const createScheduler = (
     for (const group of pendingSelectionsGroups) {
       if (group.has(selection)) {
         const promise = pendingSelectionsGroupsPromises.get(group);
+        /* istanbul ignore else */
         if (promise) {
           resolveListeners.forEach((subscription) => {
             subscription(promise, selection);

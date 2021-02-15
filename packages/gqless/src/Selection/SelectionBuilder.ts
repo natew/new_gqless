@@ -5,8 +5,8 @@ import { isInteger } from '../Utils';
 import { SelectionType } from './selection';
 
 export type BuildSelectionValue =
-  | string
-  | [string | number, Record<string, unknown>];
+  | (string | number)
+  | [string | number, Record<string, unknown>?];
 
 export type BuildSelectionInput = [
   'query' | 'mutation' | 'subscription',
@@ -32,9 +32,12 @@ export function createSelectionBuilder(innerState: InnerClientState) {
         break;
       }
       default:
-        throw new gqlessError('Invalid initial selection build argument', {
-          caller: buildSelection,
-        });
+        throw new gqlessError(
+          'Invalid initial selection build argument, specify "query", "mutation" or "subscription"',
+          {
+            caller: buildSelection,
+          }
+        );
     }
 
     let prevSelection = selectionManager.getSelection({
@@ -67,6 +70,7 @@ export function createSelectionBuilder(innerState: InnerClientState) {
             prevSelection,
           });
 
+          isArraySelection = false;
           continue;
         } else {
           prevSelection = selectionManager.getSelection({
@@ -105,7 +109,7 @@ export function createSelectionBuilder(innerState: InnerClientState) {
 
       const typeValue = schema[pureType];
       if (!typeValue)
-        throw new gqlessError('Invalid selection type', {
+        throw new gqlessError('Invalid schema type', {
           caller: buildSelection,
         });
 

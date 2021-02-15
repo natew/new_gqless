@@ -361,3 +361,33 @@ describe('assign selections', () => {
     }).toThrowError('Invalid target proxy');
   });
 });
+
+describe('unions support', () => {
+  test('works', async () => {
+    const { query, resolved } = await createTestClient();
+
+    await resolved(() => {
+      return query.species.map((v) => {
+        return {
+          __typename: v.__typename,
+          name: v.name,
+        };
+      });
+    }).then((data) => {
+      expect(data).toEqual([
+        {
+          __typename: 'Dog',
+          name: 'default',
+        },
+        {
+          __typename: 'Dog',
+          name: 'a',
+        },
+        {
+          __typename: 'Dog',
+          name: 'b',
+        },
+      ]);
+    });
+  });
+});

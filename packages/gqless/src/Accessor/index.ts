@@ -65,6 +65,7 @@ export function AccessorCreators<
       const types = unionTypes.reduce((typeAcum, objectTypeName) => {
         unionObjectTypesForSelections[objectTypeName] ||= [objectTypeName];
         const objectType = schema[objectTypeName];
+        /* istanbul ignore else */
         if (objectType) {
           for (const objectTypeFieldName of Object.keys(objectType)) {
             fieldsMap[objectTypeFieldName] ||= {

@@ -3,6 +3,7 @@ import {
   createSelectionManager,
   separateSelectionTypes,
 } from '../src/Selection/SelectionManager';
+import { createTestClient } from './utils';
 
 describe('selection creation', () => {
   const manager = createSelectionManager();
@@ -117,5 +118,94 @@ describe('selection creation', () => {
       ],
       subscriptionSelections: [selectionG],
     });
+  });
+});
+
+describe('selection builder', () => {
+  test('correct selection', async () => {
+    const { buildSelection } = await createTestClient();
+
+    const helloSelection = buildSelection('query', 'hello');
+
+    expect(helloSelection.type).toBe(SelectionType.Query);
+    expect(helloSelection.pathString).toBe('query.hello');
+
+    const humanSelection = buildSelection('query', 'human', 'name');
+
+    expect(humanSelection.pathString).toBe('query.human.name');
+
+    const humanArgSelection = buildSelection('query', [
+      'human',
+      {
+        name: 'asd',
+      },
+    ]);
+
+    expect(humanArgSelection.pathString).toBe('query.human0');
+    expect(humanArgSelection.args).toEqual({
+      name: 'asd',
+    });
+    expect(humanArgSelection.argTypes).toEqual({
+      name: 'String',
+    });
+
+    const sonsSelection = buildSelection('query', 'human', 'sons', 'name');
+
+    expect(sonsSelection.pathString).toBe('query.human.sons.0.name');
+
+    const sons1Selection = buildSelection('query', 'human', 'sons', 1, 'name');
+
+    expect(sons1Selection.pathString).toBe('query.human.sons.1.name');
+
+    const mutationSelection = buildSelection('mutation', [
+      'sendNotification',
+      {
+        message: 'hello',
+      },
+    ]);
+    expect(mutationSelection.type).toBe(SelectionType.Mutation);
+
+    expect(mutationSelection.pathString).toBe('mutation.sendNotification0');
+    expect(mutationSelection.args).toEqual({
+      message: 'hello',
+    });
+    expect(mutationSelection.argTypes).toEqual({
+      message: 'String!',
+    });
+
+    const subscriptionSelection = buildSelection(
+      'subscription',
+      'newNotification'
+    );
+
+    expect(subscriptionSelection.type).toBe(SelectionType.Subscription);
+    expect(subscriptionSelection.pathString).toBe(
+      'subscription.newNotification'
+    );
+  });
+
+  test('invalid usage', async () => {
+    const { buildSelection } = await createTestClient({
+      query: {
+        other_new_selection: { __type: 'NewOtherSelection' },
+      },
+    });
+
+    expect(() => {
+      //@ts-expect-error
+      buildSelection('error');
+    }).toThrowError(
+      'Invalid initial selection build argument, specify "query", "mutation" or "subscription"'
+    );
+
+    expect(() => {
+      buildSelection('query', 'non-existent');
+    }).toThrowError(
+      'Invalid selection argument at index 1: "non-existent", possible valid keys: "__typename" | "hello" | "stringArg" | "human" | "nFetchCalls" | "throw" | "throw2" | "nullArray" | "nullStringArray" | "time"'
+    );
+
+    expect(() => {
+      buildSelection('query', 'other_new_selection');
+    }).toThrowError('Invalid schema type');
   });
 });

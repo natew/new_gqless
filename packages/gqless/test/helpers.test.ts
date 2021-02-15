@@ -13,13 +13,7 @@ describe('selectFields', () => {
       );
     });
 
-    expect(data).toEqual({
-      __typename: 'Human',
-      name: 'foo',
-      father: null,
-      nullFather: null,
-      sons: [null],
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('recursive *, depth 2', async () => {
@@ -35,34 +29,7 @@ describe('selectFields', () => {
       );
     });
 
-    expect(data).toEqual({
-      __typename: 'Human',
-      name: 'foo',
-      father: {
-        __typename: 'Human',
-        name: 'default',
-        father: null,
-        nullFather: null,
-        sons: [null],
-      },
-      nullFather: null,
-      sons: [
-        {
-          __typename: 'Human',
-          name: 'default',
-          father: null,
-          nullFather: null,
-          sons: [null],
-        },
-        {
-          __typename: 'Human',
-          name: 'default',
-          father: null,
-          nullFather: null,
-          sons: [null],
-        },
-      ],
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named no recursive', async () => {
@@ -77,12 +44,7 @@ describe('selectFields', () => {
       );
     });
 
-    expect(data).toEqual({
-      name: 'bar',
-      father: {
-        name: 'default',
-      },
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named recursive, depth 1', async () => {
@@ -97,15 +59,7 @@ describe('selectFields', () => {
       );
     });
 
-    expect(data).toEqual({
-      father: {
-        __typename: 'Human',
-        name: 'default',
-        father: null,
-        nullFather: null,
-        sons: [null],
-      },
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named recursive, depth 2', async () => {
@@ -121,36 +75,7 @@ describe('selectFields', () => {
       );
     });
 
-    expect(data).toEqual({
-      father: {
-        __typename: 'Human',
-        name: 'default',
-        father: {
-          __typename: 'Human',
-          name: 'default',
-          father: null,
-          sons: [null],
-          nullFather: null,
-        },
-        nullFather: null,
-        sons: [
-          {
-            __typename: 'Human',
-            name: 'default',
-            father: null,
-            nullFather: null,
-            sons: [null],
-          },
-          {
-            __typename: 'Human',
-            name: 'default',
-            father: null,
-            nullFather: null,
-            sons: [null],
-          },
-        ],
-      },
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named recursive - array', async () => {
@@ -160,14 +85,7 @@ describe('selectFields', () => {
       return selectFields(query.human().sons, ['name']);
     });
 
-    expect(data).toEqual([
-      {
-        name: 'default',
-      },
-      {
-        name: 'default',
-      },
-    ]);
+    expect(data).toMatchSnapshot();
   });
 
   test('recursive * - array', async () => {
@@ -177,22 +95,7 @@ describe('selectFields', () => {
       return selectFields(query.human().sons, '*');
     });
 
-    expect(data).toEqual([
-      {
-        __typename: 'Human',
-        father: null,
-        nullFather: null,
-        sons: [null],
-        name: 'default',
-      },
-      {
-        __typename: 'Human',
-        father: null,
-        nullFather: null,
-        sons: [null],
-        name: 'default',
-      },
-    ]);
+    expect(data).toMatchSnapshot();
   });
 
   test('empty named fields array', async () => {
@@ -212,24 +115,7 @@ describe('selectFields', () => {
       return selectFields(query.human(), ['sons']);
     });
 
-    expect(data).toEqual({
-      sons: [
-        {
-          __typename: 'Human',
-          name: 'default',
-          father: null,
-          nullFather: null,
-          sons: [null],
-        },
-        {
-          __typename: 'Human',
-          name: 'default',
-          father: null,
-          nullFather: null,
-          sons: [null],
-        },
-      ],
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named fields array values - depth 2', async () => {
@@ -239,66 +125,7 @@ describe('selectFields', () => {
       return selectFields(query.human(), ['sons'], 2);
     });
 
-    expect(data).toEqual({
-      sons: [
-        {
-          __typename: 'Human',
-          name: 'default',
-          father: {
-            __typename: 'Human',
-            name: 'default',
-            father: null,
-            nullFather: null,
-            sons: [null],
-          },
-          nullFather: null,
-          sons: [
-            {
-              __typename: 'Human',
-              name: 'default',
-              father: null,
-              nullFather: null,
-              sons: [null],
-            },
-            {
-              __typename: 'Human',
-              name: 'default',
-              father: null,
-              nullFather: null,
-              sons: [null],
-            },
-          ],
-        },
-        {
-          __typename: 'Human',
-          name: 'default',
-          father: {
-            __typename: 'Human',
-            name: 'default',
-            father: null,
-            nullFather: null,
-            sons: [null],
-          },
-          nullFather: null,
-          sons: [
-            {
-              __typename: 'Human',
-              name: 'default',
-              father: null,
-              nullFather: null,
-              sons: [null],
-            },
-            {
-              __typename: 'Human',
-              name: 'default',
-              father: null,
-              nullFather: null,
-              sons: [null],
-            },
-          ],
-        },
-      ],
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named fields object values - depth 1', async () => {
@@ -308,15 +135,7 @@ describe('selectFields', () => {
       return selectFields(query.human(), ['father']);
     });
 
-    expect(data).toEqual({
-      father: {
-        __typename: 'Human',
-        name: 'default',
-        father: null,
-        nullFather: null,
-        sons: [null],
-      },
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named fields object values - depth 2', async () => {
@@ -326,36 +145,7 @@ describe('selectFields', () => {
       return selectFields(query.human(), ['father'], 2);
     });
 
-    expect(data).toEqual({
-      father: {
-        __typename: 'Human',
-        name: 'default',
-        father: {
-          __typename: 'Human',
-          name: 'default',
-          father: null,
-          nullFather: null,
-          sons: [null],
-        },
-        nullFather: null,
-        sons: [
-          {
-            __typename: 'Human',
-            name: 'default',
-            father: null,
-            nullFather: null,
-            sons: [null],
-          },
-          {
-            __typename: 'Human',
-            name: 'default',
-            father: null,
-            nullFather: null,
-            sons: [null],
-          },
-        ],
-      },
-    });
+    expect(data).toMatchSnapshot();
   });
 
   test('named non-existent field', async () => {
