@@ -33,6 +33,7 @@ export type Scalars = {
   Int: number;
   Float: number;
   ExampleScalar: any;
+  _FieldSet: any;
 };
 
 export type NamedEntity = {

@@ -35,22 +35,19 @@ export class gqlessError extends Error {
   }
 
   static create(error: unknown, caller?: Function): gqlessError {
-    const newError = (() => {
-      if (error instanceof gqlessError) return error;
+    let newError: gqlessError;
 
-      if (error instanceof Error) {
-        return Object.assign(new gqlessError(error.message), error);
-      }
-
-      return new gqlessError('Unexpected error type', {
+    if (error instanceof gqlessError) newError = error;
+    else if (error instanceof Error)
+      newError = Object.assign(new gqlessError(error.message), error);
+    else
+      newError = new gqlessError('Unexpected error type', {
         otherError: error,
       });
-    })();
 
     /* istanbul ignore else */
-    if (caller && Error.captureStackTrace!) {
+    if (caller && Error.captureStackTrace!)
       Error.captureStackTrace(newError, caller);
-    }
 
     return newError;
   }

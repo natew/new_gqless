@@ -279,7 +279,7 @@ describe('gqless integration tests', () => {
   });
 });
 
-describe.skip('select fields', () => {
+describe('select fields', () => {
   test('selectFields recursive', async () => {
     await resolved(
       () => {

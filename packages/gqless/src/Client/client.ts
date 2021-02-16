@@ -17,7 +17,7 @@ import {
   createSelectionManager,
   SelectionManager,
 } from '../Selection/SelectionManager';
-import { createResolvers, FetchResolveOptions } from './resolvers';
+import { createResolvers, RetryOptions } from './resolvers';
 
 export interface InnerClientState {
   allowCache: boolean;
@@ -38,7 +38,7 @@ export interface ClientOptions {
   scalarsEnumsHash: ScalarsEnumsHash;
   queryFetcher: QueryFetcher;
   catchSelectionsTimeMS?: number;
-  retry?: FetchResolveOptions['retry'];
+  retry?: RetryOptions;
 }
 
 export function createClient<

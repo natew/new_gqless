@@ -31,14 +31,33 @@ const defaultMaxRetries = 3;
 const defaultRetryDelay = (attemptIndex: number) =>
   Math.min(1000 * 2 ** attemptIndex, 30000);
 
+export type RetryOptions =
+  | {
+      /**
+       * Amount of retries to be made
+       * @default 3
+       */
+      maxRetries?: number;
+      /**
+       * Amount of milliseconds between each attempt, it can be a static number,
+       * or a function based on the attempt number
+       *
+       * @default attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+       */
+      retryDelay?: number | ((attemptIndex: number) => number);
+    }
+  /** If retries should be enabled
+   * @default true
+   */
+  | boolean
+  /** Amount of retries to be made
+   * @default 3
+   */
+  | number;
+
 export interface FetchResolveOptions {
-  retry?:
-    | {
-        maxRetries?: number;
-        retryDelay?: number | ((attemptIndex: number) => number);
-      }
-    | boolean
-    | number;
+  retry?: RetryOptions;
+
   scheduler?: boolean;
 }
 
@@ -226,7 +245,14 @@ export function createResolvers(innerState: InnerClientState) {
                 Object.assign({}, state, {
                   currentErrorRetry: currentErrorRetry + 1,
                 } as typeof state)
-              ).catch(console.error);
+              )
+                .then((data) => ({ data }))
+                .catch((err) => {
+                  console.error(err);
+                  return {
+                    error: gqlessError.create(err),
+                  };
+                });
 
               if (options.scheduler) {
                 const setSelections = new Set(selections);

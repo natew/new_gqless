@@ -4,6 +4,7 @@ import { createTestApp, gql } from 'test-utils';
 import { generate } from '@dish/gqless-cli';
 
 import {
+  ClientOptions,
   createClient,
   DeepPartial,
   QueryFetcher,
@@ -51,7 +52,8 @@ export interface TestClientConfig {
 export const createTestClient = async (
   addedToGeneratedSchema?: DeepPartial<Schema>,
   queryFetcher?: QueryFetcher,
-  config?: TestClientConfig
+  config?: TestClientConfig,
+  clientConfig: Partial<ClientOptions> = {}
 ) => {
   const dogs: { name: string }[] = [
     {
@@ -68,6 +70,7 @@ export const createTestClient = async (
     };
   };
   let nFetchCalls = 0;
+  let throwTry = 0;
   const { server, client: mercuriusTestClient, isReady } = createTestApp({
     schema: gql`
       type Query {
@@ -81,6 +84,7 @@ export const createTestClient = async (
         nullStringArray: [String]
         time: String!
         species: [Species!]!
+        throwUntilThirdTry: Boolean!
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
@@ -104,6 +108,14 @@ export const createTestClient = async (
     `,
     resolvers: {
       Query: {
+        throwUntilThirdTry() {
+          throwTry++;
+          if (throwTry < 3) {
+            throw Error('try again, throwTry=' + throwTry);
+          }
+          throwTry = 0;
+          return true;
+        },
         stringArg(_root, { arg }: { arg: string }) {
           return arg;
         },
@@ -226,6 +238,7 @@ export const createTestClient = async (
       throw2?: boolean;
       time: string;
       species: Array<Species>;
+      throwUntilThirdTry: boolean;
     };
     mutation: {
       sendNotification(args: { message: string }): boolean;
@@ -238,5 +251,6 @@ export const createTestClient = async (
     schema: merge(generatedSchema, addedToGeneratedSchema) as Schema,
     scalarsEnumsHash,
     queryFetcher,
+    ...clientConfig,
   });
 };

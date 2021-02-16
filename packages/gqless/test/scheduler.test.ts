@@ -1,8 +1,11 @@
 import { waitForExpect } from 'test-utils';
+import { gqlessError } from '../src';
 
 import { createInterceptorManager } from '../src/Interceptor';
 import { createScheduler } from '../src/Scheduler';
 import { Selection } from '../src/Selection';
+import { createLazyPromise } from '../src/Utils';
+import { createTestClient } from './utils';
 
 test('scheduler works with globalInterceptor', async () => {
   const interceptorManager = createInterceptorManager();
@@ -144,4 +147,145 @@ test('scheduler resolve subscriptions', async () => {
   } finally {
     spy.mockRestore();
   }
+});
+
+describe('retry', () => {
+  test('works on third try', async () => {
+    const {
+      query,
+      scheduler: { errors: schedulerErrors },
+    } = await createTestClient();
+
+    const readyPromise = createLazyPromise();
+    let callNumber = 0;
+
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const unsubscribe = schedulerErrors.subscribeErrors((data) => {
+      callNumber++;
+
+      try {
+        switch (callNumber) {
+          case 1: {
+            expect('newError' in data).toBeTruthy();
+            if ('newError' in data) {
+              expect(data.newError.message).toBe('try again, throwTry=1');
+            }
+            break;
+          }
+          case 2: {
+            expect('retryPromise' in data).toBeTruthy();
+            if ('retryPromise' in data) {
+              data.retryPromise
+                .then(({ error }) => {
+                  expect(error instanceof gqlessError).toBeTruthy();
+                  if (error) {
+                    expect(error.message).toBe('try again, throwTry=2');
+                  }
+                })
+                .catch(readyPromise.reject);
+            }
+            break;
+          }
+          case 3: {
+            expect('newError' in data).toBeTruthy();
+            if ('newError' in data) {
+              expect(data.newError.message).toBe('try again, throwTry=2');
+            }
+            break;
+          }
+          case 4: {
+            expect('retryPromise' in data).toBeTruthy();
+            if ('retryPromise' in data) {
+              data.retryPromise
+                .then(({ data }) => {
+                  callNumber++;
+                  expect(data).toEqual({ throwUntilThirdTry: true });
+                  readyPromise.resolve();
+                })
+                .catch(readyPromise.reject);
+            }
+            break;
+          }
+          case 5: {
+            expect('selectionsCleaned' in data).toBeTruthy();
+            if ('selectionsCleaned' in data) {
+              expect(data.selectionsCleaned.length).toBe(1);
+              expect(data.selectionsCleaned[0].pathString).toBe(
+                'query.throwUntilThirdTry'
+              );
+            }
+            break;
+          }
+          default:
+            throw Error("shouldn't reach");
+        }
+      } catch (err) {
+        readyPromise.reject(err);
+      }
+    });
+    try {
+      const firstTry = query.throwUntilThirdTry;
+
+      expect(firstTry).toBe(null);
+
+      await readyPromise.promise;
+      expect(callNumber).toBe(6);
+    } finally {
+      consoleErrorSpy.mockRestore();
+      unsubscribe();
+    }
+  });
+
+  test('errors always', async () => {
+    const {
+      query,
+      scheduler: { errors: schedulerErrors },
+    } = await createTestClient(undefined, undefined, undefined, {
+      retry: {
+        maxRetries: 3,
+        retryDelay: 50,
+      },
+    });
+
+    const readyPromise = createLazyPromise();
+
+    let callNumber = 0;
+
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const unsubscribe = schedulerErrors.subscribeErrors((data) => {
+      const currentCallNumber = ++callNumber;
+
+      if (callNumber % 2 === 0) {
+        expect('retryPromise' in data).toBeTruthy();
+        if ('retryPromise' in data) {
+          data.retryPromise
+            .then(({ error }) => {
+              if (currentCallNumber === 6 && callNumber === 7)
+                readyPromise.resolve();
+
+              expect(error instanceof gqlessError).toBeTruthy();
+              if (error) {
+                expect(error.message).toBe('expected error');
+              }
+            })
+            .catch(readyPromise.reject);
+        }
+      } else {
+        expect('newError' in data).toBeTruthy();
+        if ('newError' in data) {
+          expect(data.newError.message).toBe('expected error');
+        }
+      }
+    });
+    try {
+      query.throw;
+
+      await readyPromise.promise;
+
+      expect(callNumber).toBe(7);
+    } finally {
+      unsubscribe();
+      consoleErrorSpy.mockRestore();
+    }
+  }, 10000);
 });

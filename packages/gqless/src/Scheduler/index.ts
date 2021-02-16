@@ -22,7 +22,10 @@ export type ErrorSubscriptionFn = (
         selectionsCleaned: Selection[];
       }
     | {
-        retryPromise: Promise<unknown>;
+        retryPromise: Promise<{
+          error?: gqlessError;
+          data?: unknown;
+        }>;
         selections: Set<Selection>;
       }
 ) => void;
@@ -86,7 +89,7 @@ export const createScheduler = (
   }
 
   function retryPromise(
-    retryPromise: Promise<unknown>,
+    retryPromise: Promise<{ error?: gqlessError; data?: unknown }>,
     selections: Set<Selection>
   ) {
     const data = {
@@ -161,7 +164,7 @@ export const createScheduler = (
     for (const group of pendingSelectionsGroups) {
       if (group.has(selection)) {
         const promise = pendingSelectionsGroupsPromises.get(group);
-        /* istanbul ignore else */
+        /* istanbul ignore next */
         if (promise) {
           resolveListeners.forEach((subscription) => {
             subscription(promise, selection);
