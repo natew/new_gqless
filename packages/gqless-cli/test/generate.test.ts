@@ -130,15 +130,26 @@ describe('feature complete app', () => {
       type Mutation {
         increment(n: Int!): Int!
       }
-      type Human {
+      interface NamedEntity {
         name: String!
+        other: String
+        withArgs(a: Int!, b: Int): Int
+        withArgs2(a: Int): Int!
+      }
+      type Human implements NamedEntity {
+        name: String!
+        other: String
         father: Human!
         fieldWithArgs(id: Int!): Int!
+        withArgs(a: Int!, b: Int): Int
+        withArgs2(a: Int): Int!
       }
       type OtherHuman {
         name: String!
+        other: String
+        withArgs(a: Int!, b: Int): Int
+        withArgs2(a: Int): Int!
       }
-      # TODO union support
       union HumanType = Human | OtherHuman
     `,
     resolvers: {},

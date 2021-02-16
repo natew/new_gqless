@@ -241,12 +241,18 @@ export const generatedSchema = {
   Human: {
     __typename: { __type: 'String!' },
     name: { __type: 'String!' },
+    other: { __type: 'String' },
     father: { __type: 'Human!' },
     fieldWithArgs: { __type: 'Int!', __args: { id: 'Int!' } },
+    withArgs: { __type: 'Int', __args: { a: 'Int!', b: 'Int' } },
+    withArgs2: { __type: 'Int!', __args: { a: 'Int' } },
   },
   OtherHuman: {
     __typename: { __type: 'String!' },
     name: { __type: 'String!' },
+    other: { __type: 'String' },
+    withArgs: { __type: 'Int', __args: { a: 'Int!', b: 'Int' } },
+    withArgs2: { __type: 'Int!', __args: { a: 'Int' } },
   },
   [SchemaUnionsKey]: { HumanType: ['Human', 'OtherHuman'] },
 } as const;
@@ -287,16 +293,28 @@ export interface Subscription {
   __typename: 'Subscription' | null;
 }
 
-export interface Human {
+export interface Human extends NamedEntity {
   __typename: 'Human' | null;
   name: ScalarsEnums['String'];
+  other?: Maybe<ScalarsEnums['String']>;
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
+  withArgs: (args: {
+    a: ScalarsEnums['Int'];
+    b?: Maybe<ScalarsEnums['Int']>;
+  }) => Maybe<ScalarsEnums['Int']>;
+  withArgs2: (args?: { a?: Maybe<ScalarsEnums['Int']> }) => ScalarsEnums['Int'];
 }
 
 export interface OtherHuman {
   __typename: 'OtherHuman' | null;
   name: ScalarsEnums['String'];
+  other?: Maybe<ScalarsEnums['String']>;
+  withArgs: (args: {
+    a: ScalarsEnums['Int'];
+    b?: Maybe<ScalarsEnums['Int']>;
+  }) => Maybe<ScalarsEnums['Int']>;
+  withArgs2: (args?: { a?: Maybe<ScalarsEnums['Int']> }) => ScalarsEnums['Int'];
 }
 
 export type HumanType =
@@ -305,13 +323,34 @@ export type HumanType =
       father: Human;
       fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
       name: ScalarsEnums['String'];
+      other?: Maybe<ScalarsEnums['String']>;
+      withArgs: (args: {
+        a: ScalarsEnums['Int'];
+        b?: Maybe<ScalarsEnums['Int']>;
+      }) => Maybe<ScalarsEnums['Int']>;
+      withArgs2: (args?: {
+        a?: Maybe<ScalarsEnums['Int']>;
+      }) => ScalarsEnums['Int'];
     }
   | {
       __typename: 'OtherHuman' | null;
       father?: undefined;
       fieldWithArgs?: undefined;
       name: ScalarsEnums['String'];
+      other?: Maybe<ScalarsEnums['String']>;
+      withArgs: (args: {
+        a: ScalarsEnums['Int'];
+        b?: Maybe<ScalarsEnums['Int']>;
+      }) => Maybe<ScalarsEnums['Int']>;
+      withArgs2: (args?: {
+        a?: Maybe<ScalarsEnums['Int']>;
+      }) => ScalarsEnums['Int'];
     };
+
+export interface NamedEntity {
+  name: ScalarsEnums['String'];
+  other?: Maybe<ScalarsEnums['String']>;
+}
 
 export interface GeneratedSchema {
   query: Query;
@@ -329,7 +368,7 @@ export interface ScalarsEnums extends MakeNullable<Scalars> {
 "
 `;
 
-exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}},\\"number\\":{\\"__type\\":\\"Int!\\"}},\\"mutation\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"increment\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"n\\":\\"Int!\\"}}},\\"subscription\\":{},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}}},\\"OtherHuman\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"}}}"`;
+exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}},\\"number\\":{\\"__type\\":\\"Int!\\"}},\\"mutation\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"increment\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"n\\":\\"Int!\\"}}},\\"subscription\\":{},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"},\\"other\\":{\\"__type\\":\\"String\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}},\\"withArgs\\":{\\"__type\\":\\"Int\\",\\"__args\\":{\\"a\\":\\"Int!\\",\\"b\\":\\"Int\\"}},\\"withArgs2\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"a\\":\\"Int\\"}}},\\"OtherHuman\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"},\\"other\\":{\\"__type\\":\\"String\\"},\\"withArgs\\":{\\"__type\\":\\"Int\\",\\"__args\\":{\\"a\\":\\"Int!\\",\\"b\\":\\"Int\\"}},\\"withArgs2\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"a\\":\\"Int\\"}}}}"`;
 
 exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
 

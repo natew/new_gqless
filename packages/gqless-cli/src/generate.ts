@@ -184,6 +184,7 @@ export async function generate(
     )
       return;
 
+    /* istanbul ignore else */
     if (type instanceof GraphQLScalarType) {
       parseScalarType(type);
     } else if (type instanceof GraphQLObjectType) {
@@ -336,6 +337,7 @@ export async function generate(
       const allUnionFields = new Set<string>();
       types.forEach((typeName) => {
         const typeMap = objectTypeTSTypes.get(typeName);
+        /* istanbul ignore else */
         if (typeMap) {
           typeMap.forEach((_value, fieldName) => allUnionFields.add(fieldName));
         }
@@ -347,6 +349,7 @@ export async function generate(
           .reduce((acumTypes, typeName) => {
             const typeMap = objectTypeTSTypes.get(typeName);
 
+            /* istanbul ignore else */
             if (typeMap) {
               acumTypes.push(
                 `{ ${allUnionFieldsArray
@@ -360,7 +363,7 @@ export async function generate(
             }
             return acumTypes;
           }, [] as string[])
-          .join(' | ') || '{}'
+          .join(' | ') /* istanbul ignore next */ || '{}'
       };`;
 
       return acum;
