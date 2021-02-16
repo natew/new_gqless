@@ -171,26 +171,8 @@ export type Resolvers<ContextType = any> = {
  */
 export type IResolvers<ContextType = any> = Resolvers<ContextType>;
 
-type Loader<TReturn, TObj, TParams, TContext> = (
-  queries: Array<{
-    obj: TObj;
-    params: TParams;
-  }>,
-  context: TContext & {
-    reply: FastifyReply;
-  }
-) => Promise<Array<DeepPartial<TReturn>>>;
-type LoaderResolver<TReturn, TObj, TParams, TContext> =
-  | Loader<TReturn, TObj, TParams, TContext>
-  | {
-      loader: Loader<TReturn, TObj, TParams, TContext>;
-      opts?: {
-        cache?: boolean;
-      };
-    };
-export interface Loaders<
-  TContext = MercuriusContext & { reply: FastifyReply }
-> {}
+export interface Loaders {}
+
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>
