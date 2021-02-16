@@ -1,11 +1,11 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",
-  "module": "dist/gqless-tsdx.esm.js",
+  "module": "dist/gqless.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
@@ -30,7 +30,7 @@
     "lodash-es": "^4.17.20"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^4.0.0",
+    "@dish/gqless-cli": "workspace:^4.0.1",
     "@size-limit/preset-small-lib": "^4.9.2",
     "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.28",

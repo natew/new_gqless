@@ -42,8 +42,8 @@ importers:
       tslib: 2.1.0
       typescript: 4.1.5
     specifiers:
-      '@dish/gqless': workspace:^3.0.5
-      '@dish/gqless-cli': workspace:^4.0.0
+      '@dish/gqless': workspace:^3.0.6
+      '@dish/gqless-cli': workspace:^4.0.1
       '@graphql-typed-document-node/core': ^3.1.0
       '@size-limit/preset-small-lib': ^4.9.2
       '@types/lodash': ^4.14.168
@@ -93,7 +93,7 @@ importers:
       typescript: 4.1.5
       wait-on: 5.2.1
     specifiers:
-      '@dish/gqless-cli': workspace:^4.0.0
+      '@dish/gqless-cli': workspace:^4.0.1
       '@size-limit/preset-small-lib': ^4.9.2
       '@types/lodash': ^4.14.168
       '@types/node': ^14.14.28
@@ -144,7 +144,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.1.5
     specifiers:
-      '@dish/gqless': workspace:^3.0.5
+      '@dish/gqless': workspace:^3.0.6
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.21.0
       '@graphql-tools/delegate': ^7.0.10
@@ -177,7 +177,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.1.5
     specifiers:
-      '@dish/gqless': workspace:^3.0.5
+      '@dish/gqless': workspace:^3.0.6
       '@size-limit/preset-small-lib': ^4.9.2
       '@types/prettier': ^2.2.1
       prettier: ^2.2.1
@@ -212,7 +212,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.1.5
     specifiers:
-      '@dish/gqless': workspace:^3.0.5
+      '@dish/gqless': workspace:^3.0.6
       '@dish/react-ssr-prepass': workspace:^1.3.1
       '@size-limit/preset-small-lib': ^4.9.2
       '@testing-library/react': ^11.2.5
@@ -246,7 +246,7 @@ importers:
       mercurius-codegen: 1.3.4_9ba897bc3a3e01d2a695e2aef22ef7b8
       next: 10.0.7_bdba1ca4a80d13560ab4ce49959c6ea2
       node-json-db: 1.1.0
-      open: 7.4.1
+      open: 7.4.2
       react: 17.0.1
       react-dom: 17.0.1_react@17.0.1
       react-error-boundary: 3.1.0_react@17.0.1
@@ -265,9 +265,9 @@ importers:
       typescript: 4.1.5
       wait-on: 5.2.1
     specifiers:
-      '@dish/gqless-cli': workspace:^4.0.0
+      '@dish/gqless-cli': workspace:^4.0.1
       '@dish/gqless-logger': workspace:^0.1.3
-      '@dish/gqless-react': workspace:^2.0.6
+      '@dish/gqless-react': workspace:^2.0.7
       '@types/lodash': ^4.14.168
       '@types/node': ^14.14.28
       '@types/react': ^17.0.2
@@ -282,7 +282,7 @@ importers:
       mercurius-codegen: ^1.3.4
       next: ^10.0.7
       node-json-db: ^1.1.0
-      open: ^7.4.1
+      open: ^7.4.2
       open-cli: ^6.0.1
       react: ^17.0.1
       react-dom: ^17.0.1
@@ -1488,7 +1488,7 @@ packages:
       lower-case: 2.0.1
       param-case: 3.0.3
       pascal-case: 3.1.1
-      tslib: 2.0.3
+      tslib: 2.0.1
       upper-case: 2.0.1
     dev: false
     peerDependencies:
@@ -1502,7 +1502,7 @@ packages:
       auto-bind: 4.0.0
       change-case: 4.1.2
       graphql: 15.5.0
-      tslib: 2.0.3
+      tslib: 2.0.1
     dev: false
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
@@ -1596,7 +1596,7 @@ packages:
     dependencies:
       globby: 11.0.1
       graphql: 15.5.0
-      tslib: 2.0.3
+      tslib: 2.0.1
       unixify: 1.0.0
     dev: false
     peerDependencies:
@@ -3726,7 +3726,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001187
       colorette: 1.2.1
-      electron-to-chromium: 1.3.665
+      electron-to-chromium: 1.3.666
       escalade: 3.1.1
       node-releases: 1.1.70
     dev: false
@@ -3739,7 +3739,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001187
       colorette: 1.2.1
-      electron-to-chromium: 1.3.665
+      electron-to-chromium: 1.3.666
       escalade: 3.1.1
       node-releases: 1.1.70
     dev: true
@@ -5287,9 +5287,9 @@ packages:
   /ee-first/1.1.1:
     resolution:
       integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
-  /electron-to-chromium/1.3.665:
+  /electron-to-chromium/1.3.666:
     resolution:
-      integrity: sha512-LIjx1JheOz7LM8DMEQ2tPnbBzJ4nVG1MKutsbEMLnJfwfVdPIsyagqfLp56bOWhdBrYGXWHaTayYkllIU2TauA==
+      integrity: sha512-/mP4HFQ0fKIX4sXltG6kfcoGrfNDZwCIyWbH2SIcVaa9u7Rm0HKjambiHNg5OEruicTl9s1EwbERLwxZwk19aw==
   /elliptic/6.5.4:
     dependencies:
       bn.js: 4.11.9
@@ -10029,7 +10029,7 @@ packages:
       file-type: 14.7.1
       get-stdin: 7.0.0
       meow: 6.1.1
-      open: 7.4.1
+      open: 7.4.2
       temp-write: 4.0.0
     dev: true
     engines:
@@ -10037,14 +10037,14 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-A5h8MF3GrT1efn9TiO9LPajDnLtuEiGQT5G8TxWObBlgt1cZJF1YbQo/kNtsD1bJb7HxnT6SaSjzeLq0Rfhygw==
-  /open/7.4.1:
+  /open/7.4.2:
     dependencies:
       is-docker: 2.1.1
       is-wsl: 2.2.0
     engines:
       node: '>=8'
     resolution:
-      integrity: sha512-Pxv+fKRsd/Ozflgn2Gjev1HZveJJeKR6hKKmdaImJMuEZ6htAvCTbcMABJo+qevlAelTLCrEK3YTKZ9fVTcSPw==
+      integrity: sha512-MVHddDVweXZF3awtlAS+6pgKLlm/JgxZ90+/NBurBoQctVOOB/zDdVjcyPzQ+0laDGbsWgrRkflI65sQeOgT9Q==
   /opencollective-postinstall/2.0.3:
     dev: true
     hasBin: true
@@ -13926,7 +13926,6 @@ packages:
     resolution:
       integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
   /tslib/2.0.1:
-    dev: true
     resolution:
       integrity: sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ==
   /tslib/2.0.3:
