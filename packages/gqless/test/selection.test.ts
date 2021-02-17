@@ -184,6 +184,28 @@ describe('selection builder', () => {
     );
   });
 
+  test('unions', async () => {
+    const {
+      buildSelection,
+      buildAndFetchSelections,
+      query,
+    } = await createTestClient();
+
+    query;
+
+    const selection = buildSelection('query', 'species', 'name');
+
+    expect(selection.pathString).toBe('query.species.0.name');
+
+    const result = await buildAndFetchSelections([selection], 'query');
+
+    expect(result).toMatchSnapshot();
+
+    expect({
+      species: query.species.map(({ name }) => ({ name })),
+    }).toStrictEqual(result);
+  });
+
   test('invalid usage', async () => {
     const { buildSelection } = await createTestClient({
       query: {
@@ -201,7 +223,7 @@ describe('selection builder', () => {
     expect(() => {
       buildSelection('query', 'non-existent');
     }).toThrowError(
-      'Invalid selection argument at index 1: "non-existent", possible valid keys: "__typename" | "hello" | "stringArg" | "human" | "nFetchCalls" | "throw" | "throw2" | "nullArray" | "nullStringArray" | "time"'
+      'Invalid selection argument at index 0: "non-existent", possible valid keys:'
     );
 
     expect(() => {

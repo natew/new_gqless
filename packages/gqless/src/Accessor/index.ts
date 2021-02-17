@@ -37,31 +37,19 @@ export class SchemaUnion {
       combinedTypes: Record<string, Type>;
     }
   >;
+  combinedTypes!: Record<string, Type>;
 }
 
-export function AccessorCreators<
-  GeneratedSchema extends {
-    query: {};
-    mutation: {};
-    subscription: {};
-  } = never
->(innerState: InnerClientState) {
-  const {
-    accessorCache,
-    selectionManager,
-    interceptorManager,
-    scalarsEnumsHash,
-    schema,
-    eventHandler,
-  } = innerState;
-
+export function createSchemaUnions(schema: Readonly<Schema>) {
   const unionObjectTypesForSelections: Record<string, [string]> = {};
 
-  const schemaUnions = (innerState.schemaUnions = Object.entries(
+  const unions = Object.entries(
     schema[SchemaUnionsKey] /* istanbul ignore next */ || {}
   ).reduce((acum, [name, unionTypes]) => {
     const fieldsSet = new Set<string>();
     const fieldsMap: SchemaUnion['fieldsMap'] = {};
+
+    const combinedTypes: Record<string, Type> = {};
 
     const types = unionTypes.reduce((typeAcum, objectTypeName) => {
       unionObjectTypesForSelections[objectTypeName] ||= [objectTypeName];
@@ -82,6 +70,7 @@ export function AccessorCreators<
             fieldsMap[objectTypeFieldName].combinedTypes,
             objectType
           );
+          Object.assign(combinedTypes, objectType);
           fieldsSet.add(objectTypeFieldName);
         }
 
@@ -104,10 +93,34 @@ export function AccessorCreators<
         return fieldsAcum;
       }, {} as SchemaUnion['fieldsProxy']),
       fieldsMap,
+      combinedTypes,
     });
 
     return acum;
-  }, {} as Record<string, SchemaUnion>));
+  }, {} as Record<string, SchemaUnion>);
+
+  return {
+    unions,
+    unionObjectTypesForSelections,
+  };
+}
+
+export function AccessorCreators<
+  GeneratedSchema extends {
+    query: {};
+    mutation: {};
+    subscription: {};
+  } = never
+>(innerState: InnerClientState) {
+  const {
+    accessorCache,
+    selectionManager,
+    interceptorManager,
+    scalarsEnumsHash,
+    schema,
+    eventHandler,
+    schemaUnions: { unions: schemaUnions, unionObjectTypesForSelections },
+  } = innerState;
 
   const ResolveInfoSymbol = Symbol();
 

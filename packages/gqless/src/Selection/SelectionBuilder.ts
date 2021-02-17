@@ -1,3 +1,4 @@
+import { SchemaUnion } from '../Accessor';
 import { InnerClientState } from '../Client/client';
 import { gqlessError } from '../Error';
 import { parseSchemaType, Type } from '../Schema/types';
@@ -14,7 +15,12 @@ export type BuildSelectionInput = [
 ];
 
 export function createSelectionBuilder(innerState: InnerClientState) {
-  const { selectionManager, schema, scalarsEnumsHash } = innerState;
+  const {
+    selectionManager,
+    schema,
+    scalarsEnumsHash,
+    schemaUnions: { unions: schemaUnions },
+  } = innerState;
 
   function buildSelection(...[typeInput, ...input]: BuildSelectionInput) {
     let type: SelectionType;
@@ -48,6 +54,8 @@ export function createSelectionBuilder(innerState: InnerClientState) {
     let isArraySelection = false;
     let schemaType = schema[typeInput];
 
+    let unionType: SchemaUnion | undefined;
+
     for (const [index, inputValue] of input.entries()) {
       let key: string | number;
       let args: Record<string, unknown> | undefined;
@@ -57,8 +65,9 @@ export function createSelectionBuilder(innerState: InnerClientState) {
       } else {
         key = inputValue[0];
         args = inputValue[1]?.args;
-        unions = inputValue[1]?.unions;
+        unions = unionType ? inputValue[1]?.unions : undefined;
       }
+      unions ||= unionType?.fieldsMap[key]?.typesNames;
 
       if (isArraySelection) {
         let arrayIndex: number | undefined;
@@ -85,11 +94,11 @@ export function createSelectionBuilder(innerState: InnerClientState) {
       const schemaTypeValue = schemaType[key] as Type | undefined;
       if (!schemaTypeValue)
         throw new gqlessError(
-          `Invalid selection argument at index ${index + 1}: ${JSON.stringify(
+          `Invalid selection argument at index ${index}: ${JSON.stringify(
             key
-          )}, possible valid keys: ${Object.keys(schemaType)
+          )}, possible valid keys: '${Object.keys(schemaType)
             .map((v) => `"${v}"`)
-            .join(' | ')}`,
+            .join(' | ')}'`,
           {
             caller: buildSelection,
           }
@@ -108,10 +117,19 @@ export function createSelectionBuilder(innerState: InnerClientState) {
         unions,
       });
 
-      if (scalarsEnumsHash[pureType]) continue;
+      if (scalarsEnumsHash[pureType]) {
+        schemaType = {};
+        continue;
+      }
 
-      // TODO: Support unions
-      const typeValue = schema[pureType] as Record<string, Type> | undefined;
+      let typeValue: Record<string, Type> | undefined;
+
+      if ((unionType = schemaUnions[pureType])) {
+        typeValue = unionType.combinedTypes;
+      } else {
+        typeValue = schema[pureType];
+      }
+
       if (!typeValue)
         throw new gqlessError('Invalid schema type', {
           caller: buildSelection,
