@@ -1,12 +1,25 @@
 import lodashGet from 'lodash/get';
 import lodashSet from 'lodash/set';
-import lodashMerge from 'lodash/merge';
+import lodashMerge from 'lodash/mergeWith';
 
 import { Selection } from '../Selection';
 
 export const CacheNotFound = Symbol('Not Found');
 
 export type CacheType = Record<string, unknown>;
+
+function mergeCustomizer(
+  currentValue: unknown,
+  incomingValue: unknown
+): unknown[] | void {
+  if (
+    Array.isArray(currentValue) &&
+    Array.isArray(incomingValue) &&
+    currentValue.length !== incomingValue.length
+  ) {
+    return incomingValue;
+  }
+}
 
 export function createCache() {
   const cache: CacheType = {};
@@ -26,7 +39,7 @@ export function createCache() {
     data: unknown,
     prefix: 'query' | 'mutation' | 'subscription'
   ) {
-    lodashMerge(cache, { [prefix]: data });
+    lodashMerge(cache, { [prefix]: data }, mergeCustomizer);
   }
 
   return { cache, getCacheFromSelection, setCacheFromSelection, mergeCache };

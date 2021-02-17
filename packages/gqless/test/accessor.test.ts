@@ -94,7 +94,13 @@ describe('accessor undefined paths', () => {
 
 describe('setCache', () => {
   test('expected functionality', async () => {
-    const { scheduler, query, mutation, setCache } = await createTestClient();
+    const {
+      scheduler,
+      query,
+      mutation,
+      setCache,
+      buildSelection,
+    } = await createTestClient();
 
     const humanQuery = query.human({
       name: 'aaa',
@@ -173,6 +179,10 @@ describe('setCache', () => {
         name: 'hhh',
       }).name
     ).toBe('nnn');
+
+    setCache(buildSelection('query', 'human', 'name'), 'zzz');
+
+    expect(query.human().name).toBe('zzz');
   });
 
   test('with listeners', async () => {
@@ -234,11 +244,7 @@ describe('setCache', () => {
     }).toThrowError('Invalid arguments of type: ' + 'function');
 
     expect(() => {
-      setCache(
-        (_args?: { a: string }) => {},
-        //@ts-expect-error
-        123123
-      );
+      setCache((_args?: { a: string }) => {}, 123123 as any);
     }).toThrowError('Invalid arguments of type: ' + 'number');
 
     expect(() => {

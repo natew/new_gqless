@@ -1,10 +1,8 @@
 import lodashGet from 'lodash/get';
 import lodashSet from 'lodash/set';
-import { CacheNotFound } from '../Cache';
 
-function isProxyLike(v: any): v is object {
-  return typeof v === 'object' && v !== null;
-}
+import { CacheNotFound } from '../Cache';
+import { isObject } from '../Utils';
 
 export function selectFields<A extends object | null | undefined>(
   accessor: A,
@@ -19,7 +17,7 @@ export function selectFields<A extends object | null | undefined>(
     ) as A;
   }
 
-  if (!isProxyLike(accessor)) return accessor;
+  if (!isObject(accessor)) return accessor;
 
   if (fields.length === 0) {
     return {} as A;
@@ -39,7 +37,7 @@ export function selectFields<A extends object | null | undefined>(
               return selectFields(value, '*', recursionDepth - 1);
             })
           );
-        } else if (isProxyLike(fieldValue)) {
+        } else if (isObject(fieldValue)) {
           lodashSet(
             acum,
             fieldName,
@@ -68,7 +66,7 @@ export function selectFields<A extends object | null | undefined>(
           return selectFields(value, '*', recursionDepth);
         })
       );
-    } else if (isProxyLike(fieldValue)) {
+    } else if (isObject(fieldValue)) {
       lodashSet(acum, fieldName, selectFields(fieldValue, '*', recursionDepth));
     } else {
       lodashSet(acum, fieldName, fieldValue);

@@ -132,16 +132,16 @@ describe('selection builder', () => {
 
     const humanSelection = buildSelection('query', 'human', 'name');
 
-    expect(humanSelection.pathString).toBe('query.human.name');
+    expect(humanSelection.pathString).toBe('query.human0.name');
 
     const humanArgSelection = buildSelection('query', [
       'human',
       {
-        name: 'asd',
+        args: { name: 'asd' },
       },
     ]);
 
-    expect(humanArgSelection.pathString).toBe('query.human0');
+    expect(humanArgSelection.pathString).toBe('query.human1');
     expect(humanArgSelection.args).toEqual({
       name: 'asd',
     });
@@ -149,18 +149,18 @@ describe('selection builder', () => {
       name: 'String',
     });
 
-    const sonsSelection = buildSelection('query', 'human', 'sons', 'name');
+    const sonsSelection = buildSelection('query', ['human'], 'sons', 'name');
 
-    expect(sonsSelection.pathString).toBe('query.human.sons.0.name');
+    expect(sonsSelection.pathString).toBe('query.human0.sons.0.name');
 
     const sons1Selection = buildSelection('query', 'human', 'sons', 1, 'name');
 
-    expect(sons1Selection.pathString).toBe('query.human.sons.1.name');
+    expect(sons1Selection.pathString).toBe('query.human0.sons.1.name');
 
     const mutationSelection = buildSelection('mutation', [
       'sendNotification',
       {
-        message: 'hello',
+        args: { message: 'hello' },
       },
     ]);
     expect(mutationSelection.type).toBe(SelectionType.Mutation);

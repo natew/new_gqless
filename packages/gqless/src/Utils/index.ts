@@ -20,3 +20,6 @@ export function createLazyPromise<T = void>(): LazyPromise<T> {
 }
 
 export const isInteger = (v: any): v is number => Number.isInteger(v);
+
+export const isObject = (v: unknown): v is object =>
+  v != null && typeof v === 'object';

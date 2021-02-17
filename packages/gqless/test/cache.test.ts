@@ -199,4 +199,160 @@ describe('dataCache', () => {
 
     await scheduler.resolving?.promise;
   });
+
+  test('merge works as it should with arrays', () => {
+    const { cache, mergeCache } = createCache();
+
+    function expectCacheToBe(v: typeof cache) {
+      try {
+        expect(JSON.stringify(cache)).toBe(JSON.stringify(v));
+      } catch (err) {
+        Error.captureStackTrace(err, expectCacheToBe);
+        throw err;
+      }
+    }
+
+    mergeCache(
+      {
+        other: 123,
+        array1: [1, 2],
+        array2: [
+          {
+            a: 1,
+          },
+        ],
+      },
+      'query'
+    );
+
+    expectCacheToBe({
+      query: {
+        other: 123,
+        array1: [1, 2],
+        array2: [
+          {
+            a: 1,
+          },
+        ],
+      },
+    });
+
+    mergeCache(
+      {
+        array1: [3],
+      },
+      'query'
+    );
+
+    expectCacheToBe({
+      query: {
+        other: 123,
+        array1: [3],
+        array2: [
+          {
+            a: 1,
+          },
+        ],
+      },
+    });
+
+    mergeCache(
+      {
+        array2: [
+          {
+            b: 2,
+          },
+        ],
+      },
+      'query'
+    );
+
+    expectCacheToBe({
+      query: {
+        other: 123,
+        array1: [3],
+        array2: [
+          {
+            a: 1,
+            b: 2,
+          },
+        ],
+      },
+    });
+
+    mergeCache(
+      {
+        array2: [],
+      },
+      'query'
+    );
+
+    expectCacheToBe({
+      query: {
+        other: 123,
+        array1: [3],
+        array2: [],
+      },
+    });
+
+    mergeCache(
+      {
+        array2: [
+          {
+            c: 1,
+          },
+          {
+            d: 1,
+          },
+          {
+            e: 1,
+          },
+        ],
+      },
+      'query'
+    );
+
+    expectCacheToBe({
+      query: {
+        other: 123,
+        array1: [3],
+        array2: [
+          {
+            c: 1,
+          },
+          {
+            d: 1,
+          },
+          {
+            e: 1,
+          },
+        ],
+      },
+    });
+
+    mergeCache(
+      {
+        array1: null,
+      },
+      'query'
+    );
+
+    expectCacheToBe({
+      query: {
+        other: 123,
+        array1: null,
+        array2: [
+          {
+            c: 1,
+          },
+          {
+            d: 1,
+          },
+          {
+            e: 1,
+          },
+        ],
+      },
+    });
+  });
 });

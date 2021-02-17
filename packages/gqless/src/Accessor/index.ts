@@ -9,11 +9,11 @@ import {
   Type,
 } from '../Schema';
 import { Selection, SelectionType } from '../Selection';
-import { isInteger } from '../Utils';
+import { isInteger, isObject } from '../Utils';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
-class SchemaUnion {
+export class SchemaUnion {
   /** union name */
   name!: string;
   types!: Record<
@@ -57,58 +57,57 @@ export function AccessorCreators<
 
   const unionObjectTypesForSelections: Record<string, [string]> = {};
 
-  const schemaUnions = Object.entries(schema[SchemaUnionsKey] || {}).reduce(
-    (acum, [name, unionTypes]) => {
-      const fieldsSet = new Set<string>();
-      const fieldsMap: SchemaUnion['fieldsMap'] = {};
+  const schemaUnions = (innerState.schemaUnions = Object.entries(
+    schema[SchemaUnionsKey] /* istanbul ignore next */ || {}
+  ).reduce((acum, [name, unionTypes]) => {
+    const fieldsSet = new Set<string>();
+    const fieldsMap: SchemaUnion['fieldsMap'] = {};
 
-      const types = unionTypes.reduce((typeAcum, objectTypeName) => {
-        unionObjectTypesForSelections[objectTypeName] ||= [objectTypeName];
-        const objectType = schema[objectTypeName];
-        /* istanbul ignore else */
-        if (objectType) {
-          for (const objectTypeFieldName of Object.keys(objectType)) {
-            fieldsMap[objectTypeFieldName] ||= {
-              list: [],
-              typesNames: [],
-              combinedTypes: {},
-            };
-            fieldsMap[objectTypeFieldName].list.push({
-              type: objectType,
-              objectTypeName,
-            });
-            Object.assign(
-              fieldsMap[objectTypeFieldName].combinedTypes,
-              objectType
-            );
-            fieldsSet.add(objectTypeFieldName);
-          }
-
-          typeAcum[objectTypeName] = objectType;
+    const types = unionTypes.reduce((typeAcum, objectTypeName) => {
+      unionObjectTypesForSelections[objectTypeName] ||= [objectTypeName];
+      const objectType = schema[objectTypeName];
+      /* istanbul ignore else */
+      if (objectType) {
+        for (const objectTypeFieldName of Object.keys(objectType)) {
+          fieldsMap[objectTypeFieldName] ||= {
+            list: [],
+            typesNames: [],
+            combinedTypes: {},
+          };
+          fieldsMap[objectTypeFieldName].list.push({
+            type: objectType,
+            objectTypeName,
+          });
+          Object.assign(
+            fieldsMap[objectTypeFieldName].combinedTypes,
+            objectType
+          );
+          fieldsSet.add(objectTypeFieldName);
         }
-        return typeAcum;
-      }, {} as SchemaUnion['types']);
 
-      for (const fieldMapValue of Object.values(fieldsMap)) {
-        fieldMapValue.typesNames = fieldMapValue.list.map(
-          (v) => v.objectTypeName
-        );
+        typeAcum[objectTypeName] = objectType;
       }
+      return typeAcum;
+    }, {} as SchemaUnion['types']);
 
-      acum[name] = Object.assign(new SchemaUnion(), {
-        name,
-        types,
-        fieldsProxy: Array.from(fieldsSet).reduce((fieldsAcum, fieldName) => {
-          fieldsAcum[fieldName] = ProxySymbol;
-          return fieldsAcum;
-        }, {} as SchemaUnion['fieldsProxy']),
-        fieldsMap,
-      });
+    for (const fieldMapValue of Object.values(fieldsMap)) {
+      fieldMapValue.typesNames = fieldMapValue.list.map(
+        (v) => v.objectTypeName
+      );
+    }
 
-      return acum;
-    },
-    {} as Record<string, SchemaUnion>
-  );
+    acum[name] = Object.assign(new SchemaUnion(), {
+      name,
+      types,
+      fieldsProxy: Array.from(fieldsSet).reduce((fieldsAcum, fieldName) => {
+        fieldsAcum[fieldName] = ProxySymbol;
+        return fieldsAcum;
+      }, {} as SchemaUnion['fieldsProxy']),
+      fieldsMap,
+    });
+
+    return acum;
+  }, {} as Record<string, SchemaUnion>));
 
   const ResolveInfoSymbol = Symbol();
 
@@ -135,9 +134,17 @@ export function AccessorCreators<
       if (selectionCache === CacheNotFound) return;
 
       return selectionCache;
-    } else return value;
+    } else if (isObject(value)) {
+      /**
+       * This is necessary to be able to extract data from proxies
+       * inside user-made objects and arrays
+       */
+      return JSON.parse(JSON.stringify(value));
+    }
+    return value;
   }
 
+  function setCache(selection: Selection, data: unknown): void;
   function setCache<A extends object>(
     accessor: A,
     data: DeepPartial<A> | null | undefined
@@ -148,11 +155,18 @@ export function AccessorCreators<
     data: DeepPartial<ReturnType<B>> | null | undefined
   ): void;
   function setCache(
-    accessor: unknown,
-    dataOrArgs: Record<string, unknown> | unknown,
+    accessorOrSelection: unknown,
+    dataOrArgs: unknown,
     possibleData?: unknown
   ) {
-    if (typeof accessor === 'function') {
+    if (accessorOrSelection instanceof Selection) {
+      const data = extractDataFromProxy(dataOrArgs);
+      innerState.clientCache.setCacheFromSelection(accessorOrSelection, data);
+      eventHandler.sendCacheChange({
+        data,
+        selection: accessorOrSelection,
+      });
+    } else if (typeof accessorOrSelection === 'function') {
       if (dataOrArgs !== undefined && typeof dataOrArgs !== 'object') {
         throw new gqlessError(
           'Invalid arguments of type: ' + typeof dataOrArgs,
@@ -162,7 +176,7 @@ export function AccessorCreators<
         );
       }
 
-      const resolveInfo = (accessor as Function & {
+      const resolveInfo = (accessorOrSelection as Function & {
         [ResolveInfoSymbol]?: ResolveInfo;
       })[ResolveInfoSymbol];
 
@@ -184,8 +198,8 @@ export function AccessorCreators<
         data,
         selection,
       });
-    } else if (accessorCache.isProxy(accessor)) {
-      const selection = accessorCache.getProxySelection(accessor);
+    } else if (accessorCache.isProxy(accessorOrSelection)) {
+      const selection = accessorCache.getProxySelection(accessorOrSelection);
 
       // An edge case hard to reproduce
       /* istanbul ignore if */
@@ -342,6 +356,25 @@ export function AccessorCreators<
     return cacheReference;
   }
 
+  function getTypename(selection: Selection): string | void {
+    const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
+      selection
+    );
+    let typename: string;
+    if (
+      isObject(cacheValue) &&
+      (typename = Reflect.get(cacheValue, '__typename'))
+    )
+      return typename;
+
+    interceptorManager.addSelection(
+      selectionManager.getSelection({
+        key: '__typename',
+        prevSelection: selection,
+      })
+    );
+  }
+
   function createAccessor(
     schemaValue: Schema[string] | SchemaUnion,
     selectionArg: Selection,
@@ -351,26 +384,6 @@ export function AccessorCreators<
       selectionArg
     );
     if (innerState.allowCache && cacheValue === null) return null;
-
-    function getTypename(): string | void {
-      const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
-        selectionArg
-      );
-      let typename: string;
-      if (
-        typeof cacheValue === 'object' &&
-        cacheValue !== null &&
-        (typename = Reflect.get(cacheValue, '__typename'))
-      )
-        return typename;
-
-      interceptorManager.addSelection(
-        selectionManager.getSelection({
-          key: '__typename',
-          prevSelection: selectionArg,
-        })
-      );
-    }
 
     const accessor = accessorCache.getAccessor(
       selectionArg,
@@ -413,7 +426,7 @@ export function AccessorCreators<
               return Reflect.get(target, key, receiver);
 
             if (schemaValue instanceof SchemaUnion) {
-              let unionTypeName = getTypename();
+              let unionTypeName = getTypename(selectionArg);
 
               let objectType: Record<string, Type>;
 
@@ -423,7 +436,7 @@ export function AccessorCreators<
                 objectType = schemaValue.types[unionTypeName];
                 selectionUnions = unionObjectTypesForSelections[
                   unionTypeName
-                ] || [unionTypeName];
+                ] /* istanbul ignore next */ || [unionTypeName];
               } else {
                 // TODO: Long term fix, this doesn't work if there is fields types/naming conflicts
                 ({
@@ -485,7 +498,8 @@ export function AccessorCreators<
                   return cacheValue;
                 }
 
-                const typeValue = schema[pureType] || schemaUnions[pureType];
+                const typeValue: Record<string, Type> | SchemaUnion =
+                  schema[pureType] || schemaUnions[pureType];
                 if (typeValue) {
                   const childAccessor = (isArray
                     ? createArrayAccessor

@@ -1,4 +1,4 @@
-import { AccessorCreators } from '../Accessor';
+import { AccessorCreators, SchemaUnion } from '../Accessor';
 import {
   AccessorCache,
   CacheInstance,
@@ -31,6 +31,7 @@ export interface InnerClientState {
   readonly schema: Readonly<Schema>;
   readonly scalarsEnumsHash: Readonly<ScalarsEnumsHash>;
   readonly queryFetcher: QueryFetcher;
+  schemaUnions: Record<string, SchemaUnion>;
 }
 
 export interface ClientOptions {
@@ -84,6 +85,7 @@ export function createClient<
     scheduler,
     eventHandler,
     queryFetcher,
+    schemaUnions: {},
   };
 
   const {

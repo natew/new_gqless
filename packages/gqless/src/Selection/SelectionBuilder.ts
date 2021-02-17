@@ -1,12 +1,12 @@
 import { InnerClientState } from '../Client/client';
 import { gqlessError } from '../Error';
-import { parseSchemaType } from '../Schema/types';
+import { parseSchemaType, Type } from '../Schema/types';
 import { isInteger } from '../Utils';
 import { SelectionType } from './selection';
 
 export type BuildSelectionValue =
   | (string | number)
-  | [string | number, Record<string, unknown>?];
+  | [string | number, { args?: Record<string, unknown>; unions?: string[] }?];
 
 export type BuildSelectionInput = [
   'query' | 'mutation' | 'subscription',
@@ -51,11 +51,13 @@ export function createSelectionBuilder(innerState: InnerClientState) {
     for (const [index, inputValue] of input.entries()) {
       let key: string | number;
       let args: Record<string, unknown> | undefined;
+      let unions: string[] | undefined;
       if (typeof inputValue !== 'object') {
         key = inputValue;
       } else {
         key = inputValue[0];
-        args = inputValue[1];
+        args = inputValue[1]?.args;
+        unions = inputValue[1]?.unions;
       }
 
       if (isArraySelection) {
@@ -80,7 +82,7 @@ export function createSelectionBuilder(innerState: InnerClientState) {
         }
       }
 
-      const schemaTypeValue = schemaType[key];
+      const schemaTypeValue = schemaType[key] as Type | undefined;
       if (!schemaTypeValue)
         throw new gqlessError(
           `Invalid selection argument at index ${index + 1}: ${JSON.stringify(
@@ -101,13 +103,15 @@ export function createSelectionBuilder(innerState: InnerClientState) {
       prevSelection = selectionManager.getSelection({
         key,
         prevSelection,
-        args,
+        args: argTypes ? args || {} : args,
         argTypes,
+        unions,
       });
 
       if (scalarsEnumsHash[pureType]) continue;
 
-      const typeValue = schema[pureType];
+      // TODO: Support unions
+      const typeValue = schema[pureType] as Record<string, Type> | undefined;
       if (!typeValue)
         throw new gqlessError('Invalid schema type', {
           caller: buildSelection,
