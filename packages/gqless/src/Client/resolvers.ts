@@ -3,6 +3,7 @@ import lodashGet from 'lodash/get';
 
 import { CacheInstance, CacheNotFound, createCache } from '../Cache';
 import { gqlessError } from '../Error';
+import { doRetry } from '../Error/retry';
 import { FetchEventData } from '../Events';
 import { buildQuery } from '../QueryBuilder';
 import { Selection } from '../Selection/selection';
@@ -28,11 +29,6 @@ export interface ResolveOptions<TData> {
    */
   onCacheData?: (data: TData) => boolean;
 }
-
-const defaultMaxRetries = 3;
-
-const defaultRetryDelay = (attemptIndex: number) =>
-  Math.min(1000 * 2 ** attemptIndex, 30000);
 
 export type RetryOptions =
   | {
@@ -62,10 +58,6 @@ export interface FetchResolveOptions {
   retry?: RetryOptions;
 
   scheduler?: boolean;
-}
-
-export interface BuildAndFetchState {
-  currentErrorRetry?: number;
 }
 
 export function createResolvers(innerState: InnerClientState) {
@@ -152,8 +144,7 @@ export function createResolvers(innerState: InnerClientState) {
     selections: Selection[],
     type: 'query' | 'mutation' | 'subscription',
     cache: CacheInstance = innerState.clientCache,
-    options: FetchResolveOptions = {},
-    state: BuildAndFetchState = {}
+    options: FetchResolveOptions = {}
   ): Promise<TData | null | undefined> {
     if (selections.length === 0) return;
 
@@ -267,55 +258,42 @@ export function createResolvers(innerState: InnerClientState) {
       }
 
       if (options.retry) {
-        const currentErrorRetry = state.currentErrorRetry ?? 0;
+        doRetry(options.retry, {
+          onRetry: async () => {
+            const retryPromise: Promise<{
+              error?: gqlessError;
+              data?: unknown;
+            }> = buildAndFetchSelections(
+              selections,
+              type,
+              cache,
+              Object.assign({}, options, {
+                retry: false,
+              } as FetchResolveOptions)
+            )
+              .then((data) => ({ data }))
+              .catch((err) => {
+                console.error(err);
+                return {
+                  error: gqlessError.create(err, buildAndFetchSelections),
+                };
+              });
 
-        const maxRetries =
-          typeof options.retry === 'number'
-            ? options.retry
-            : (typeof options.retry === 'object'
-                ? options.retry.maxRetries
-                : undefined) ?? defaultMaxRetries;
-        const retryDelay =
-          (typeof options.retry === 'object'
-            ? options.retry.retryDelay
-            : undefined) ?? defaultRetryDelay;
+            if (options.scheduler) {
+              const setSelections = new Set(selections);
+              scheduler.pendingSelectionsGroups.add(setSelections);
 
-        if (currentErrorRetry < maxRetries) {
-          setTimeout(
-            () => {
-              const retryPromise = buildAndFetchSelections(
-                selections,
-                type,
-                cache,
-                options,
-                Object.assign({}, state, {
-                  currentErrorRetry: currentErrorRetry + 1,
-                } as typeof state)
-              )
-                .then((data) => ({ data }))
-                .catch((err) => {
-                  console.error(err);
-                  return {
-                    error: gqlessError.create(err),
-                  };
-                });
+              scheduler.errors.retryPromise(retryPromise, setSelections);
 
-              if (options.scheduler) {
-                const setSelections = new Set(selections);
-                scheduler.pendingSelectionsGroups.add(setSelections);
+              retryPromise.finally(() => {
+                scheduler.pendingSelectionsGroups.delete(setSelections);
+              });
+            }
 
-                scheduler.errors.retryPromise(retryPromise, setSelections);
-
-                retryPromise.finally(() => {
-                  scheduler.pendingSelectionsGroups.delete(setSelections);
-                });
-              }
-            },
-            typeof retryDelay === 'function'
-              ? retryDelay(currentErrorRetry)
-              : retryDelay
-          );
-        }
+            const { error } = await retryPromise;
+            if (error) throw error;
+          },
+        });
       }
 
       throw error;

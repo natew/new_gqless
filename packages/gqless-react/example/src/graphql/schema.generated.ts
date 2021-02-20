@@ -1,4 +1,4 @@
-import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
+import { ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {

@@ -11,7 +11,7 @@ const ErrorComponent = () => {
   return (
     <div>
       {JSON.stringify({
-        a: query.expectedNullableError,
+        a: query.thirdTry,
         b: query.__typename,
       })}
     </div>

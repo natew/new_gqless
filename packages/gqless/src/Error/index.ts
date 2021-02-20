@@ -52,3 +52,5 @@ export class gqlessError extends Error {
     return newError;
   }
 }
+
+export * from './retry';

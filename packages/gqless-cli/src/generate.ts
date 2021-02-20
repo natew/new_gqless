@@ -471,11 +471,15 @@ export async function generate(
     prettierConfigPromise,
   ]);
 
+  const hasUnions = !!unionsMap.size;
+
   const schemaCode = format(
     `
   ${preImport}
 
-  import { ScalarsEnumsHash, SchemaUnionsKey } from "@dish/gqless";
+  import { ScalarsEnumsHash${
+    hasUnions ? ', SchemaUnionsKey' : ''
+  } } from "@dish/gqless";
 
   ${codegenResult}
 
@@ -486,7 +490,7 @@ export async function generate(
     (acum, [key, value]) => {
       return `${JSON.stringify(key)}:${JSON.stringify(value)}, ${acum}`;
     },
-    unionsMap.size ? `[SchemaUnionsKey]: ${JSON.stringify(unionsMapObj)}` : ''
+    hasUnions ? `[SchemaUnionsKey]: ${JSON.stringify(unionsMapObj)}` : ''
   )}} as const;
 
   ${typescriptTypes}
