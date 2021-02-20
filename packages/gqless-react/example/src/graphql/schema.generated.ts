@@ -1,4 +1,4 @@
-import { ScalarsEnumsHash } from '@dish/gqless';
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -44,7 +44,7 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query';
+  __typename: 'Query' | null;
   expectedError?: Maybe<ScalarsEnums['Boolean']>;
   dogs: Array<Dog>;
   time: ScalarsEnums['String'];
@@ -52,21 +52,21 @@ export interface Query {
 }
 
 export interface Mutation {
-  __typename: 'Mutation';
+  __typename: 'Mutation' | null;
 }
 
 export interface Subscription {
-  __typename: 'Subscription';
+  __typename: 'Subscription' | null;
 }
 
 export interface Dog {
-  __typename: 'Dog';
+  __typename: 'Dog' | null;
   name: ScalarsEnums['String'];
   owner?: Maybe<Human>;
 }
 
 export interface Human {
-  __typename: 'Human';
+  __typename: 'Human' | null;
   name: ScalarsEnums['String'];
   dogs?: Maybe<Array<Dog>>;
 }

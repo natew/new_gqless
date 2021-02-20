@@ -22,6 +22,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  _FieldSet: any;
 };
 
 export type Dog = {
@@ -175,7 +176,7 @@ export type DogResolvers<
 > = {
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   owner?: Resolver<Maybe<ResolversTypes['Human']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type HumanResolvers<
@@ -184,7 +185,7 @@ export type HumanResolvers<
 > = {
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   dogs?: Resolver<Maybe<Array<ResolversTypes['Dog']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type QueryResolvers<
