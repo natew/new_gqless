@@ -26,8 +26,8 @@
     "test:watch-coverage": "rimraf coverage && mkdirp coverage/lcov-report && concurrently --raw \"tsdx test --watchAll\" \"serve -l 8787 coverage/lcov-report\" \"wait-on tcp:8787 coverage/lcov-report/index.html && open-cli http://localhost:8787\""
   },
   "dependencies": {
-    "lodash": "^4.17.20",
-    "lodash-es": "^4.17.20"
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@dish/gqless-cli": "workspace:^4.0.1",
@@ -37,7 +37,7 @@
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.1",
     "@types/tap": "^14.10.2",
-    "concurrently": "^5.3.0",
+    "concurrently": "^6.0.0",
     "graphql": "^15.5.0",
     "mercurius": "^7.1.0",
     "mkdirp": "^1.0.4",

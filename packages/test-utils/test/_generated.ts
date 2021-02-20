@@ -1,5 +1,3 @@
-import { MercuriusContext } from 'mercurius';
-import { FastifyReply } from 'fastify';
 import { GraphQLResolveInfo } from 'graphql';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -182,6 +180,7 @@ interface _DeepPartialArray<T> extends Array<DeepPartial<T>> {}
 type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 declare module 'mercurius' {
-  interface IResolvers extends Resolvers<MercuriusContext> {}
+  interface IResolvers
+    extends Resolvers<import('mercurius').MercuriusContext> {}
   interface MercuriusLoaders extends Loaders {}
 }

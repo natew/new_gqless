@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`create test app with codegen 1`] = `
-"import { MercuriusContext } from 'mercurius';
-import { FastifyReply } from 'fastify';
-import { GraphQLResolveInfo } from 'graphql';
+"import { GraphQLResolveInfo } from 'graphql';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
@@ -185,7 +183,8 @@ interface _DeepPartialArray<T> extends Array<DeepPartial<T>> {}
 type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 declare module 'mercurius' {
-  interface IResolvers extends Resolvers<MercuriusContext> {}
+  interface IResolvers
+    extends Resolvers<import('mercurius').MercuriusContext> {}
   interface MercuriusLoaders extends Loaders {}
 }
 "
