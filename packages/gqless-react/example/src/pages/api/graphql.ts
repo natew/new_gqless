@@ -62,12 +62,16 @@ const schema = gql`
     dogs: [Dog!]
   }
   type Query {
-    expectedError: Boolean
+    expectedError: Boolean!
+    expectedNullableError: Boolean
+    thirdTry: Boolean!
     dogs: [Dog!]!
     time: String!
     stringList: [String!]!
   }
 `;
+
+let nTries = 0;
 
 const resolvers: IResolvers = {
   Query: {
@@ -82,6 +86,16 @@ const resolvers: IResolvers = {
     },
     async expectedError() {
       throw Error('Expected error');
+    },
+    async expectedNullableError() {
+      throw Error('Expected error');
+    },
+    async thirdTry() {
+      if (++nTries >= 3) {
+        nTries = 0;
+        return true;
+      }
+      throw Error('nTries=' + nTries);
     },
   },
 };

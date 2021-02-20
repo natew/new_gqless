@@ -39,7 +39,9 @@ export type Human = {
 
 export type Query = {
   __typename?: 'Query';
-  expectedError?: Maybe<Scalars['Boolean']>;
+  expectedError: Scalars['Boolean'];
+  expectedNullableError?: Maybe<Scalars['Boolean']>;
+  thirdTry: Scalars['Boolean'];
   dogs: Array<Dog>;
   time: Scalars['String'];
   stringList: Array<Scalars['String']>;
@@ -192,11 +194,13 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  expectedError?: Resolver<
+  expectedError?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  expectedNullableError?: Resolver<
     Maybe<ResolversTypes['Boolean']>,
     ParentType,
     ContextType
   >;
+  thirdTry?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   dogs?: Resolver<Array<ResolversTypes['Dog']>, ParentType, ContextType>;
   time?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stringList?: Resolver<

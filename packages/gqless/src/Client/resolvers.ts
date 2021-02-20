@@ -1,4 +1,7 @@
-import { CacheInstance, createCache } from '../Cache';
+import type { ExecutionResult } from 'graphql';
+import lodashGet from 'lodash/get';
+
+import { CacheInstance, CacheNotFound, createCache } from '../Cache';
 import { gqlessError } from '../Error';
 import { FetchEventData } from '../Events';
 import { buildQuery } from '../QueryBuilder';
@@ -166,12 +169,16 @@ export function createResolvers(innerState: InnerClientState) {
       eventHandler.sendFetchPromise(loggingPromise.promise, selections);
     }
 
+    let executionData: ExecutionResult['data'];
     try {
       const executionResult = await queryFetcher(query, variables);
 
       const { data, errors } = executionResult;
 
-      if (data) cache.mergeCache(data, type);
+      if (data) {
+        cache.mergeCache(data, type);
+        executionData = data;
+      }
 
       if (errors?.length) {
         const error =
@@ -189,10 +196,6 @@ export function createResolvers(innerState: InnerClientState) {
             : new gqlessError(errors[0].message, {
                 graphQLErrors: errors,
               });
-
-        if (options.scheduler) {
-          innerState.scheduler.errors.triggerError(error, selections);
-        }
 
         throw error;
       } else if (options.scheduler) {
@@ -219,6 +222,49 @@ export function createResolvers(innerState: InnerClientState) {
         selections,
         type,
       });
+
+      if (options.scheduler) {
+        const gqlErrorsPaths = error.graphQLErrors
+          ?.map((err) =>
+            err.path
+              ?.filter(
+                (pathValue): pathValue is string =>
+                  typeof pathValue === 'string'
+              )
+              .join('.')
+          )
+          .filter((possiblePath): possiblePath is NonNullable<
+            typeof possiblePath
+          > => {
+            return !!possiblePath;
+          });
+        const selectionsWithErrors =
+          !gqlErrorsPaths?.length || !executionData
+            ? selections
+            : selections.filter((selection) => {
+                const selectionPathNoIndex = selection.noIndexSelections
+                  .slice(1)
+                  .join('.');
+
+                const selectionData = lodashGet(
+                  executionData,
+                  selectionPathNoIndex,
+                  CacheNotFound
+                );
+
+                switch (selectionData) {
+                  case CacheNotFound: {
+                    return true;
+                  }
+                  case null: {
+                    return gqlErrorsPaths.includes(selectionPathNoIndex);
+                  }
+                  default:
+                    return false;
+                }
+              });
+        innerState.scheduler.errors.triggerError(error, selectionsWithErrors);
+      }
 
       if (options.retry) {
         const currentErrorRetry = state.currentErrorRetry ?? 0;

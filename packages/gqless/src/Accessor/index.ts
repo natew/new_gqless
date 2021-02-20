@@ -120,6 +120,10 @@ export function AccessorCreators<
     schema,
     eventHandler,
     schemaUnions: { unions: schemaUnions, unionObjectTypesForSelections },
+    clientCache: schedulerClientCache,
+    scheduler: {
+      errors: { map: schedulerErrorsMap },
+    },
   } = innerState;
 
   const ResolveInfoSymbol = Symbol();
@@ -388,6 +392,8 @@ export function AccessorCreators<
     );
   }
 
+  const emptyScalarArray = Object.freeze([]);
+
   function createAccessor(
     schemaValue: Schema[string] | SchemaUnion,
     selectionArg: Selection,
@@ -495,12 +501,20 @@ export function AccessorCreators<
                   );
 
                   if (cacheValue === CacheNotFound) {
-                    // If cache was not found, add the selections to the queue
-                    interceptorManager.addSelection(selection);
-
                     innerState.foundValidCache = false;
 
-                    return isArray ? [] : null;
+                    /**
+                     * If cache was not found & the selection doesn't have errors,
+                     * add the selection to the queue
+                     */
+                    if (
+                      schedulerClientCache !== innerState.clientCache ||
+                      !schedulerErrorsMap.has(selection)
+                    ) {
+                      interceptorManager.addSelection(selection);
+                    }
+
+                    return isArray ? emptyScalarArray : null;
                   }
 
                   if (!innerState.allowCache) {

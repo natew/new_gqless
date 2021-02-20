@@ -27,7 +27,7 @@ const Comp = graphql(function Asd() {
         owner: dog.owner?.__typename ? 'has owner 😁' : 'no owner 😔',
       };
     });
-  });
+  }, {});
 
   const [n, dispatch] = useReducer(
     (state: number, action: 'add' | 'substact') => {
@@ -49,14 +49,12 @@ const Comp = graphql(function Asd() {
       <label>Depth: {n}</label>
       <button onClick={() => dispatch('add')}>add</button>
       <button onClick={() => dispatch('substact')}>substract</button>
-
       {!defaultSuspense && state.isLoading
         ? 'LOADING NO SUSPENSE'
         : JSON.stringify(selectFields(query.dogs, '*', n))}
       <br />
       <br />
-      {JSON.stringify(data, null, 2)}
-
+      useTransactionQuery: "{JSON.stringify(data, null, 2)}"
       <br />
       <button
         onClick={() => {

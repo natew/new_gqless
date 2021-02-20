@@ -102,6 +102,8 @@ export const createScheduler = (
   }
 
   function triggerError(newError: gqlessError, selections: Selection[]) {
+    if (!selections.length) return;
+
     for (const selection of selections) errorsMap.set(selection, newError);
 
     const data = {

@@ -191,8 +191,6 @@ describe('selection builder', () => {
       query,
     } = await createTestClient();
 
-    query;
-
     const selection = buildSelection('query', 'species', 'name');
 
     expect(selection.pathString).toBe('query.species.0.name');
