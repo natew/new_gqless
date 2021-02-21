@@ -21,5 +21,7 @@ export function createLazyPromise<T = void>(): LazyPromise<T> {
 
 export const isInteger = (v: any): v is number => Number.isInteger(v);
 
-export const isObject = (v: unknown): v is object =>
+export type AccessibleObject = Record<string | number | symbol, unknown>;
+
+export const isObject = (v: unknown): v is AccessibleObject =>
   v != null && typeof v === 'object';

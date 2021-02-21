@@ -1,225 +1,162 @@
-import lodashGet from 'lodash/get';
 import lodashSet from 'lodash/set';
-// import lodashMerge from 'lodash/mergeWith';
+import lodashMerge from 'lodash/mergeWith';
 
 import { Selection } from '../Selection';
-import { isObject } from '../Utils';
+import { AccessibleObject, isObject } from '../Utils';
 import { EventHandler } from '../Events';
 
 export const CacheNotFound = Symbol('Not Found');
 
 export type CacheType = Record<string, unknown>;
 
-// function mergeCustomizer(
-//   currentValue: unknown,
-//   incomingValue: unknown
-// ): unknown[] | void {
-//   if (
-//     Array.isArray(currentValue) &&
-//     Array.isArray(incomingValue) &&
-//     currentValue.length !== incomingValue.length
-//   ) {
-//     return incomingValue;
-//   }
-// }
+export function getId<
+  T extends { __typename?: unknown; id?: unknown; _id?: unknown }
+>(obj: T): string | void {
+  const __typename: unknown = obj.__typename;
+  const id: unknown = obj.id || obj._id;
 
-export function getId(obj: any): string | void {
-  if (typeof obj === 'object' && obj != null) {
-    const __typename: unknown = obj.__typename;
-    const id: unknown = obj.id || obj._id;
-
-    if (
-      (typeof id === 'string' || typeof id === 'number') &&
-      typeof __typename === 'string'
-    ) {
-      return __typename + id;
-    }
+  if (
+    (typeof id === 'string' || typeof id === 'number') &&
+    typeof __typename === 'string'
+  ) {
+    return __typename + id;
   }
 }
 
-export function createCache(eventHandler?: EventHandler) {
+export function createCache(_eventHandler?: EventHandler) {
   const cache: CacheType = {};
-
-  const normalizedCache: Record<string, object | undefined> = {};
+  const normalizedCache: Record<string, AccessibleObject | undefined> = {};
 
   function getCacheFromSelection(
-    selection: Selection,
+    selection: Pick<Selection, 'cachePath'>,
     notFoundValue: unknown = CacheNotFound
-  ) {
-    return lodashGet(cache, selection.cachePath, notFoundValue);
+  ): any {
+    let container: AccessibleObject | undefined;
+    let containerKey: string | number | undefined;
+
+    let currentValue: unknown = cache;
+
+    function getNormalized() {
+      let id: string | void;
+      let normalizedObject: AccessibleObject | undefined;
+      if (
+        isObject(currentValue) &&
+        (id = getId(currentValue)) &&
+        (normalizedObject = normalizedCache[id]) &&
+        normalizedObject !== currentValue
+      ) {
+        if (container && containerKey != null) {
+          container[containerKey] = normalizedObject;
+        }
+
+        currentValue = normalizedObject;
+      }
+    }
+
+    for (const key of selection.cachePath) {
+      if (isObject(currentValue)) {
+        getNormalized();
+
+        container = currentValue;
+        containerKey = key;
+
+        currentValue = currentValue[key];
+      } else {
+        return notFoundValue;
+      }
+    }
+
+    getNormalized();
+
+    return currentValue === undefined ? notFoundValue : currentValue;
   }
 
   function setCacheFromSelection(selection: Selection, value: unknown) {
-    const prevSelection = selection.selectionsList[
-      selection.selectionsList.length - 2
-    ] as Selection | undefined;
-
-    if (prevSelection) {
-      console.log(5858, prevSelection.pathString);
-      switch (prevSelection.pathString) {
-        // case 'query':
-        // case 'mutation':
-        // case 'subscription':
-        //   break;
-        default: {
-          const dataPrevSelection = lodashGet(cache, prevSelection.cachePath);
-
-          if (isObject(dataPrevSelection)) {
-            const id =
-              getId(dataPrevSelection) || `[${prevSelection.pathString}]`;
-
-            // console.log(
-            //   'set prev data before',
-            //   JSON.stringify(dataPrevSelection)
-            // );
-            const newData = Object.assign(
-              Array.isArray(dataPrevSelection) ? [] : {},
-              dataPrevSelection,
-              { [selection.key]: value }
-            );
-            normalizedCache[id] = newData;
-
-            setCacheFromSelection(prevSelection, newData);
-            eventHandler?.sendCacheChange({
-              data: newData,
-              selection: prevSelection,
-            });
-
-            // console.log(
-            //   'set prev data after',
-            //   JSON.stringify(dataPrevSelection)
-            // );
-          } else {
-            // console.log('no prev data', {
-            //   prevSelection: prevSelection.cachePath,
-            //   selection: selection.cachePath,
-            //   value,
-            // });
-            // const newData = { [selection.key]: value };
-            // setCacheFromSelection(prevSelection, newData);
-            // eventHandler?.sendCacheChange({
-            //   data: newData,
-            //   selection: prevSelection,
-            // });
-          }
-
-          break;
-        }
-      }
-    }
+    if (isObject(value)) scanNormalizedObjects(value);
 
     lodashSet(cache, selection.cachePath, value);
   }
 
-  function mergeCache(
-    data: unknown,
-    _prefix: 'query' | 'mutation' | 'subscription',
-    scalarSelections: Selection[]
-  ) {
-    const normalizableSelections = new Set<Selection>();
+  function mergeCustomizer(
+    currentValue: unknown,
+    incomingValue: unknown
+  ): object | void {
+    if (isObject(incomingValue) && isObject(currentValue)) {
+      const idNewValue = getId(incomingValue);
+      const idCurrentValue = getId(currentValue);
 
-    for (const selection of scalarSelections) {
-      for (const intermediateSelection of selection.selectionsList.slice(
-        0,
-        -1
-      )) {
-        normalizableSelections.add(intermediateSelection);
-      }
-    }
+      if (idNewValue) {
+        if (idNewValue === idCurrentValue) {
+          const currentObject = normalizedCache[idNewValue];
 
-    const sortedNormalizableSelection = Array.from(normalizableSelections);
-
-    sortedNormalizableSelection.sort(
-      (a, b) => b.selectionsList.length - a.selectionsList.length
-    );
-
-    for (const selection of sortedNormalizableSelection) {
-      const dataPath = selection.cachePath.slice(1);
-      const newData =
-        dataPath.length === 0
-          ? data
-          : lodashGet(data, selection.cachePath.slice(1));
-
-      let result: object;
-      if (isObject(newData)) {
-        const id = getId(newData) || `[${selection.pathString}]`;
-
-        const existingData = normalizedCache[id];
-
-        if (existingData) {
-          console.log(116, {
-            newData,
-            existingData,
-          });
-          if (Array.isArray(newData) && Array.isArray(existingData)) {
-            console.log(117, {
-              newData,
-              existingData,
-            });
-            if (newData.length !== existingData.length) {
-              result = normalizedCache[id] = newData;
-              console.log(119, result);
-            } else {
-              result = newData.map((newValue, index) => {
-                const existingValue = existingData[index];
-                if (isObject(newValue) && isObject(existingValue)) {
-                  const newValueCopy = { ...newValue };
-                  return Object.assign(newValue, existingValue, newValueCopy);
-                }
-                return newValue;
-              });
-            }
-          } else {
-            result = Object.assign({}, existingData, newData);
+          if (currentObject !== incomingValue) {
+            return (normalizedCache[idNewValue] = lodashMerge(
+              {},
+              currentObject,
+              incomingValue,
+              mergeCustomizer
+            ));
           }
-
-          switch (selection.pathString) {
-            case 'query':
-            case 'mutation':
-            case 'subscription':
-              continue;
-            default:
-              eventHandler?.sendCacheChange({
-                data: result,
-                selection,
-              });
-              break;
-          }
-        } else {
-          result = normalizedCache[id] = newData;
         }
+        return (normalizedCache[idNewValue] = incomingValue);
       } else {
-        result = newData;
       }
-
-      console.log(141, {
-        cachePath: selection.cachePath,
-        result,
-      });
-
-      lodashSet(cache, selection.cachePath, result);
-
-      // for (const selection of scalarSelections) {
-      //   setCacheFromSelection(
-      //     selection,
-      //     lodashGet(data, selection.cachePath.slice(1))
-      //   );
-      // }
-
-      // setCacheFromSelection(selection, newData);
     }
 
-    // for (const selection of scalarSelections) {
-    //   lodashSet(cache, selection.cachePath, lodashGet(data, selection.cachePath))
-    // }
-
-    // lodashMerge(cache, { [prefix]: data }, mergeCustomizer);
-
-    // Object.keys(normalizedCache).length &&
-    //   console.log('normalizedCache', JSON.stringify(normalizedCache, null, 2));
+    if (
+      Array.isArray(currentValue) &&
+      Array.isArray(incomingValue) &&
+      currentValue.length !== incomingValue.length
+    ) {
+      return incomingValue;
+    }
   }
 
-  return { cache, getCacheFromSelection, setCacheFromSelection, mergeCache };
+  function scanNormalizedObjects(data: Record<string, unknown>) {
+    const pendingObjects = new Set<AccessibleObject>([data]);
+
+    for (const container of pendingObjects) {
+      for (const [key, value] of Object.entries(container)) {
+        if (isObject(value)) {
+          const id = getId(value);
+
+          if (id) {
+            const currentValueNormalizedCache = normalizedCache[id];
+
+            if (currentValueNormalizedCache) {
+              container[key] = normalizedCache[id] = lodashMerge(
+                {},
+                currentValueNormalizedCache,
+                value,
+                mergeCustomizer
+              );
+            } else {
+              container[key] = normalizedCache[id] = value;
+            }
+          }
+
+          pendingObjects.add(value);
+        }
+      }
+    }
+  }
+
+  function mergeCache(
+    data: Record<string, unknown>,
+    prefix: 'query' | 'mutation' | 'subscription'
+  ) {
+    scanNormalizedObjects(data);
+    // TODO: Change lodash merge to use hand-made merge
+    lodashMerge(cache, { [prefix]: data }, mergeCustomizer);
+  }
+
+  return {
+    cache,
+    getCacheFromSelection,
+    setCacheFromSelection,
+    mergeCache,
+    normalizedCache,
+  };
 }
 
 export type CacheInstance = ReturnType<typeof createCache>;

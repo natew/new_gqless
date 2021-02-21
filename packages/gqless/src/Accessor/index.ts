@@ -245,9 +245,11 @@ export function AccessorCreators<
     selectionArg: Selection,
     unions?: string[]
   ) {
-    const arrayCacheValue = innerState.clientCache.getCacheFromSelection(
-      selectionArg
-    );
+    const arrayCacheValue:
+      | typeof CacheNotFound
+      | undefined
+      | null
+      | unknown[] = innerState.clientCache.getCacheFromSelection(selectionArg);
     if (innerState.allowCache && arrayCacheValue === null) return null;
 
     const proxyValue: unknown[] =
@@ -310,12 +312,12 @@ export function AccessorCreators<
               if (
                 innerState.allowCache &&
                 arrayCacheValue !== CacheNotFound &&
-                arrayCacheValue[index] == null
+                arrayCacheValue?.[index] == null
               ) {
                 /**
                  * If cache is enabled and arrayCacheValue[index] is 'null' or 'undefined', return it
                  */
-                return arrayCacheValue[index];
+                return arrayCacheValue?.[index];
               }
 
               const childAccessor = createAccessor(

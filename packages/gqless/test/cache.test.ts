@@ -1,8 +1,8 @@
+import { get } from 'lodash';
 import { assertIsDefined } from 'test-utils';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../src/Cache';
 import { Selection } from '../src/Selection';
-import { createSelectionManager } from '../src/Selection/SelectionManager';
 import { createTestClient } from './utils';
 
 describe('accessorCache', () => {
@@ -183,8 +183,7 @@ describe('dataCache', () => {
       {
         a: 1,
       },
-      'query',
-      [selection]
+      'query'
     );
 
     const data = cache.getCacheFromSelection(selection);
@@ -202,8 +201,7 @@ describe('dataCache', () => {
     await scheduler.resolving?.promise;
   });
 
-  test.only('merge works as it should with arrays', async () => {
-    const { getSelection } = createSelectionManager();
+  test('merge works as it should with arrays', () => {
     const { cache, mergeCache } = createCache();
 
     function expectCacheToBe(v: typeof cache) {
@@ -215,35 +213,6 @@ describe('dataCache', () => {
       }
     }
 
-    const querySelection = getSelection({
-      key: 'query',
-    });
-
-    const otherSelection = getSelection({
-      key: 'other',
-      prevSelection: querySelection,
-    });
-
-    const array1Selection = getSelection({
-      key: 'array1',
-      prevSelection: querySelection,
-    });
-
-    const array2Selection = getSelection({
-      key: 'array2',
-      prevSelection: querySelection,
-    });
-
-    const array2SelectionIndex = getSelection({
-      key: 0,
-      prevSelection: array2Selection,
-    });
-
-    const aArray2Selection = getSelection({
-      key: 'a',
-      prevSelection: array2SelectionIndex,
-    });
-
     mergeCache(
       {
         other: 123,
@@ -254,8 +223,7 @@ describe('dataCache', () => {
           },
         ],
       },
-      'query',
-      [otherSelection, array1Selection, aArray2Selection]
+      'query'
     );
 
     expectCacheToBe({
@@ -274,8 +242,7 @@ describe('dataCache', () => {
       {
         array1: [3],
       },
-      'query',
-      [array1Selection]
+      'query'
     );
 
     expectCacheToBe({
@@ -288,11 +255,6 @@ describe('dataCache', () => {
           },
         ],
       },
-    });
-
-    const bArray2Selection = getSelection({
-      key: 'b',
-      prevSelection: array2SelectionIndex,
     });
 
     mergeCache(
@@ -303,8 +265,7 @@ describe('dataCache', () => {
           },
         ],
       },
-      'query',
-      [bArray2Selection]
+      'query'
     );
 
     expectCacheToBe({
@@ -324,8 +285,7 @@ describe('dataCache', () => {
       {
         array2: [],
       },
-      'query',
-      [bArray2Selection]
+      'query'
     );
 
     expectCacheToBe({
@@ -350,8 +310,7 @@ describe('dataCache', () => {
           },
         ],
       },
-      'query',
-      []
+      'query'
     );
 
     expectCacheToBe({
@@ -376,8 +335,7 @@ describe('dataCache', () => {
       {
         array1: null,
       },
-      'query',
-      []
+      'query'
     );
 
     expectCacheToBe({
@@ -395,6 +353,161 @@ describe('dataCache', () => {
             e: 1,
           },
         ],
+      },
+    });
+  });
+});
+
+describe('data normalization', () => {
+  test('should work', async () => {
+    const {
+      cache,
+      mergeCache,
+      normalizedCache,
+      getCacheFromSelection,
+    } = createCache();
+
+    function expectCacheToBe(v: typeof normalizedCache) {
+      try {
+        expect(JSON.stringify(cache)).toBe(JSON.stringify(v));
+      } catch (err) {
+        Error.captureStackTrace(err, expectNormalizedCacheToBe);
+        throw err;
+      }
+    }
+    function expectNormalizedCacheToBe(v: typeof normalizedCache) {
+      try {
+        expect(JSON.stringify(normalizedCache)).toBe(JSON.stringify(v));
+      } catch (err) {
+        Error.captureStackTrace(err, expectNormalizedCacheToBe);
+        throw err;
+      }
+    }
+
+    mergeCache(
+      {
+        a: {
+          __typename: 'a',
+          id: 1,
+          v: 1,
+        },
+      },
+      'query'
+    );
+
+    expectNormalizedCacheToBe({
+      a1: {
+        __typename: 'a',
+        id: 1,
+        v: 1,
+      },
+    });
+
+    expectCacheToBe({
+      query: {
+        a: {
+          __typename: 'a',
+          id: 1,
+          v: 1,
+        },
+      },
+    });
+
+    mergeCache(
+      {
+        a: {
+          __typename: 'a',
+          id: 1,
+          g: 2,
+        },
+      },
+      'query'
+    );
+
+    expectNormalizedCacheToBe({
+      a1: {
+        __typename: 'a',
+        id: 1,
+        v: 1,
+        g: 2,
+      },
+    });
+
+    expectCacheToBe({
+      query: {
+        a: {
+          __typename: 'a',
+          id: 1,
+          v: 1,
+          g: 2,
+        },
+      },
+    });
+
+    mergeCache(
+      {
+        otherQuery: {
+          deep: {
+            __typename: 'a',
+            id: 1,
+            n: 3,
+          },
+        },
+      },
+      'query'
+    );
+
+    expectNormalizedCacheToBe({
+      a1: {
+        __typename: 'a',
+        id: 1,
+        v: 1,
+        g: 2,
+        n: 3,
+      },
+    });
+
+    // TODO FIX: getCacheFromSelection of non scalar should work anyways
+
+    const aData = getCacheFromSelection({
+      cachePath: ['query', 'a'],
+    });
+
+    expect(aData).toStrictEqual({ __typename: 'a', id: 1, v: 1, g: 2, n: 3 });
+
+    expect(get(cache, 'query.a')).toStrictEqual({
+      __typename: 'a',
+      id: 1,
+      v: 1,
+      g: 2,
+      n: 3,
+    });
+
+    expect(get(cache, 'query.a') === normalizedCache['a1']).toBeTruthy();
+
+    // TODO FIX: It should to "toBe", but lodash merge is messing things up
+    expect(get(cache, 'query.a')).toStrictEqual(
+      get(cache, 'query.otherQuery.deep')
+    );
+
+    expectCacheToBe({
+      query: {
+        a: {
+          __typename: 'a',
+          id: 1,
+          v: 1,
+          g: 2,
+          n: 3,
+        },
+        otherQuery: {
+          deep: {
+            __typename: 'a',
+            id: 1,
+            v: 1,
+            g: 2,
+            n: 3,
+          },
+        },
       },
     });
   });
