@@ -167,7 +167,7 @@ export function createResolvers(innerState: InnerClientState) {
       const { data, errors } = executionResult;
 
       if (data) {
-        cache.mergeCache(data, type);
+        cache.mergeCache(data, type, selections);
         executionData = data;
       }
 

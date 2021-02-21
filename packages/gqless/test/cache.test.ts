@@ -2,6 +2,7 @@ import { assertIsDefined } from 'test-utils';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../src/Cache';
 import { Selection } from '../src/Selection';
+import { createSelectionManager } from '../src/Selection/SelectionManager';
 import { createTestClient } from './utils';
 
 describe('accessorCache', () => {
@@ -182,7 +183,8 @@ describe('dataCache', () => {
       {
         a: 1,
       },
-      'query'
+      'query',
+      [selection]
     );
 
     const data = cache.getCacheFromSelection(selection);
@@ -200,7 +202,8 @@ describe('dataCache', () => {
     await scheduler.resolving?.promise;
   });
 
-  test('merge works as it should with arrays', () => {
+  test.only('merge works as it should with arrays', async () => {
+    const { getSelection } = createSelectionManager();
     const { cache, mergeCache } = createCache();
 
     function expectCacheToBe(v: typeof cache) {
@@ -212,6 +215,35 @@ describe('dataCache', () => {
       }
     }
 
+    const querySelection = getSelection({
+      key: 'query',
+    });
+
+    const otherSelection = getSelection({
+      key: 'other',
+      prevSelection: querySelection,
+    });
+
+    const array1Selection = getSelection({
+      key: 'array1',
+      prevSelection: querySelection,
+    });
+
+    const array2Selection = getSelection({
+      key: 'array2',
+      prevSelection: querySelection,
+    });
+
+    const array2SelectionIndex = getSelection({
+      key: 0,
+      prevSelection: array2Selection,
+    });
+
+    const aArray2Selection = getSelection({
+      key: 'a',
+      prevSelection: array2SelectionIndex,
+    });
+
     mergeCache(
       {
         other: 123,
@@ -222,7 +254,8 @@ describe('dataCache', () => {
           },
         ],
       },
-      'query'
+      'query',
+      [otherSelection, array1Selection, aArray2Selection]
     );
 
     expectCacheToBe({
@@ -241,7 +274,8 @@ describe('dataCache', () => {
       {
         array1: [3],
       },
-      'query'
+      'query',
+      [array1Selection]
     );
 
     expectCacheToBe({
@@ -254,6 +288,11 @@ describe('dataCache', () => {
           },
         ],
       },
+    });
+
+    const bArray2Selection = getSelection({
+      key: 'b',
+      prevSelection: array2SelectionIndex,
     });
 
     mergeCache(
@@ -264,7 +303,8 @@ describe('dataCache', () => {
           },
         ],
       },
-      'query'
+      'query',
+      [bArray2Selection]
     );
 
     expectCacheToBe({
@@ -284,7 +324,8 @@ describe('dataCache', () => {
       {
         array2: [],
       },
-      'query'
+      'query',
+      [bArray2Selection]
     );
 
     expectCacheToBe({
@@ -309,7 +350,8 @@ describe('dataCache', () => {
           },
         ],
       },
-      'query'
+      'query',
+      []
     );
 
     expectCacheToBe({
@@ -334,7 +376,8 @@ describe('dataCache', () => {
       {
         array1: null,
       },
-      'query'
+      'query',
+      []
     );
 
     expectCacheToBe({

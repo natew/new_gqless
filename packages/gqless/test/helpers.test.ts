@@ -250,7 +250,7 @@ describe('refetch function', () => {
     }
   });
 
-  test('refetch proxy selections', async () => {
+  test.only('refetch proxy selections', async () => {
     const { query, resolved, refetch, cache } = await createTestClient();
 
     const time1 = await resolved(() => query.time);

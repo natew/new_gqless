@@ -61,7 +61,9 @@ export function createClient<
 
   const accessorCache = createAccessorCache();
 
-  const clientCache = createCache();
+  const eventHandler = new EventHandler();
+
+  const clientCache = createCache(eventHandler);
 
   const selectionManager = createSelectionManager();
 
@@ -70,8 +72,6 @@ export function createClient<
     resolveSchedulerSelections,
     catchSelectionsTimeMS
   );
-
-  const eventHandler = new EventHandler();
 
   const innerState: InnerClientState = {
     allowCache: true,
