@@ -1,7 +1,7 @@
 import { stripIgnoredCharacters } from 'graphql/utilities/stripIgnoredCharacters';
-import lodashSet from 'lodash/set';
 
 import { Selection } from '../Selection';
+import { set } from '../Utils';
 
 interface SelectionTree {
   [P: string]: SelectionTree | true;
@@ -119,7 +119,7 @@ export const buildQuery = (
     selectionBranches.push(createSelectionBranch(selection.noIndexSelections));
 
     for (const branch of selectionBranches) {
-      lodashSet(selectionTree, branch, true);
+      set(selectionTree, branch, true);
     }
   }
 

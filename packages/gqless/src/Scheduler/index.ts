@@ -1,9 +1,8 @@
-import debounce from 'lodash/debounce';
 import { gqlessError } from '../Error';
-
 import { InterceptorManager } from '../Interceptor';
 import { Selection } from '../Selection';
 import { createLazyPromise, LazyPromise } from '../Utils';
+import { debounce } from '../Utils/debounce';
 
 export type Scheduler = ReturnType<typeof createScheduler>;
 

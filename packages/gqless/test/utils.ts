@@ -1,4 +1,3 @@
-import { merge } from 'lodash';
 import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '@dish/gqless-cli';
@@ -11,6 +10,7 @@ import {
   Schema,
   SchemaUnionsKey,
 } from '../src';
+import { merge } from '../src/Utils';
 
 export type Maybe<T> = T | null;
 export type Human = {
@@ -248,7 +248,7 @@ export const createTestClient = async (
       newNotification: void;
     };
   }>({
-    schema: merge(generatedSchema, addedToGeneratedSchema) as Schema,
+    schema: merge(generatedSchema, [addedToGeneratedSchema]) as Schema,
     scalarsEnumsHash,
     queryFetcher,
     ...clientConfig,

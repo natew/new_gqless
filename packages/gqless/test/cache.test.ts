@@ -1,8 +1,8 @@
-import { get } from 'lodash';
 import { assertIsDefined } from 'test-utils';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../src/Cache';
 import { Selection } from '../src/Selection';
+import { get } from '../src/Utils';
 import { createTestClient } from './utils';
 
 describe('accessorCache', () => {
@@ -482,12 +482,9 @@ describe('data normalization', () => {
       n: 3,
     });
 
-    expect(get(cache, 'query.a') === normalizedCache['a1']).toBeTruthy();
+    expect(get(cache, 'query.a')).toBe(normalizedCache['a1']);
 
-    // TODO FIX: It should to "toBe", but lodash merge is messing things up
-    expect(get(cache, 'query.a')).toStrictEqual(
-      get(cache, 'query.otherQuery.deep')
-    );
+    expect(get(cache, 'query.a')).toBe(get(cache, 'query.otherQuery.deep'));
 
     expectCacheToBe({
       query: {

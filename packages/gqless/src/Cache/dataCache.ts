@@ -1,9 +1,6 @@
-import lodashSet from 'lodash/set';
-import lodashMerge from 'lodash/mergeWith';
-
-import { Selection } from '../Selection';
-import { AccessibleObject, isObject, isObjectWithType } from '../Utils';
 import { EventHandler } from '../Events';
+import { Selection } from '../Selection';
+import { PlainObject, isObject, isObjectWithType, merge, set } from '../Utils';
 
 export const CacheNotFound = Symbol('Not Found');
 
@@ -25,20 +22,20 @@ export function getId<
 
 export function createCache(_eventHandler?: EventHandler) {
   const cache: CacheType = {};
-  const normalizedCache: Record<string, AccessibleObject | undefined> = {};
+  const normalizedCache: Record<string, PlainObject | undefined> = {};
 
   function getCacheFromSelection(
     selection: Pick<Selection, 'cachePath'>,
     notFoundValue: unknown = CacheNotFound
   ): any {
-    let container: AccessibleObject | undefined;
+    let container: PlainObject | undefined;
     let containerKey: string | number | undefined;
 
     let currentValue: unknown = cache;
 
     function getNormalized() {
       let id: string | void;
-      let normalizedObject: AccessibleObject | undefined;
+      let normalizedObject: PlainObject | undefined;
       if (
         isObject(currentValue) &&
         (id = getId(currentValue)) &&
@@ -57,10 +54,13 @@ export function createCache(_eventHandler?: EventHandler) {
       if (isObject(currentValue)) {
         getNormalized();
 
+        //@ts-expect-error
         container = currentValue;
         containerKey = key;
 
-        currentValue = currentValue[key];
+        currentValue =
+          //@ts-expect-error
+          currentValue[key];
       } else {
         return notFoundValue;
       }
@@ -74,14 +74,14 @@ export function createCache(_eventHandler?: EventHandler) {
   function setCacheFromSelection(selection: Selection, value: unknown) {
     if (isObject(value)) scanNormalizedObjects(value);
 
-    lodashSet(cache, selection.cachePath, value);
+    set(cache, selection.cachePath, value);
   }
 
   function mergeCustomizer(
-    currentValue: unknown,
-    incomingValue: unknown
+    currentValue: object,
+    incomingValue: object
   ): object | void {
-    if (isObject(incomingValue) && isObject(currentValue)) {
+    if (isObjectWithType(incomingValue)) {
       const idNewValue = getId(incomingValue);
       const idCurrentValue = getId(currentValue);
 
@@ -90,10 +90,9 @@ export function createCache(_eventHandler?: EventHandler) {
           const currentObject = normalizedCache[idNewValue];
 
           if (currentObject !== incomingValue) {
-            return (normalizedCache[idNewValue] = lodashMerge(
+            return (normalizedCache[idNewValue] = merge(
               {},
-              currentObject,
-              incomingValue,
+              [currentObject, incomingValue],
               mergeCustomizer
             ));
           }
@@ -112,8 +111,8 @@ export function createCache(_eventHandler?: EventHandler) {
     }
   }
 
-  function scanNormalizedObjects(data: Record<string, unknown>) {
-    const pendingObjects = new Set<AccessibleObject>([data]);
+  function scanNormalizedObjects(data: object) {
+    const pendingObjects = new Set<object>([data]);
 
     for (const container of pendingObjects) {
       for (const [key, value] of Object.entries(container)) {
@@ -124,13 +123,14 @@ export function createCache(_eventHandler?: EventHandler) {
             const currentValueNormalizedCache = normalizedCache[id];
 
             if (currentValueNormalizedCache) {
-              container[key] = normalizedCache[id] = lodashMerge(
+              //@ts-expect-error
+              container[key] = normalizedCache[id] = merge(
                 {},
-                currentValueNormalizedCache,
-                value,
+                [currentValueNormalizedCache, value],
                 mergeCustomizer
               );
             } else {
+              //@ts-expect-error
               container[key] = normalizedCache[id] = value;
             }
           }
@@ -146,8 +146,7 @@ export function createCache(_eventHandler?: EventHandler) {
     prefix: 'query' | 'mutation' | 'subscription'
   ) {
     scanNormalizedObjects(data);
-    // TODO: Change lodash merge to use hand-made merge
-    lodashMerge(cache, { [prefix]: data }, mergeCustomizer);
+    merge(cache, [{ [prefix]: data }], mergeCustomizer);
   }
 
   return {

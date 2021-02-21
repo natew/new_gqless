@@ -1,8 +1,5 @@
-import lodashGet from 'lodash/get';
-import lodashSet from 'lodash/set';
-
 import { CacheNotFound } from '../Cache';
-import { isObject } from '../Utils';
+import { get, isObject, set } from '../Utils';
 
 export function selectFields<A extends object | null | undefined>(
   accessor: A,
@@ -27,10 +24,10 @@ export function selectFields<A extends object | null | undefined>(
     if (recursionDepth > 0) {
       const allAccessorKeys = Object.keys(accessor);
       return allAccessorKeys.reduce((acum, fieldName) => {
-        const fieldValue: unknown = lodashGet(accessor, fieldName);
+        const fieldValue: unknown = get(accessor, fieldName);
 
         if (Array.isArray(fieldValue)) {
-          lodashSet(
+          set(
             acum,
             fieldName,
             fieldValue.map((value) => {
@@ -38,13 +35,13 @@ export function selectFields<A extends object | null | undefined>(
             })
           );
         } else if (isObject(fieldValue)) {
-          lodashSet(
+          set(
             acum,
             fieldName,
             selectFields(fieldValue, '*', recursionDepth - 1)
           );
         } else {
-          lodashSet(acum, fieldName, fieldValue);
+          set(acum, fieldName, fieldValue);
         }
         return acum;
       }, {} as NonNullable<A>);
@@ -54,12 +51,12 @@ export function selectFields<A extends object | null | undefined>(
   }
 
   return fields.reduce((acum, fieldName) => {
-    const fieldValue = lodashGet(accessor, fieldName, CacheNotFound);
+    const fieldValue = get(accessor, fieldName, CacheNotFound);
 
     if (fieldValue === CacheNotFound) return acum;
 
     if (Array.isArray(fieldValue)) {
-      lodashSet(
+      set(
         acum,
         fieldName,
         fieldValue.map((value) => {
@@ -67,9 +64,9 @@ export function selectFields<A extends object | null | undefined>(
         })
       );
     } else if (isObject(fieldValue)) {
-      lodashSet(acum, fieldName, selectFields(fieldValue, '*', recursionDepth));
+      set(acum, fieldName, selectFields(fieldValue, '*', recursionDepth));
     } else {
-      lodashSet(acum, fieldName, fieldValue);
+      set(acum, fieldName, fieldValue);
     }
 
     return acum;

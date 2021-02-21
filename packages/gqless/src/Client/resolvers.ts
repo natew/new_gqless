@@ -1,6 +1,4 @@
 import type { ExecutionResult } from 'graphql';
-import lodashGet from 'lodash/get';
-
 import { CacheInstance, CacheNotFound, createCache } from '../Cache';
 import { gqlessError } from '../Error';
 import { doRetry } from '../Error/retry';
@@ -8,7 +6,7 @@ import { FetchEventData } from '../Events';
 import { buildQuery } from '../QueryBuilder';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
-import { createLazyPromise, LazyPromise } from '../Utils';
+import { createLazyPromise, get, LazyPromise } from '../Utils';
 import { InnerClientState } from './client';
 
 export interface ResolveOptions<TData> {
@@ -237,7 +235,7 @@ export function createResolvers(innerState: InnerClientState) {
                   .slice(1)
                   .join('.');
 
-                const selectionData = lodashGet(
+                const selectionData = get(
                   executionData,
                   selectionPathNoIndex,
                   CacheNotFound
@@ -291,6 +289,7 @@ export function createResolvers(innerState: InnerClientState) {
             }
 
             const { error } = await retryPromise;
+
             if (error) throw error;
           },
         });
