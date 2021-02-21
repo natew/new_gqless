@@ -396,6 +396,37 @@ export function AccessorCreators<
 
   const emptyScalarArray = Object.freeze([]);
 
+  const querySelection = selectionManager.getSelection({
+    key: 'query',
+    type: SelectionType.Query,
+  });
+
+  const mutationSelection = selectionManager.getSelection({
+    key: 'mutation',
+    type: SelectionType.Mutation,
+  });
+
+  const subscriptionSelection = selectionManager.getSelection({
+    key: 'subscription',
+    type: SelectionType.Subscription,
+  });
+
+  function autoFetchTypename(prevSelection: Selection) {
+    switch (prevSelection) {
+      case querySelection:
+      case mutationSelection:
+      case subscriptionSelection:
+        return;
+      default:
+        interceptorManager.addSelection(
+          selectionManager.getSelection({
+            key: '__typename',
+            prevSelection: prevSelection,
+          })
+        );
+    }
+  }
+
   function createAccessor(
     schemaValue: Schema[string] | SchemaUnion,
     selectionArg: Selection,
@@ -514,6 +545,8 @@ export function AccessorCreators<
                       !schedulerErrorsMap.has(selection)
                     ) {
                       interceptorManager.addSelection(selection);
+
+                      autoFetchTypename(selectionArg);
                     }
 
                     return isArray ? emptyScalarArray : null;
@@ -522,6 +555,8 @@ export function AccessorCreators<
                   if (!innerState.allowCache) {
                     // Or if you are making the network fetch always
                     interceptorManager.addSelection(selection);
+
+                    autoFetchTypename(selectionArg);
                   }
 
                   return cacheValue;
@@ -575,45 +610,18 @@ export function AccessorCreators<
     return accessor;
   }
 
-  function createSchemaAccesor() {
-    return (new Proxy(
-      {
-        query: ProxySymbol,
-        mutation: ProxySymbol,
-        subscription: ProxySymbol,
-      },
-      {
-        get(target, key: string, receiver) {
-          const schemaType = schema[key];
-
-          if (schemaType) {
-            let type: SelectionType;
-            switch (key) {
-              case 'subscription': {
-                type = SelectionType.Subscription;
-                break;
-              }
-              case 'mutation': {
-                type = SelectionType.Mutation;
-                break;
-              }
-              default: {
-                type = SelectionType.Query;
-              }
-            }
-            const selection = selectionManager.getSelection({
-              key,
-              type,
-            });
-
-            return createAccessor(schemaType, selection);
-          }
-
-          return Reflect.get(target, key, receiver);
-        },
-      }
-    ) as unknown) as GeneratedSchema;
-  }
+  const query: GeneratedSchema['query'] = createAccessor(
+    schema.query,
+    querySelection
+  )!;
+  const mutation: GeneratedSchema['mutation'] = createAccessor(
+    schema.mutation,
+    mutationSelection
+  )!;
+  const subscription: GeneratedSchema['subscription'] = createAccessor(
+    schema.subscription,
+    subscriptionSelection
+  )!;
 
   function assignSelections<A extends object, B extends A>(
     source: A | null | undefined,
@@ -671,8 +679,10 @@ export function AccessorCreators<
   return {
     createAccessor,
     createArrayAccessor,
-    createSchemaAccesor,
     assignSelections,
     setCache,
+    query,
+    mutation,
+    subscription,
   };
 }

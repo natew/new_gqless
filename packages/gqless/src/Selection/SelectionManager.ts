@@ -75,14 +75,17 @@ export function createSelectionManager() {
   >) {
     let alias: string | undefined;
     let cacheKey = key + '';
-    const unionsString = unions ? ';' + unions.join(';') : '';
     if (args && argTypes) {
       alias = getVariableAlias(key, args, argTypes);
-      cacheKey = alias + unionsString;
+      cacheKey = alias;
     }
 
     if (prevSelection) {
-      cacheKey = prevSelection.pathString + '.' + cacheKey + unionsString;
+      cacheKey = prevSelection.pathString + '.' + cacheKey;
+    }
+
+    if (unions) {
+      cacheKey += ';' + unions.join(';');
     }
 
     let selection = selectionCache.get(cacheKey);

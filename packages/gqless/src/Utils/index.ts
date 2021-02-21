@@ -25,3 +25,7 @@ export type AccessibleObject = Record<string | number | symbol, unknown>;
 
 export const isObject = (v: unknown): v is AccessibleObject =>
   v != null && typeof v === 'object';
+
+export const isObjectWithType = <T extends { __typename: string }>(
+  v: unknown
+): v is T => isObject(v) && typeof v.__typename === 'string';

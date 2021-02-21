@@ -118,15 +118,13 @@ export function createClient<
 
   const refetch = createRefetch(innerState, resolveSelections);
 
-  const { createSchemaAccesor, setCache, assignSelections } = AccessorCreators(
-    innerState
-  );
-
-  const client: GeneratedSchema = createSchemaAccesor();
-
-  const query: GeneratedSchema['query'] = client.query;
-  const mutation: GeneratedSchema['mutation'] = client.mutation;
-  const subscription: GeneratedSchema['subscription'] = client.subscription;
+  const {
+    query,
+    mutation,
+    subscription,
+    setCache,
+    assignSelections,
+  } = AccessorCreators<GeneratedSchema>(innerState);
 
   const { hydrateCache, prepareRender } = createSSRHelpers({
     innerState,

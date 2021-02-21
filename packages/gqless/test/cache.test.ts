@@ -447,6 +447,7 @@ describe('data normalization', () => {
     mergeCache(
       {
         otherQuery: {
+          __typename: 'o',
           deep: {
             __typename: 'a',
             id: 1,
@@ -466,8 +467,6 @@ describe('data normalization', () => {
         n: 3,
       },
     });
-
-    // TODO FIX: getCacheFromSelection of non scalar should work anyways
 
     const aData = getCacheFromSelection({
       cachePath: ['query', 'a'],
@@ -500,6 +499,7 @@ describe('data normalization', () => {
           n: 3,
         },
         otherQuery: {
+          __typename: 'o',
           deep: {
             __typename: 'a',
             id: 1,

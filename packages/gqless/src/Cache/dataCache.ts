@@ -2,7 +2,7 @@ import lodashSet from 'lodash/set';
 import lodashMerge from 'lodash/mergeWith';
 
 import { Selection } from '../Selection';
-import { AccessibleObject, isObject } from '../Utils';
+import { AccessibleObject, isObject, isObjectWithType } from '../Utils';
 import { EventHandler } from '../Events';
 
 export const CacheNotFound = Symbol('Not Found');
@@ -117,7 +117,7 @@ export function createCache(_eventHandler?: EventHandler) {
 
     for (const container of pendingObjects) {
       for (const [key, value] of Object.entries(container)) {
-        if (isObject(value)) {
+        if (isObjectWithType(value)) {
           const id = getId(value);
 
           if (id) {

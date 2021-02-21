@@ -58,18 +58,6 @@ describe('accessor undefined paths', () => {
     expect(shouldBeUndefined).toBe(undefined);
   });
 
-  test('undefined schema root path', async () => {
-    const { mutation } = await createTestClient({
-      //@ts-expect-error
-      mutation: null,
-    });
-
-    //@ts-expect-error
-    const shouldBeUndefined = mutation.other;
-
-    expect(shouldBeUndefined).toBe(undefined);
-  });
-
   test('intentionally manipulated schema', async () => {
     const { query } = await createTestClient({
       query: {
