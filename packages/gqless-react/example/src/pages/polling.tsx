@@ -57,6 +57,7 @@ const Dogs = graphql(function Dogs() {
 
   return (
     <ul>
+      <li>XDXD {query.time}</li>
       {dogs.map((dog, index) => {
         return <DogComp key={index + 1} dog={dog} />;
       })}

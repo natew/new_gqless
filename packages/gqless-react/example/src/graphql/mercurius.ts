@@ -1,5 +1,3 @@
-import { MercuriusContext } from 'mercurius';
-import { FastifyReply } from 'fastify';
 import { GraphQLResolveInfo } from 'graphql';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -27,12 +25,14 @@ export type Scalars = {
 
 export type Dog = {
   __typename?: 'Dog';
+  id: Scalars['ID'];
   name: Scalars['String'];
   owner?: Maybe<Human>;
 };
 
 export type Human = {
   __typename?: 'Human';
+  id: Scalars['ID'];
   name: Scalars['String'];
   dogs?: Maybe<Array<Dog>>;
 };
@@ -45,6 +45,7 @@ export type Query = {
   dogs: Array<Dog>;
   time: Scalars['String'];
   stringList: Array<Scalars['String']>;
+  humans: Array<Human>;
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -157,6 +158,7 @@ export type DirectiveResolverFn<
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Dog: ResolverTypeWrapper<Dog>;
+  ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Human: ResolverTypeWrapper<Human>;
   Query: ResolverTypeWrapper<{}>;
@@ -166,6 +168,7 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Dog: Dog;
+  ID: Scalars['ID'];
   String: Scalars['String'];
   Human: Human;
   Query: {};
@@ -176,6 +179,7 @@ export type DogResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Dog'] = ResolversParentTypes['Dog']
 > = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   owner?: Resolver<Maybe<ResolversTypes['Human']>, ParentType, ContextType>;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -185,6 +189,7 @@ export type HumanResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes['Human'] = ResolversParentTypes['Human']
 > = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   dogs?: Resolver<Maybe<Array<ResolversTypes['Dog']>>, ParentType, ContextType>;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -208,6 +213,7 @@ export type QueryResolvers<
     ParentType,
     ContextType
   >;
+  humans?: Resolver<Array<ResolversTypes['Human']>, ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
@@ -228,7 +234,7 @@ type Loader<TReturn, TObj, TParams, TContext> = (
     params: TParams;
   }>,
   context: TContext & {
-    reply: FastifyReply;
+    reply: import('fastify').FastifyReply;
   }
 ) => Promise<Array<DeepPartial<TReturn>>>;
 type LoaderResolver<TReturn, TObj, TParams, TContext> =
@@ -240,14 +246,18 @@ type LoaderResolver<TReturn, TObj, TParams, TContext> =
       };
     };
 export interface Loaders<
-  TContext = MercuriusContext & { reply: FastifyReply }
+  TContext = import('mercurius').MercuriusContext & {
+    reply: import('fastify').FastifyReply;
+  }
 > {
   Dog?: {
+    id?: LoaderResolver<Scalars['ID'], Dog, {}, TContext>;
     name?: LoaderResolver<Scalars['String'], Dog, {}, TContext>;
     owner?: LoaderResolver<Maybe<Human>, Dog, {}, TContext>;
   };
 
   Human?: {
+    id?: LoaderResolver<Scalars['ID'], Human, {}, TContext>;
     name?: LoaderResolver<Scalars['String'], Human, {}, TContext>;
     dogs?: LoaderResolver<Maybe<Array<Dog>>, Human, {}, TContext>;
   };
@@ -264,6 +274,7 @@ interface _DeepPartialArray<T> extends Array<DeepPartial<T>> {}
 type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 declare module 'mercurius' {
-  interface IResolvers extends Resolvers<MercuriusContext> {}
+  interface IResolvers
+    extends Resolvers<import('mercurius').MercuriusContext> {}
   interface MercuriusLoaders extends Loaders {}
 }

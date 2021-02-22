@@ -62,9 +62,13 @@ importers:
       tslib: ^2.1.0
       typescript: ^4.1.5
   packages/gqless:
+    dependencies:
+      lodash: 4.17.21
+      lodash-es: 4.17.21
     devDependencies:
       '@dish/gqless-cli': link:../gqless-cli
       '@size-limit/preset-small-lib': 4.9.2_4fcf929cc5587035bc9d3445dfe6e237
+      '@types/lodash': 4.14.168
       '@types/node': 14.14.31
       '@types/react': 17.0.2
       '@types/react-dom': 17.0.1
@@ -91,12 +95,15 @@ importers:
     specifiers:
       '@dish/gqless-cli': workspace:^4.0.1
       '@size-limit/preset-small-lib': ^4.9.2
+      '@types/lodash': ^4.14.168
       '@types/node': ^14.14.31
       '@types/react': ^17.0.2
       '@types/react-dom': ^17.0.1
       '@types/tap': ^14.10.2
       concurrently: ^6.0.0
       graphql: ^15.5.0
+      lodash: ^4.17.21
+      lodash-es: ^4.17.21
       mercurius: ^7.1.0
       mkdirp: ^1.0.4
       nodemon: ^2.0.7
@@ -8922,6 +8929,10 @@ packages:
       node: '>=10'
     resolution:
       integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==
+  /lodash-es/4.17.21:
+    dev: false
+    resolution:
+      integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
   /lodash.debounce/4.0.8:
     dev: true
     resolution:

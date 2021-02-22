@@ -18,6 +18,7 @@ export interface Scalars {
 }
 
 export const scalarsEnumsHash: ScalarsEnumsHash = {
+  ID: true,
   String: true,
   Boolean: true,
 };
@@ -30,16 +31,19 @@ export const generatedSchema = {
     dogs: { __type: '[Dog!]!' },
     time: { __type: 'String!' },
     stringList: { __type: '[String!]!' },
+    humans: { __type: '[Human!]!' },
   },
   mutation: {},
   subscription: {},
   Dog: {
     __typename: { __type: 'String!' },
+    id: { __type: 'ID!' },
     name: { __type: 'String!' },
     owner: { __type: 'Human' },
   },
   Human: {
     __typename: { __type: 'String!' },
+    id: { __type: 'ID!' },
     name: { __type: 'String!' },
     dogs: { __type: '[Dog!]' },
   },
@@ -53,6 +57,7 @@ export interface Query {
   dogs: Array<Dog>;
   time: ScalarsEnums['String'];
   stringList: Array<ScalarsEnums['String']>;
+  humans: Array<Human>;
 }
 
 export interface Mutation {
@@ -65,12 +70,14 @@ export interface Subscription {
 
 export interface Dog {
   __typename: 'Dog' | null;
+  id: ScalarsEnums['ID'];
   name: ScalarsEnums['String'];
   owner?: Maybe<Human>;
 }
 
 export interface Human {
   __typename: 'Human' | null;
+  id: ScalarsEnums['ID'];
   name: ScalarsEnums['String'];
   dogs?: Maybe<Array<Dog>>;
 }

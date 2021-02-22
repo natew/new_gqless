@@ -1,6 +1,8 @@
+import merge from 'lodash/mergeWith';
+
 import { EventHandler } from '../Events';
 import { Selection } from '../Selection';
-import { PlainObject, isObject, isObjectWithType, merge, set } from '../Utils';
+import { isObject, isObjectWithType, PlainObject, set } from '../Utils';
 
 export const CacheNotFound = Symbol('Not Found');
 
@@ -97,7 +99,7 @@ export function createCache(eventHandler?: EventHandler) {
     currentValue: object,
     incomingValue: object
   ): object | void {
-    if (isObjectWithType(incomingValue)) {
+    if (isObjectWithType(incomingValue) && isObjectWithType(currentValue)) {
       const idNewValue = getId(incomingValue);
       const idCurrentValue = getId(currentValue);
 
@@ -108,7 +110,8 @@ export function createCache(eventHandler?: EventHandler) {
           if (currentObject !== incomingValue) {
             return (normalizedCache[idNewValue] = merge(
               {},
-              [currentObject, incomingValue],
+              currentObject,
+              incomingValue,
               onObjectMergeConflict
             ));
           }
@@ -142,7 +145,8 @@ export function createCache(eventHandler?: EventHandler) {
                 //@ts-expect-error
                 container[key] = normalizedCache[id] = data = merge(
                   {},
-                  [currentValueNormalizedCache, value],
+                  currentValueNormalizedCache,
+                  value,
                   onObjectMergeConflict
                 );
               } else {
@@ -176,7 +180,8 @@ export function createCache(eventHandler?: EventHandler) {
     prefix: 'query' | 'mutation' | 'subscription'
   ) {
     scanNormalizedObjects(data);
-    merge(cache, [{ [prefix]: data }], onObjectMergeConflict);
+
+    merge(cache, { [prefix]: data }, onObjectMergeConflict);
   }
 
   return {

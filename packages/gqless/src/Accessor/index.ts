@@ -411,22 +411,6 @@ export function AccessorCreators<
     type: SelectionType.Subscription,
   });
 
-  function autoFetchTypename(prevSelection: Selection) {
-    switch (prevSelection) {
-      case querySelection:
-      case mutationSelection:
-      case subscriptionSelection:
-        return;
-      default:
-        interceptorManager.addSelection(
-          selectionManager.getSelection({
-            key: '__typename',
-            prevSelection: prevSelection,
-          })
-        );
-    }
-  }
-
   function createAccessor(
     schemaValue: Schema[string] | SchemaUnion,
     selectionArg: Selection,
@@ -545,8 +529,6 @@ export function AccessorCreators<
                       !schedulerErrorsMap.has(selection)
                     ) {
                       interceptorManager.addSelection(selection);
-
-                      autoFetchTypename(selectionArg);
                     }
 
                     return isArray ? emptyScalarArray : null;
@@ -555,8 +537,6 @@ export function AccessorCreators<
                   if (!innerState.allowCache) {
                     // Or if you are making the network fetch always
                     interceptorManager.addSelection(selection);
-
-                    autoFetchTypename(selectionArg);
                   }
 
                   return cacheValue;

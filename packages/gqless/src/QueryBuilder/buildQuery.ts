@@ -119,6 +119,9 @@ export const buildQuery = (
     selectionBranches.push(createSelectionBranch(selection.noIndexSelections));
 
     for (const branch of selectionBranches) {
+      for (let i = 2; i < branch.length; ++i) {
+        set(selectionTree, [...branch.slice(0, i), '__typename'], true);
+      }
       set(selectionTree, branch, true);
     }
   }

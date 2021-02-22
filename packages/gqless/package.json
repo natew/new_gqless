@@ -28,6 +28,7 @@
   "devDependencies": {
     "@dish/gqless-cli": "workspace:^4.0.1",
     "@size-limit/preset-small-lib": "^4.9.2",
+    "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.31",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.1",
@@ -64,5 +65,9 @@
       "path": "dist/gqless.esm.js",
       "limit": "20 KB"
     }
-  ]
+  ],
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21"
+  }
 }

@@ -8,7 +8,7 @@ import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
 
 import { writeGenerate } from '@dish/gqless-cli';
 
-import type { Human } from '../../graphql/mercurius';
+import type { Dog, Human } from '../../graphql/mercurius';
 
 const app = Fastify();
 
@@ -18,15 +18,19 @@ db.push(
   '/dogs',
   [
     {
+      id: 1,
       name: 'a',
     },
     {
+      id: 2,
       name: 'b',
     },
     {
+      id: 3,
       name: 'c',
     },
     {
+      id: 4,
       name: 'd',
     },
   ],
@@ -37,9 +41,11 @@ db.push(
   '/humans',
   [
     {
+      id: 1,
       name: 'g',
     },
     {
+      id: 2,
       name: 'h',
     },
   ],
@@ -54,10 +60,12 @@ db.push('/dogOwners', {
 
 const schema = gql`
   type Dog {
+    id: ID!
     name: String!
     owner: Human
   }
   type Human {
+    id: ID!
     name: String!
     dogs: [Dog!]
   }
@@ -68,6 +76,7 @@ const schema = gql`
     dogs: [Dog!]!
     time: String!
     stringList: [String!]!
+    humans: [Human!]!
   }
 `;
 
@@ -75,6 +84,9 @@ let nTries = 0;
 
 const resolvers: IResolvers = {
   Query: {
+    humans() {
+      return db.getData('/humans');
+    },
     stringList() {
       return ['a', 'b', 'c'];
     },
@@ -113,23 +125,24 @@ const loaders: MercuriusLoaders = {
     async dogs(queries) {
       const dogOwners: Record<string, string> = db.getData('/dogOwners');
 
+      const dogs = db.getData('/dogs');
+
       const humanDogs = Object.entries(dogOwners).reduce(
         (acum, [dogName, humanName]) => {
           defaults(acum, {
             [humanName]: [],
           });
 
-          acum[humanName].push(dogName);
+          const dog = dogs.find((v: Dog) => v.name === dogName);
+          if (dog) acum[humanName].push(dog);
 
           return acum;
         },
-        {} as Record<string, string[]>
+        {} as Record<string, Dog[]>
       );
 
       return queries.map(({ obj }) => {
-        return humanDogs[obj.name]?.map((name) => ({
-          name,
-        }));
+        return humanDogs[obj.name]?.map((dog) => dog);
       });
     },
   },
