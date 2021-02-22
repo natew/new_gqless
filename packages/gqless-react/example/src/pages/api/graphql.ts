@@ -14,48 +14,43 @@ const app = Fastify();
 
 const db = new JsonDB(new Config('db.json', true, true, '/'));
 
-db.push(
-  '/dogs',
-  [
-    {
-      id: 1,
-      name: 'a',
-    },
-    {
-      id: 2,
-      name: 'b',
-    },
-    {
-      id: 3,
-      name: 'c',
-    },
-    {
-      id: 4,
-      name: 'd',
-    },
-  ],
-  true
-);
+const initialDogs = [
+  {
+    id: 1,
+    name: 'a',
+  },
+  {
+    id: 2,
+    name: 'b',
+  },
+  {
+    id: 3,
+    name: 'c',
+  },
+  {
+    id: 4,
+    name: 'd',
+  },
+];
+db.push('/dogs', initialDogs, true);
 
-db.push(
-  '/humans',
-  [
-    {
-      id: 1,
-      name: 'g',
-    },
-    {
-      id: 2,
-      name: 'h',
-    },
-  ],
-  true
-);
+const initialHumans = [
+  {
+    id: 1,
+    name: 'g',
+  },
+  {
+    id: 2,
+    name: 'h',
+  },
+];
+
+db.push('/humans', initialHumans, true);
 
 db.push('/dogOwners', {
-  a: 'g',
-  b: 'g',
-  c: 'h',
+  1: 1,
+  2: 1,
+  3: 2,
 });
 
 const schema = gql`
@@ -77,6 +72,10 @@ const schema = gql`
     time: String!
     stringList: [String!]!
     humans: [Human!]!
+  }
+  type Mutation {
+    renameDog(id: ID!, name: String!): Dog
+    renameHuman(id: ID!, name: String!): Human
   }
 `;
 
@@ -110,31 +109,65 @@ const resolvers: IResolvers = {
       throw Error('nTries=' + nTries);
     },
   },
+  Mutation: {
+    renameDog(_root, { id, name }) {
+      const dog = initialDogs.find((v) => {
+        return v.id + '' === id;
+      });
+
+      if (dog) {
+        db.push('/dogs', initialDogs, true);
+        dog.name = name;
+        return {
+          ...dog,
+          id: dog.id + '',
+        };
+      }
+
+      return null;
+    },
+    renameHuman(_root, { id, name }) {
+      const human = initialHumans.find((v) => {
+        return v.id + '' === id;
+      });
+
+      if (human) {
+        human.name = name;
+        db.push('/humans', initialHumans, true);
+        return {
+          ...human,
+          id: human.id + '',
+        };
+      }
+
+      return null;
+    },
+  },
 };
 const loaders: MercuriusLoaders = {
   Dog: {
     async owner(queries) {
       const dogOwners: Record<string, string> = db.getData('/dogOwners');
-      const humans = keyBy(db.getData('/humans') as Array<Human>, 'name');
+      const humans = keyBy(db.getData('/humans') as Array<Human>, 'id');
       return queries.map(({ obj }) => {
-        return humans[dogOwners[obj.name]];
+        return humans[dogOwners[obj.id]];
       });
     },
   },
   Human: {
     async dogs(queries) {
-      const dogOwners: Record<string, string> = db.getData('/dogOwners');
+      const dogOwners: Record<number, number> = db.getData('/dogOwners');
 
       const dogs = db.getData('/dogs');
 
       const humanDogs = Object.entries(dogOwners).reduce(
-        (acum, [dogName, humanName]) => {
+        (acum, [dogId, humanId]) => {
           defaults(acum, {
-            [humanName]: [],
+            [humanId]: [],
           });
 
-          const dog = dogs.find((v: Dog) => v.name === dogName);
-          if (dog) acum[humanName].push(dog);
+          const dog = dogs.find((v: Dog) => v.id == dogId);
+          if (dog) acum[humanId].push(dog);
 
           return acum;
         },
@@ -142,7 +175,7 @@ const loaders: MercuriusLoaders = {
       );
 
       return queries.map(({ obj }) => {
-        return humanDogs[obj.name]?.map((dog) => dog);
+        return humanDogs[obj.id]?.map((dog) => dog);
       });
     },
   },

@@ -134,7 +134,9 @@ export function createCache(eventHandler?: EventHandler) {
 
     for (const container of pendingObjects) {
       for (const [key, value] of Object.entries(container)) {
-        if (isObjectWithType(value)) {
+        if (Array.isArray(value)) {
+          pendingObjects.add(value);
+        } else if (isObjectWithType(value)) {
           const id = getId(value);
           let data = value;
           if (id) {
@@ -143,11 +145,10 @@ export function createCache(eventHandler?: EventHandler) {
             if (currentValueNormalizedCache !== value) {
               if (currentValueNormalizedCache) {
                 //@ts-expect-error
-                container[key] = normalizedCache[id] = data = merge(
+                container[key] = normalizedCache[id] = data = Object.assign(
                   {},
                   currentValueNormalizedCache,
-                  value,
-                  onObjectMergeConflict
+                  value
                 );
               } else {
                 //@ts-expect-error
@@ -166,6 +167,8 @@ export function createCache(eventHandler?: EventHandler) {
                   }
                 }
               }
+            } else {
+              continue;
             }
           }
 

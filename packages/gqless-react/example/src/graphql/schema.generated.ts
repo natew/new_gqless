@@ -33,7 +33,11 @@ export const generatedSchema = {
     stringList: { __type: '[String!]!' },
     humans: { __type: '[Human!]!' },
   },
-  mutation: {},
+  mutation: {
+    __typename: { __type: 'String!' },
+    renameDog: { __type: 'Dog', __args: { id: 'ID!', name: 'String!' } },
+    renameHuman: { __type: 'Human', __args: { id: 'ID!', name: 'String!' } },
+  },
   subscription: {},
   Dog: {
     __typename: { __type: 'String!' },
@@ -62,6 +66,14 @@ export interface Query {
 
 export interface Mutation {
   __typename: 'Mutation' | null;
+  renameDog: (args: {
+    id: ScalarsEnums['ID'];
+    name: ScalarsEnums['String'];
+  }) => Maybe<Dog>;
+  renameHuman: (args: {
+    id: ScalarsEnums['ID'];
+    name: ScalarsEnums['String'];
+  }) => Maybe<Human>;
 }
 
 export interface Subscription {

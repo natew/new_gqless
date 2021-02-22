@@ -120,7 +120,12 @@ export const buildQuery = (
 
     for (const branch of selectionBranches) {
       for (let i = 2; i < branch.length; ++i) {
-        set(selectionTree, [...branch.slice(0, i), '__typename'], true);
+        const typenameBranch = branch.slice(0, i);
+        if (typenameBranch[typenameBranch.length - 1]?.startsWith('...')) {
+          continue;
+        } else typenameBranch.push('__typename');
+
+        set(selectionTree, typenameBranch, true);
       }
       set(selectionTree, branch, true);
     }

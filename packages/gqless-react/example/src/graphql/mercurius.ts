@@ -13,6 +13,10 @@ export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   context: TContext,
   info: GraphQLResolveInfo
 ) => Promise<DeepPartial<TResult>> | DeepPartial<TResult>;
+export type RequireFields<T, K extends keyof T> = {
+  [X in Exclude<keyof T, K>]?: T[X];
+} &
+  { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -46,6 +50,22 @@ export type Query = {
   time: Scalars['String'];
   stringList: Array<Scalars['String']>;
   humans: Array<Human>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  renameDog?: Maybe<Dog>;
+  renameHuman?: Maybe<Human>;
+};
+
+export type MutationrenameDogArgs = {
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
+export type MutationrenameHumanArgs = {
+  id: Scalars['ID'];
+  name: Scalars['String'];
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -163,6 +183,7 @@ export type ResolversTypes = {
   Human: ResolverTypeWrapper<Human>;
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  Mutation: ResolverTypeWrapper<{}>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -173,6 +194,7 @@ export type ResolversParentTypes = {
   Human: Human;
   Query: {};
   Boolean: Scalars['Boolean'];
+  Mutation: {};
 };
 
 export type DogResolvers<
@@ -216,10 +238,29 @@ export type QueryResolvers<
   humans?: Resolver<Array<ResolversTypes['Human']>, ParentType, ContextType>;
 };
 
+export type MutationResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']
+> = {
+  renameDog?: Resolver<
+    Maybe<ResolversTypes['Dog']>,
+    ParentType,
+    ContextType,
+    RequireFields<MutationrenameDogArgs, 'id' | 'name'>
+  >;
+  renameHuman?: Resolver<
+    Maybe<ResolversTypes['Human']>,
+    ParentType,
+    ContextType,
+    RequireFields<MutationrenameHumanArgs, 'id' | 'name'>
+  >;
+};
+
 export type Resolvers<ContextType = any> = {
   Dog?: DogResolvers<ContextType>;
   Human?: HumanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
 };
 
 /**
