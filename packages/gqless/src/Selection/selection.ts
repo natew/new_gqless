@@ -28,9 +28,10 @@ export class Selection {
   cachePath: readonly (string | number)[] = [];
   pathString: string;
 
+  selectionsList: readonly Selection[];
+
   noIndexSelections: readonly Selection[];
   noIndexSelectionsString: string;
-  selectionsList: readonly Selection[];
 
   constructor({
     key,
@@ -58,17 +59,26 @@ export class Selection {
       ? prevSelection.pathString + '.' + pathKey
       : pathKey.toString();
 
-    const prevIndexSelections = prevSelection?.noIndexSelections || [];
+    const prevSelectionsList = prevSelection?.selectionsList || [];
 
-    this.selectionsList = [...prevIndexSelections, this];
+    this.selectionsList = [...prevSelectionsList, this];
+
+    const prevNoSelectionsList = prevSelection?.noIndexSelections || [];
 
     this.noIndexSelections =
-      typeof key === 'string' ? this.selectionsList : prevIndexSelections;
+      typeof key === 'string'
+        ? [...prevNoSelectionsList, this]
+        : prevNoSelectionsList;
 
     const prevNoIndexString = prevSelection?.noIndexSelectionsString || '';
     this.noIndexSelectionsString =
       typeof key === 'number'
         ? prevNoIndexString
         : prevNoIndexString + '.' + key;
+
+    // If both lists have the same length, we can assume they are the same and save some memory
+    if (this.selectionsList.length === this.noIndexSelections.length) {
+      this.noIndexSelections = this.selectionsList;
+    }
   }
 }

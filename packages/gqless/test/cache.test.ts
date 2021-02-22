@@ -468,9 +468,15 @@ describe('data normalization', () => {
       },
     });
 
-    const aData = getCacheFromSelection({
-      cachePath: ['query', 'a'],
+    const querySelection = new Selection({
+      key: 'query',
     });
+    const aSelection = new Selection({
+      key: 'a',
+      prevSelection: querySelection,
+    });
+
+    const aData = getCacheFromSelection(aSelection);
 
     expect(aData).toStrictEqual({ __typename: 'a', id: 1, v: 1, g: 2, n: 3 });
 

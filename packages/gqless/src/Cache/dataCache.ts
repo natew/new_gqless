@@ -20,12 +20,14 @@ export function getId<
   }
 }
 
-export function createCache(_eventHandler?: EventHandler) {
+export function createCache(eventHandler?: EventHandler) {
   const cache: CacheType = {};
   const normalizedCache: Record<string, PlainObject | undefined> = {};
 
+  const normalizedSelections = new Map<string, Set<Selection>>();
+
   function getCacheFromSelection(
-    selection: Pick<Selection, 'cachePath'>,
+    selection: Selection,
     notFoundValue: unknown = CacheNotFound
   ): any {
     let container: PlainObject | undefined;
@@ -33,24 +35,38 @@ export function createCache(_eventHandler?: EventHandler) {
 
     let currentValue: unknown = cache;
 
+    let currentSelection: Selection;
+
     function getNormalized() {
       let id: string | void;
-      let normalizedObject: PlainObject | undefined;
-      if (
-        isObject(currentValue) &&
-        (id = getId(currentValue)) &&
-        (normalizedObject = normalizedCache[id]) &&
-        normalizedObject !== currentValue
-      ) {
-        if (container && containerKey != null) {
-          container[containerKey] = normalizedObject;
+      if (isObject(currentValue) && (id = getId(currentValue))) {
+        let selectionsSet = normalizedSelections.get(id);
+        if (!selectionsSet) {
+          selectionsSet = new Set();
+          normalizedSelections.set(id, selectionsSet);
         }
 
-        currentValue = normalizedObject;
+        selectionsSet.add(currentSelection);
+
+        let normalizedObject: PlainObject | undefined;
+
+        if (
+          (normalizedObject = normalizedCache[id]) &&
+          normalizedObject !== currentValue
+        ) {
+          if (container && containerKey != null) {
+            container[containerKey] = normalizedObject;
+          }
+
+          currentValue = normalizedObject;
+        }
       }
     }
 
-    for (const key of selection.cachePath) {
+    for (const selectionValue of selection.selectionsList) {
+      currentSelection = selectionValue;
+      const key = selectionValue.alias || selectionValue.key;
+
       if (isObject(currentValue)) {
         getNormalized();
 
@@ -77,7 +93,7 @@ export function createCache(_eventHandler?: EventHandler) {
     set(cache, selection.cachePath, value);
   }
 
-  function mergeCustomizer(
+  function onObjectMergeConflict(
     currentValue: object,
     incomingValue: object
   ): object | void {
@@ -93,12 +109,11 @@ export function createCache(_eventHandler?: EventHandler) {
             return (normalizedCache[idNewValue] = merge(
               {},
               [currentObject, incomingValue],
-              mergeCustomizer
+              onObjectMergeConflict
             ));
           }
         }
         return (normalizedCache[idNewValue] = incomingValue);
-      } else {
       }
     }
 
@@ -111,31 +126,46 @@ export function createCache(_eventHandler?: EventHandler) {
     }
   }
 
-  function scanNormalizedObjects(data: object) {
-    const pendingObjects = new Set<object>([data]);
+  function scanNormalizedObjects(obj: object) {
+    const pendingObjects = new Set<object>([obj]);
 
     for (const container of pendingObjects) {
       for (const [key, value] of Object.entries(container)) {
         if (isObjectWithType(value)) {
           const id = getId(value);
-
+          let data = value;
           if (id) {
             const currentValueNormalizedCache = normalizedCache[id];
 
-            if (currentValueNormalizedCache) {
-              //@ts-expect-error
-              container[key] = normalizedCache[id] = merge(
-                {},
-                [currentValueNormalizedCache, value],
-                mergeCustomizer
-              );
-            } else {
-              //@ts-expect-error
-              container[key] = normalizedCache[id] = value;
+            if (currentValueNormalizedCache !== value) {
+              if (currentValueNormalizedCache) {
+                //@ts-expect-error
+                container[key] = normalizedCache[id] = data = merge(
+                  {},
+                  [currentValueNormalizedCache, value],
+                  onObjectMergeConflict
+                );
+              } else {
+                //@ts-expect-error
+                container[key] = normalizedCache[id] = value;
+              }
+
+              if (eventHandler) {
+                const selections = normalizedSelections.get(id);
+
+                if (selections) {
+                  for (const selection of selections) {
+                    eventHandler.sendCacheChange({
+                      data,
+                      selection,
+                    });
+                  }
+                }
+              }
             }
           }
 
-          pendingObjects.add(value);
+          pendingObjects.add(data);
         }
       }
     }
@@ -146,7 +176,7 @@ export function createCache(_eventHandler?: EventHandler) {
     prefix: 'query' | 'mutation' | 'subscription'
   ) {
     scanNormalizedObjects(data);
-    merge(cache, [{ [prefix]: data }], mergeCustomizer);
+    merge(cache, [{ [prefix]: data }], onObjectMergeConflict);
   }
 
   return {
