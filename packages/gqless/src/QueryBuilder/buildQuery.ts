@@ -1,4 +1,5 @@
 import { stripIgnoredCharacters } from 'graphql/utilities/stripIgnoredCharacters';
+import { NormalizationHandler } from '../Normalization';
 
 import { Selection } from '../Selection';
 import { set } from '../Utils';
@@ -30,7 +31,8 @@ export const buildQuery = (
     type,
   }: {
     type: 'query' | 'mutation' | 'subscription';
-  }
+  },
+  normalization?: NormalizationHandler
 ) => {
   let variableId = 1;
 
@@ -119,14 +121,17 @@ export const buildQuery = (
     selectionBranches.push(createSelectionBranch(selection.noIndexSelections));
 
     for (const branch of selectionBranches) {
-      for (let i = 2; i < branch.length; ++i) {
-        const typenameBranch = branch.slice(0, i);
-        if (typenameBranch[typenameBranch.length - 1]?.startsWith('...')) {
-          continue;
-        } else typenameBranch.push('__typename');
+      if (normalization) {
+        for (let i = 2; i < branch.length; ++i) {
+          const typenameBranch = branch.slice(0, i);
+          if (typenameBranch[typenameBranch.length - 1]?.startsWith('...')) {
+            continue;
+          } else typenameBranch.push('__typename');
 
-        set(selectionTree, typenameBranch, true);
+          set(selectionTree, typenameBranch, true);
+        }
       }
+
       set(selectionTree, branch, true);
     }
   }

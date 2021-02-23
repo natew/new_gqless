@@ -17,10 +17,15 @@ export interface Scalars {
   Float: number;
 }
 
+export interface inputTypeExample {
+  a: Scalars['String'];
+}
+
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   ID: true,
   String: true,
   Boolean: true,
+  Int: true,
 };
 export const generatedSchema = {
   query: {
@@ -37,6 +42,7 @@ export const generatedSchema = {
     __typename: { __type: 'String!' },
     renameDog: { __type: 'Dog', __args: { id: 'ID!', name: 'String!' } },
     renameHuman: { __type: 'Human', __args: { id: 'ID!', name: 'String!' } },
+    other: { __type: 'Int', __args: { arg: 'inputTypeExample!' } },
   },
   subscription: {},
   Dog: {
@@ -51,6 +57,7 @@ export const generatedSchema = {
     name: { __type: 'String!' },
     dogs: { __type: '[Dog!]' },
   },
+  inputTypeExample: { a: { __type: 'String!' } },
 } as const;
 
 export interface Query {
@@ -74,6 +81,7 @@ export interface Mutation {
     id: ScalarsEnums['ID'];
     name: ScalarsEnums['String'];
   }) => Maybe<Human>;
+  other: (args: { arg: inputTypeExample }) => Maybe<ScalarsEnums['Int']>;
 }
 
 export interface Subscription {

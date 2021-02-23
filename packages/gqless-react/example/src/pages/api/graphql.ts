@@ -76,6 +76,10 @@ const schema = gql`
   type Mutation {
     renameDog(id: ID!, name: String!): Dog
     renameHuman(id: ID!, name: String!): Human
+    other(arg: inputTypeExample!): Int
+  }
+  input inputTypeExample {
+    a: String!
   }
 `;
 

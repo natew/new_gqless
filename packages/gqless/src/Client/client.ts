@@ -1,4 +1,8 @@
-import { AccessorCreators, createSchemaUnions } from '../Accessor';
+import {
+  AccessorCreators,
+  createSchemaUnions,
+  SchemaUnions,
+} from '../Accessor';
 import {
   AccessorCache,
   CacheInstance,
@@ -9,6 +13,11 @@ import { EventHandler } from '../Events';
 import { createRefetch } from '../Helpers/refetch';
 import { createSSRHelpers } from '../Helpers/ssr';
 import { createInterceptorManager, InterceptorManager } from '../Interceptor';
+import {
+  createNormalizationHandler,
+  NormalizationHandler,
+  NormalizationOptions,
+} from '../Normalization';
 import { createScheduler, Scheduler } from '../Scheduler';
 import { QueryFetcher, ScalarsEnumsHash, Schema } from '../Schema/types';
 import { Selection } from '../Selection/selection';
@@ -31,7 +40,8 @@ export interface InnerClientState {
   readonly schema: Readonly<Schema>;
   readonly scalarsEnumsHash: Readonly<ScalarsEnumsHash>;
   readonly queryFetcher: QueryFetcher;
-  readonly schemaUnions: ReturnType<typeof createSchemaUnions>;
+  readonly schemaUnions: SchemaUnions;
+  readonly normalizationHandler: NormalizationHandler;
 }
 
 export interface ClientOptions {
@@ -40,6 +50,7 @@ export interface ClientOptions {
   queryFetcher: QueryFetcher;
   catchSelectionsTimeMS?: number;
   retry?: RetryOptions;
+  normalization?: NormalizationOptions | boolean;
 }
 
 export function createClient<
@@ -54,6 +65,7 @@ export function createClient<
   queryFetcher,
   catchSelectionsTimeMS = 10,
   retry,
+  normalization = true,
 }: ClientOptions) {
   const interceptorManager = createInterceptorManager();
 
@@ -63,7 +75,13 @@ export function createClient<
 
   const eventHandler = new EventHandler();
 
-  const clientCache = createCache(eventHandler);
+  const normalizationHandler = createNormalizationHandler(
+    normalization,
+    eventHandler,
+    schema
+  );
+
+  const clientCache = createCache(normalizationHandler);
 
   const selectionManager = createSelectionManager();
 
@@ -86,6 +104,7 @@ export function createClient<
     eventHandler,
     queryFetcher,
     schemaUnions: createSchemaUnions(schema),
+    normalizationHandler,
   };
 
   const {

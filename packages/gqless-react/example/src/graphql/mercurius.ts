@@ -56,6 +56,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   renameDog?: Maybe<Dog>;
   renameHuman?: Maybe<Human>;
+  other?: Maybe<Scalars['Int']>;
 };
 
 export type MutationrenameDogArgs = {
@@ -66,6 +67,14 @@ export type MutationrenameDogArgs = {
 export type MutationrenameHumanArgs = {
   id: Scalars['ID'];
   name: Scalars['String'];
+};
+
+export type MutationotherArgs = {
+  arg: inputTypeExample;
+};
+
+export type inputTypeExample = {
+  a: Scalars['String'];
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -184,6 +193,8 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Mutation: ResolverTypeWrapper<{}>;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
+  inputTypeExample: inputTypeExample;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -195,6 +206,8 @@ export type ResolversParentTypes = {
   Query: {};
   Boolean: Scalars['Boolean'];
   Mutation: {};
+  Int: Scalars['Int'];
+  inputTypeExample: inputTypeExample;
 };
 
 export type DogResolvers<
@@ -253,6 +266,12 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<MutationrenameHumanArgs, 'id' | 'name'>
+  >;
+  other?: Resolver<
+    Maybe<ResolversTypes['Int']>,
+    ParentType,
+    ContextType,
+    RequireFields<MutationotherArgs, 'arg'>
   >;
 };
 

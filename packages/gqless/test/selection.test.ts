@@ -200,7 +200,10 @@ describe('selection builder', () => {
     expect(result).toMatchSnapshot();
 
     expect({
-      species: query.species.map(({ name }) => ({ name })),
+      species: query.species.map(({ __typename, name }) => ({
+        __typename,
+        name,
+      })),
     }).toStrictEqual(result);
   });
 

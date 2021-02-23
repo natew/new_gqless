@@ -6,7 +6,11 @@ export const isObject = (v: unknown): v is object =>
 export const isPlainObject = (v: unknown): v is PlainObject =>
   isObject(v) && !Array.isArray(v);
 
-export const isObjectWithType = <T extends { __typename: string }>(
+export interface ObjectWithType extends Record<string, unknown> {
+  __typename: string;
+}
+
+export const isObjectWithType = <T extends ObjectWithType>(
   v: unknown
 ): v is T => isPlainObject(v) && typeof v.__typename === 'string';
 

@@ -9,7 +9,7 @@ import {
   Type,
 } from '../Schema';
 import { Selection, SelectionType } from '../Selection';
-import { isInteger, isObject } from '../Utils';
+import { isInteger, isObject, isObjectWithType } from '../Utils';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
@@ -39,6 +39,8 @@ export class SchemaUnion {
   >;
   combinedTypes!: Record<string, Type>;
 }
+
+export type SchemaUnions = ReturnType<typeof createSchemaUnions>;
 
 export function createSchemaUnions(schema: Readonly<Schema>) {
   const unionObjectTypesForSelections: Record<string, [string]> = {};
@@ -124,6 +126,7 @@ export function AccessorCreators<
     scheduler: {
       errors: { map: schedulerErrorsMap },
     },
+    normalizationHandler,
   } = innerState;
 
   const ResolveInfoSymbol = Symbol();
@@ -242,14 +245,13 @@ export function AccessorCreators<
 
   function createArrayAccessor(
     schemaValue: Schema[string] | SchemaUnion,
-    selectionArg: Selection,
-    unions?: string[]
+    prevSelection: Selection,
+    unions?: string[],
+    parentTypename?: string
   ) {
-    const arrayCacheValue:
-      | typeof CacheNotFound
-      | undefined
-      | null
-      | unknown[] = innerState.clientCache.getCacheFromSelection(selectionArg);
+    const arrayCacheValue = innerState.clientCache.getCacheFromSelection<
+      undefined | null | unknown[]
+    >(prevSelection);
     if (innerState.allowCache && arrayCacheValue === null) return null;
 
     const proxyValue: unknown[] =
@@ -258,7 +260,7 @@ export function AccessorCreators<
         : arrayCacheValue;
 
     const accessor = accessorCache.getArrayAccessor(
-      selectionArg,
+      prevSelection,
       proxyValue,
       () => {
         return new Proxy(proxyValue, {
@@ -272,7 +274,7 @@ export function AccessorCreators<
             if (isInteger(index)) {
               const selection = selectionManager.getSelection({
                 key: index,
-                prevSelection: selectionArg,
+                prevSelection,
               });
 
               const data = extractDataFromProxy(value);
@@ -292,7 +294,7 @@ export function AccessorCreators<
           get(target, key: string, receiver) {
             if (key === 'toJSON')
               return () =>
-                innerState.clientCache.getCacheFromSelection(selectionArg, []);
+                innerState.clientCache.getCacheFromSelection(prevSelection, []);
 
             let index: number | undefined;
 
@@ -303,7 +305,7 @@ export function AccessorCreators<
             if (isInteger(index)) {
               const selection = selectionManager.getSelection({
                 key: index,
-                prevSelection: selectionArg,
+                prevSelection,
               });
 
               // For the subscribers of data changes
@@ -323,7 +325,8 @@ export function AccessorCreators<
               const childAccessor = createAccessor(
                 schemaValue,
                 selection,
-                unions
+                unions,
+                parentTypename
               );
 
               accessorCache.addAccessorChild(accessor, childAccessor);
@@ -379,12 +382,8 @@ export function AccessorCreators<
     const cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
       selection
     );
-    let typename: string;
-    if (
-      isObject(cacheValue) &&
-      (typename = Reflect.get(cacheValue, '__typename'))
-    )
-      return typename;
+
+    if (isObjectWithType(cacheValue)) return cacheValue.__typename;
 
     interceptorManager.addSelection(
       selectionManager.getSelection({
@@ -413,18 +412,58 @@ export function AccessorCreators<
 
   function createAccessor(
     schemaValue: Schema[string] | SchemaUnion,
-    selectionArg: Selection,
-    unions?: string[]
+    prevSelection: Selection,
+    unions?: string[],
+    parentTypename?: string
   ) {
     let cacheValue: unknown = innerState.clientCache.getCacheFromSelection(
-      selectionArg
+      prevSelection
     );
     if (innerState.allowCache && cacheValue === null) return null;
 
     const accessor = accessorCache.getAccessor(
-      selectionArg,
+      prevSelection,
       getCacheValueReference(cacheValue, unions),
       () => {
+        const autoFetchKeys =
+          normalizationHandler && (parentTypename || unions)
+            ? () => {
+                if (unions) {
+                  const schemaKeys = normalizationHandler.schemaKeys;
+
+                  for (const objectTypeName of unions) {
+                    const objectNormalizationKeys = schemaKeys[objectTypeName];
+                    if (objectNormalizationKeys) {
+                      for (const key of objectNormalizationKeys) {
+                        interceptorManager.addSelection(
+                          selectionManager.getSelection({
+                            key,
+                            prevSelection,
+                            unions: unionObjectTypesForSelections[
+                              objectTypeName
+                            ] || [objectTypeName],
+                          })
+                        );
+                      }
+                    }
+                  }
+                } else if (parentTypename) {
+                  const normalizationKeys =
+                    normalizationHandler.schemaKeys[parentTypename];
+                  if (normalizationKeys) {
+                    for (const key of normalizationKeys) {
+                      interceptorManager.addSelection(
+                        selectionManager.getSelection({
+                          key,
+                          prevSelection,
+                        })
+                      );
+                    }
+                  }
+                }
+              }
+            : undefined;
+
         const proxyValue =
           schemaValue instanceof SchemaUnion
             ? schemaValue.fieldsProxy
@@ -439,7 +478,7 @@ export function AccessorCreators<
 
             const targetSelection = selectionManager.getSelection({
               key,
-              prevSelection: selectionArg,
+              prevSelection,
               unions,
             });
 
@@ -456,13 +495,13 @@ export function AccessorCreators<
           get(target, key: string, receiver) {
             if (key === 'toJSON')
               return () =>
-                innerState.clientCache.getCacheFromSelection(selectionArg, {});
+                innerState.clientCache.getCacheFromSelection(prevSelection, {});
 
             if (!proxyValue.hasOwnProperty(key))
               return Reflect.get(target, key, receiver);
 
             if (schemaValue instanceof SchemaUnion) {
-              let unionTypeName = getTypename(selectionArg);
+              let unionTypeName = getTypename(prevSelection);
 
               let objectType: Record<string, Type>;
 
@@ -483,8 +522,9 @@ export function AccessorCreators<
 
               const proxy = createAccessor(
                 objectType,
-                selectionArg,
-                selectionUnions
+                prevSelection,
+                selectionUnions,
+                parentTypename
               );
 
               return proxy && Reflect.get(proxy, key);
@@ -498,7 +538,7 @@ export function AccessorCreators<
               }): unknown => {
                 const selection = selectionManager.getSelection({
                   key,
-                  prevSelection: selectionArg,
+                  prevSelection,
                   args: args != null ? args.argValues : undefined,
                   argTypes: args != null ? args.argTypes : undefined,
                   unions,
@@ -528,6 +568,8 @@ export function AccessorCreators<
                       schedulerClientCache !== innerState.clientCache ||
                       !schedulerErrorsMap.has(selection)
                     ) {
+                      autoFetchKeys?.();
+
                       interceptorManager.addSelection(selection);
                     }
 
@@ -535,6 +577,8 @@ export function AccessorCreators<
                   }
 
                   if (!innerState.allowCache) {
+                    autoFetchKeys?.();
+
                     // Or if you are making the network fetch always
                     interceptorManager.addSelection(selection);
                   }
@@ -544,10 +588,16 @@ export function AccessorCreators<
 
                 const typeValue: Record<string, Type> | SchemaUnion =
                   schema[pureType] || schemaUnions[pureType];
+
                 if (typeValue) {
                   const childAccessor = (isArray
                     ? createArrayAccessor
-                    : createAccessor)(typeValue, selection);
+                    : createAccessor)(
+                    typeValue,
+                    selection,
+                    undefined,
+                    pureType
+                  );
 
                   accessorCache.addAccessorChild(accessor, childAccessor);
 
@@ -564,7 +614,7 @@ export function AccessorCreators<
               if (__args) {
                 const resolveInfo: ResolveInfo = {
                   key,
-                  prevSelection: selectionArg,
+                  prevSelection,
                   argTypes: __args,
                 };
 

@@ -84,7 +84,7 @@ export function createSelectionManager() {
       cacheKey = prevSelection.pathString + '.' + cacheKey;
     }
 
-    if (unions) {
+    if (unions?.length) {
       cacheKey += ';' + unions.join(';');
     }
 

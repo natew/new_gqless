@@ -1,6 +1,8 @@
 import { assertIsDefined } from 'test-utils';
 
 import { CacheNotFound, createAccessorCache, createCache } from '../src/Cache';
+import { EventHandler } from '../src/Events';
+import { createNormalizationHandler } from '../src/Normalization';
 import { Selection } from '../src/Selection';
 import { get } from '../src/Utils';
 import { createTestClient } from './utils';
@@ -365,7 +367,19 @@ describe('data normalization', () => {
       mergeCache,
       normalizedCache,
       getCacheFromSelection,
-    } = createCache();
+    } = createCache(
+      createNormalizationHandler(true, new EventHandler(), {
+        mutation: {},
+        query: {},
+        subscription: {},
+        a: {
+          __typename: { __type: 'String!' },
+          id: { __type: 'Int!' },
+        },
+      })
+    );
+
+    assertIsDefined(normalizedCache);
 
     function expectCacheToBe(v: typeof normalizedCache) {
       try {

@@ -4,12 +4,15 @@ exports[`selection builder unions 1`] = `
 Object {
   "species": Array [
     Object {
+      "__typename": "Dog",
       "name": "default",
     },
     Object {
+      "__typename": "Dog",
       "name": "a",
     },
     Object {
+      "__typename": "Dog",
       "name": "b",
     },
   ],

@@ -146,9 +146,13 @@ export function createResolvers(innerState: InnerClientState) {
   ): Promise<TData | null | undefined> {
     if (selections.length === 0) return;
 
-    const { query, variables } = buildQuery(selections, {
-      type,
-    });
+    const { query, variables } = buildQuery(
+      selections,
+      {
+        type,
+      },
+      innerState.normalizationHandler
+    );
 
     let loggingPromise: LazyPromise<FetchEventData> | undefined;
 
