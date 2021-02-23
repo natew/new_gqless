@@ -156,7 +156,7 @@ export function createNormalizationHandler(
     const pendingObjects = new Set<object>([obj]);
 
     for (const container of pendingObjects) {
-      for (const [key, value] of Object.entries(container)) {
+      for (const value of Object.values(container)) {
         if (Array.isArray(value)) {
           pendingObjects.add(value);
         } else if (isObjectWithType(value)) {
@@ -167,15 +167,13 @@ export function createNormalizationHandler(
 
             if (currentValueNormalizedCache !== value) {
               if (currentValueNormalizedCache) {
-                //@ts-expect-error
-                container[key] = normalizedCache[id] = data = Object.assign(
+                normalizedCache[id] = data = Object.assign(
                   {},
                   currentValueNormalizedCache,
                   value
                 );
               } else {
-                //@ts-expect-error
-                container[key] = normalizedCache[id] = value;
+                normalizedCache[id] = value;
               }
 
               if (eventHandler) {
@@ -190,9 +188,7 @@ export function createNormalizationHandler(
                   }
                 }
               }
-            } else {
-              continue;
-            }
+            } else continue;
           }
 
           pendingObjects.add(data);
@@ -207,22 +203,22 @@ export function createNormalizationHandler(
   ): object | void {
     if (isObjectWithType(incomingValue) && isObjectWithType(currentValue)) {
       const idNewValue = getId(incomingValue);
+      if (!idNewValue) return;
+
       const idCurrentValue = getId(currentValue);
 
-      if (idNewValue) {
-        if (idNewValue === idCurrentValue) {
-          const currentObject = normalizedCache[idNewValue];
+      if (idNewValue === idCurrentValue) {
+        const currentObject = normalizedCache[idNewValue];
 
-          if (currentObject !== incomingValue) {
-            return (normalizedCache[idNewValue] = merge(
-              {},
-              currentObject,
-              incomingValue,
-              onObjectMergeConflict
-            ));
-          }
+        if (currentObject !== incomingValue) {
+          return (normalizedCache[idNewValue] = merge(
+            {},
+            currentObject,
+            incomingValue,
+            onObjectMergeConflict
+          ));
         }
-        return (normalizedCache[idNewValue] = incomingValue);
+        return incomingValue;
       }
     }
   }
