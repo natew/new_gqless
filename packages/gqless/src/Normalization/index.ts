@@ -142,9 +142,7 @@ export function createNormalizationHandler(
         currentValue =
           //@ts-expect-error
           currentValue[key];
-      } else {
-        return notFoundValue;
-      }
+      } else return notFoundValue;
     }
 
     getNormalized();
@@ -152,11 +150,11 @@ export function createNormalizationHandler(
     return currentValue === undefined ? notFoundValue : (currentValue as Value);
   }
 
-  function scanNormalizedObjects(obj: object) {
+  function scanNormalizedObjects(obj: object, shouldMutate?: boolean) {
     const pendingObjects = new Set<object>([obj]);
 
     for (const container of pendingObjects) {
-      for (const value of Object.values(container)) {
+      for (const [key, value] of Object.entries(container)) {
         if (Array.isArray(value)) {
           pendingObjects.add(value);
         } else if (isObjectWithType(value)) {
@@ -175,6 +173,9 @@ export function createNormalizationHandler(
               } else {
                 normalizedCache[id] = value;
               }
+
+              //@ts-expect-error
+              if (shouldMutate) container[key] = value;
 
               if (eventHandler) {
                 const selections = normalizedSelections.get(id);

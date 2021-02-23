@@ -385,7 +385,7 @@ describe('data normalization', () => {
       try {
         expect(JSON.stringify(cache)).toBe(JSON.stringify(v));
       } catch (err) {
-        Error.captureStackTrace(err, expectNormalizedCacheToBe);
+        Error.captureStackTrace(err, expectCacheToBe);
         throw err;
       }
     }
@@ -502,12 +502,13 @@ describe('data normalization', () => {
       n: 3,
     });
 
-    expect(get(cache, 'query.a')).toBe(normalizedCache['a1']);
-
-    // TODO FIX: Duplicated objects due to lodash merge, memory wasted
-    expect(get(cache, 'query.a')).toStrictEqual(
-      get(cache, 'query.otherQuery.deep')
-    );
+    expect(normalizedCache['a1']).toStrictEqual({
+      __typename: 'a',
+      id: 1,
+      v: 1,
+      g: 2,
+      n: 3,
+    });
 
     expectCacheToBe({
       query: {
@@ -523,8 +524,6 @@ describe('data normalization', () => {
           deep: {
             __typename: 'a',
             id: 1,
-            v: 1,
-            g: 2,
             n: 3,
           },
         },
