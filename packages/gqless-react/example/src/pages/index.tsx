@@ -5,6 +5,7 @@ import { selectFields } from '@dish/gqless';
 import { createReactClient } from '../../../';
 import { Suspense } from '../components/Suspense';
 import { client, GeneratedSchema, query } from '../graphql/gqless';
+import NormalizedPage from './normalized';
 
 const defaultSuspense = true;
 
@@ -20,7 +21,7 @@ const {
 
 const Comp = graphql(function Asd() {
   const queryFromHook = useQuery({
-    cacheAndNetwork: true,
+    staleWhileRevalidate: true,
   });
   const { data } = useTransactionQuery((query) => {
     return query.dogs.map((dog) => {
@@ -73,6 +74,7 @@ export default function Index() {
   return (
     <Suspense fallback="Loading...">
       <Comp />
+      <NormalizedPage />
     </Suspense>
   );
 }

@@ -12,7 +12,7 @@ import {
 
 export interface GraphQLHOCOptions {
   suspense?: boolean;
-  cacheAndNetwork?: boolean;
+  staleWhileRevalidate?: boolean;
 }
 
 export interface GraphQLHOC {
@@ -32,14 +32,17 @@ export function createGraphqlHOC(
     eventHandler,
     interceptorManager,
   }: ReturnType<typeof createClient>,
-  { defaultSuspense }: CreateReactClientOptions
+  { defaultSuspense, defaultStaleWhileRevalidate }: CreateReactClientOptions
 ) {
   const graphql: GraphQLHOC = function graphql<
     R extends ReactElement<any, any> | null,
     P = unknown
   >(
     component: (props: P) => R,
-    { suspense = defaultSuspense, cacheAndNetwork }: GraphQLHOCOptions = {}
+    {
+      suspense = defaultSuspense,
+      staleWhileRevalidate = defaultStaleWhileRevalidate,
+    }: GraphQLHOCOptions = {}
   ) {
     const withGraphQL: {
       (props: P): R;
@@ -87,7 +90,7 @@ export function createGraphqlHOC(
 
       const isFirstMount = useIsFirstMount();
 
-      if (cacheAndNetwork && isFirstMount.current) {
+      if (staleWhileRevalidate && isFirstMount.current) {
         interceptor.selectionCacheRefetchListeners.add((selection) => {
           interceptorManager.globalInterceptor.addSelectionCacheRefetch(
             selection

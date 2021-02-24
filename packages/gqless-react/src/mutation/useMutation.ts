@@ -122,7 +122,10 @@ export function createUseMutation<
     fnRef.current = mutationFn;
 
     const mutate = useCallback(
-      ({ fn: fnArg, args }: { fn?: typeof mutationFn; args?: any } = {}) => {
+      function mutateFn({
+        fn: fnArg,
+        args,
+      }: { fn?: typeof mutationFn; args?: any } = {}) {
         dispatch({ type: 'loading' });
 
         const refFn = fnRef.current;
@@ -135,7 +138,7 @@ export function createUseMutation<
               throw new gqlessError(
                 'You have to specify a function to be resolved',
                 {
-                  caller: useMutation,
+                  caller: mutateFn,
                 }
               );
             })();

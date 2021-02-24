@@ -12,7 +12,7 @@ import {
 
 export interface UseQueryOptions {
   suspense?: boolean;
-  cacheAndNetwork?: boolean;
+  staleWhileRevalidate?: boolean;
 }
 
 export interface UseQuery<GeneratedSchema extends { query: object }> {
@@ -28,15 +28,15 @@ export function createUseQuery<
     query: object;
   }
 >(client: ReturnType<typeof createClient>, opts: CreateReactClientOptions) {
-  const { defaultSuspense } = opts;
+  const { defaultSuspense, defaultStaleWhileRevalidate } = opts;
   const { scheduler, eventHandler, interceptorManager } = client;
 
   const clientQuery: GeneratedSchema['query'] = client.query;
 
   const useQuery: UseQuery<GeneratedSchema> = function useQuery({
     suspense = defaultSuspense,
-    cacheAndNetwork,
-  } = {}) {
+    staleWhileRevalidate = defaultStaleWhileRevalidate,
+  }: UseQueryOptions = {}) {
     const [componentSelections] = useState(initSelectionsState);
 
     const fetchingPromise = useRef<Promise<void> | null>(null);
@@ -46,7 +46,7 @@ export function createUseQuery<
 
     const isFirstMount = useIsFirstMount();
 
-    if (cacheAndNetwork && isFirstMount.current) {
+    if (staleWhileRevalidate && isFirstMount.current) {
       interceptor.selectionCacheRefetchListeners.add((selection) => {
         interceptorManager.globalInterceptor.addSelectionCacheRefetch(
           selection

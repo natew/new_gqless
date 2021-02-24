@@ -12,8 +12,30 @@ import { createUseTransactionQuery } from './query/useTransactionQuery';
 import { createSSRHelpers } from './ssr';
 
 export interface CreateReactClientOptions {
+  /**
+   * Enable/Disable by default 'React Suspense' features
+   *
+   * > _Valid for __graphql HOC__ & __useQuery___
+   *
+   * > _You can override it on a per-hook basis_
+   */
   defaultSuspense?: boolean;
+  /**
+   * Define default 'fetchPolicy' hooks behaviour
+   *
+   * > _Valid for __useTransactionQuery___
+   *
+   * > _You can override it on a per-hook basis_
+   */
   defaultFetchPolicy?: FetchPolicy;
+  /**
+   * __Enable__/__Disable__ default 'stale-while-revalidate' behaviour
+   *
+   * > _Valid for __graphql HOC__ & __useQuery___
+   *
+   * > _You can override it on a per-hook basis_
+   */
+  defaultStaleWhileRevalidate?: boolean;
 }
 
 export function createReactClient<

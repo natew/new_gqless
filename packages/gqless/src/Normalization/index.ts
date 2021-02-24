@@ -70,11 +70,15 @@ export function createNormalizationHandler(
   function getId(
     obj: ObjectWithType
   ): ReturnType<NonNullable<typeof identifier>> {
+    if (identifier) {
+      const result = identifier(obj);
+
+      if (result !== undefined) return result;
+    }
+
     const keys = schemaKeys[obj.__typename];
 
-    if (identifier && keys !== idSchemaKey && keys !== _idSchemaKey)
-      return identifier(obj);
-    else if (keys) {
+    if (keys) {
       let id: string = '';
 
       for (const key of keys) {
