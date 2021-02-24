@@ -19,7 +19,9 @@ const {
 });
 
 const Comp = graphql(function Asd() {
-  const queryFromHook = useQuery();
+  const queryFromHook = useQuery({
+    cacheAndNetwork: true,
+  });
   const { data } = useTransactionQuery((query) => {
     return query.dogs.map((dog) => {
       return {
@@ -42,7 +44,7 @@ const Comp = graphql(function Asd() {
 
   return (
     <div style={{ whiteSpace: 'pre-wrap' }}>
-      <p>Time: {query.time}</p>
+      <p>Time: {queryFromHook.time}</p>
       {typename}
       <br />
       <br />

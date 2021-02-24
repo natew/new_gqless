@@ -6,11 +6,13 @@ import { CreateReactClientOptions } from './client';
 import {
   useDeferDispatch,
   useForceUpdate,
+  useIsFirstMount,
   useIsomorphicLayoutEffect,
 } from './common';
 
 export interface GraphQLHOCOptions {
   suspense?: boolean;
+  cacheAndNetwork?: boolean;
 }
 
 export interface GraphQLHOC {
@@ -37,7 +39,7 @@ export function createGraphqlHOC(
     P = unknown
   >(
     component: (props: P) => R,
-    { suspense = defaultSuspense }: GraphQLHOCOptions = {}
+    { suspense = defaultSuspense, cacheAndNetwork }: GraphQLHOCOptions = {}
   ) {
     const withGraphQL: {
       (props: P): R;
@@ -82,6 +84,18 @@ export function createGraphqlHOC(
       }, [componentSelections]);
 
       const interceptor = interceptorManager.createInterceptor();
+
+      const isFirstMount = useIsFirstMount();
+
+      if (cacheAndNetwork && isFirstMount.current) {
+        interceptor.selectionCacheRefetchListeners.add((selection) => {
+          interceptorManager.globalInterceptor.addSelectionCacheRefetch(
+            selection
+          );
+
+          componentSelections.add(selection);
+        });
+      }
 
       interceptor.selectionAddListeners.add((selection) => {
         componentSelections.add(selection);

@@ -574,13 +574,14 @@ export function AccessorCreators<
                     }
 
                     return isArray ? emptyScalarArray : null;
-                  }
-
-                  if (!innerState.allowCache) {
+                  } else if (!innerState.allowCache) {
                     autoFetchKeys?.();
 
                     // Or if you are making the network fetch always
                     interceptorManager.addSelection(selection);
+                  } else {
+                    // Support cache-and-network / stale-while-revalidate pattern
+                    interceptorManager.addSelectionCacheFound(selection);
                   }
 
                   return cacheValue;

@@ -6,11 +6,13 @@ import { CreateReactClientOptions } from '../client';
 import {
   useDeferDispatch,
   useForceUpdate,
+  useIsFirstMount,
   useIsomorphicLayoutEffect,
 } from '../common';
 
 export interface UseQueryOptions {
   suspense?: boolean;
+  cacheAndNetwork?: boolean;
 }
 
 export interface UseQuery<GeneratedSchema extends { query: object }> {
@@ -33,6 +35,7 @@ export function createUseQuery<
 
   const useQuery: UseQuery<GeneratedSchema> = function useQuery({
     suspense = defaultSuspense,
+    cacheAndNetwork,
   } = {}) {
     const [componentSelections] = useState(initSelectionsState);
 
@@ -40,6 +43,18 @@ export function createUseQuery<
     const forceUpdate = useDeferDispatch(useForceUpdate());
 
     const interceptor = interceptorManager.createInterceptor();
+
+    const isFirstMount = useIsFirstMount();
+
+    if (cacheAndNetwork && isFirstMount.current) {
+      interceptor.selectionCacheRefetchListeners.add((selection) => {
+        interceptorManager.globalInterceptor.addSelectionCacheRefetch(
+          selection
+        );
+
+        componentSelections.add(selection);
+      });
+    }
 
     interceptor.selectionAddListeners.add((selection) => {
       componentSelections.add(selection);

@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '../components/client';
 export default function NormalizedPage() {
   const query = useQuery({
     suspense: false,
+    cacheAndNetwork: true,
   });
 
   const [renameDog] = useMutation((mutation) => {

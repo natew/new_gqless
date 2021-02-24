@@ -5,6 +5,7 @@ export class Interceptor {
   listening = true;
   selectionAddListeners = new Set<(selection: Selection) => void>();
   selectionCacheListeners = new Set<(selection: Selection) => void>();
+  selectionCacheRefetchListeners = new Set<(selection: Selection) => void>();
 
   addSelection(selection: Selection) {
     if (this.listening) {
@@ -19,6 +20,16 @@ export class Interceptor {
   addSelectionCache(selection: Selection) {
     if (this.listening) {
       for (const listener of this.selectionCacheListeners) {
+        listener(selection);
+      }
+    }
+  }
+
+  addSelectionCacheRefetch(selection: Selection) {
+    if (this.listening && this.selectionCacheRefetchListeners.size) {
+      this.fetchSelections.add(selection);
+
+      for (const listener of this.selectionCacheRefetchListeners) {
         listener(selection);
       }
     }
@@ -63,6 +74,14 @@ export function createInterceptorManager() {
     }
   }
 
+  function addSelectionCacheRefetch(selection: Selection) {
+    for (const interceptor of interceptors) {
+      if (interceptor === globalInterceptor) continue;
+
+      interceptor.addSelectionCacheRefetch(selection);
+    }
+  }
+
   function addSelections(selection: Selection[] | Set<Selection>) {
     selection.forEach(addSelection);
   }
@@ -80,6 +99,7 @@ export function createInterceptorManager() {
     removeInterceptor,
     addSelection,
     addSelectionCache,
+    addSelectionCacheFound: addSelectionCacheRefetch,
     addSelections,
     removeSelections,
   };

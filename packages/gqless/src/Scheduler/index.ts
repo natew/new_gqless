@@ -161,9 +161,11 @@ export const createScheduler = (
     );
   }, catchSelectionsTimeMS);
 
-  globalInterceptor.selectionAddListeners.add((selection) => {
+  function addSelectionToScheduler(selection: Selection, notifyResolve = true) {
     for (const group of pendingSelectionsGroups) {
       if (group.has(selection)) {
+        if (!notifyResolve) return;
+
         const promise = pendingSelectionsGroupsPromises.get(group);
         /* istanbul ignore next */
         if (promise) {
@@ -188,12 +190,22 @@ export const createScheduler = (
     } else {
       lazyPromise = resolvingPromise;
     }
-    const promise = lazyPromise.promise;
-    resolveListeners.forEach((subscription) => {
-      subscription(promise, selection);
-    });
+
+    if (notifyResolve) {
+      const promise = lazyPromise.promise;
+      resolveListeners.forEach((subscription) => {
+        subscription(promise, selection);
+      });
+    }
+
     fetchSelections(lazyPromise);
-  });
+  }
+
+  globalInterceptor.selectionCacheRefetchListeners.add((selection) =>
+    addSelectionToScheduler(selection, false)
+  );
+
+  globalInterceptor.selectionAddListeners.add(addSelectionToScheduler);
 
   return scheduler;
 };
