@@ -26,6 +26,10 @@ export interface ResolveOptions<TData> {
    * with the existing cache data.
    */
   onCacheData?: (data: TData) => boolean;
+  /**
+   * Get every selection intercepted in the specified function
+   */
+  onSelection?: (selection: Selection) => void;
 }
 
 export type RetryOptions =
@@ -69,7 +73,12 @@ export function createResolvers(innerState: InnerClientState) {
 
   async function resolved<T = unknown>(
     dataFn: () => T,
-    { refetch, noCache, onCacheData }: ResolveOptions<T> = {}
+    {
+      refetch,
+      noCache,
+      onCacheData,
+      onSelection: onSelectionAdd,
+    }: ResolveOptions<T> = {}
   ): Promise<T> {
     const prevFoundValidCache = innerState.foundValidCache;
     innerState.foundValidCache = true;
@@ -89,6 +98,12 @@ export function createResolvers(innerState: InnerClientState) {
     globalInterceptor.listening = false;
 
     const interceptor = interceptorManager.createInterceptor();
+
+    if (onSelectionAdd) {
+      interceptor.selectionAddListeners.add(onSelectionAdd);
+      interceptor.selectionCacheListeners.add(onSelectionAdd);
+      interceptor.selectionCacheRefetchListeners.add(onSelectionAdd);
+    }
 
     try {
       const data = dataFn();

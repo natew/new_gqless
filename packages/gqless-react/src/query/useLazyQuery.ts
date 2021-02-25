@@ -1,21 +1,25 @@
 import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
-import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
+import { createClient, gqlessError } from '@dish/gqless';
 
 import { CreateReactClientOptions } from '../client';
+import { FetchPolicy, fetchPolicyDefaultResolveOptions } from '../common';
 
-export interface UseLazyQueryOptions<TData> extends ResolveOptions<TData> {
+export interface UseLazyQueryOptions<TData> {
   onCompleted?: (data: TData) => void;
   onError?: (error: gqlessError) => void;
+  fetchPolicy?: FetchPolicy;
 }
 
 export interface UseLazyQueryState<TData> {
   data: TData | undefined;
   error?: gqlessError;
   isLoading: boolean;
+  isCalled: boolean;
 }
 
 type UseLazyQueryReducerAction<TData> =
+  | { type: 'cache-found'; data: TData }
   | { type: 'success'; data: TData }
   | { type: 'failure'; error: gqlessError }
   | { type: 'loading' };
@@ -30,12 +34,14 @@ function UseLazyQueryReducer<TData>(
       return {
         data: state.data,
         isLoading: true,
+        isCalled: true,
       };
     }
     case 'success': {
       return {
         data: action.data,
         isLoading: false,
+        isCalled: true,
       };
     }
     case 'failure': {
@@ -43,6 +49,14 @@ function UseLazyQueryReducer<TData>(
         data: state.data,
         isLoading: false,
         error: action.error,
+        isCalled: true,
+      };
+    }
+    case 'cache-found': {
+      return {
+        data: action.data,
+        isLoading: state.isLoading,
+        isCalled: true,
       };
     }
   }
@@ -52,6 +66,7 @@ function InitUseLazyQueryReducer<TData>(): UseLazyQueryState<TData> {
   return {
     data: undefined,
     isLoading: false,
+    isCalled: false,
   };
 }
 
@@ -61,7 +76,7 @@ export interface UseLazyQuery<
   }
 > {
   <TData = unknown, TArgs = undefined>(
-    queryFn?: (query: GeneratedSchema['query'], args: TArgs) => TData,
+    queryFn: (query: GeneratedSchema['query'], args: TArgs) => TData,
     options?: UseLazyQueryOptions<TData>
   ): readonly [
     (
@@ -95,7 +110,7 @@ export function createUseLazyQuery<
     TData,
     TArgs = undefined
   >(
-    fn?: (query: typeof clientQuery, args: TArgs) => TData,
+    fn: (query: typeof clientQuery, args: TArgs) => TData,
     opts: UseLazyQueryOptions<TData> = {}
   ) {
     const [state, dispatch] = useReducer(
@@ -104,6 +119,9 @@ export function createUseLazyQuery<
       InitUseLazyQueryReducer
     ) as [UseLazyQueryState<TData>, Dispatch<UseLazyQueryReducerAction<TData>>];
 
+    const stateRef = useRef(state);
+    stateRef.current = state;
+
     const fnRef = useRef(fn);
     fnRef.current = fn;
 
@@ -111,10 +129,12 @@ export function createUseLazyQuery<
     optsRef.current = opts;
 
     const queryFn = useCallback(
-      ({ fn: fnArg, args }: { fn?: typeof fn; args?: any } = {}) => {
+      function callback(callbackArgs: { fn?: typeof fn; args?: any } = {}) {
         dispatch({
           type: 'loading',
         });
+
+        const { fn: fnArg, args } = callbackArgs;
 
         const refFn = fnRef.current;
 
@@ -126,17 +146,34 @@ export function createUseLazyQuery<
               throw new gqlessError(
                 'You have to specify a function to be resolved',
                 {
-                  caller: useLazyQuery,
+                  caller: callback,
                 }
               );
             })();
 
-        const { noCache, refetch, onCacheData } = optsRef.current;
+        const { fetchPolicy } = optsRef.current;
+
+        const resolveOptions = fetchPolicyDefaultResolveOptions(fetchPolicy);
 
         return resolved<TData>(functionResolve, {
-          noCache,
-          refetch,
-          onCacheData,
+          ...resolveOptions,
+          onCacheData(data): boolean {
+            switch (fetchPolicy) {
+              case 'cache-and-network': {
+                dispatch({
+                  type: 'cache-found',
+                  data,
+                });
+                stateRef.current.data = data;
+                return true;
+              }
+              case 'cache-first': {
+                return false;
+              }
+              default:
+                return true;
+            }
+          },
         }).then(
           (data) => {
             optsRef.current.onCompleted?.(data);

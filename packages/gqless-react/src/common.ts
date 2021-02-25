@@ -9,6 +9,9 @@ import {
 } from 'react';
 
 import { BuildSelectionInput, ResolveOptions, Selection } from '@dish/gqless';
+import { EventHandler } from '@dish/gqless/dist/Events';
+import { InterceptorManager } from '@dish/gqless/dist/Interceptor';
+import { Scheduler } from '@dish/gqless/dist/Scheduler';
 
 export function useOnFirstMount(fn: () => void) {
   const isFirstMount = useRef(true);
@@ -237,4 +240,133 @@ export function isAnySelectionIncludedInMatrix(
   }
 
   return false;
+}
+
+function initSelectionsState() {
+  return new Set<Selection>();
+}
+
+export function useSelectionsState() {
+  const [selections] = useState(initSelectionsState);
+
+  return selections;
+}
+
+export function useSubscribeCacheChanges({
+  hookSelections,
+  eventHandler,
+  onChange,
+  shouldSubscribe = true,
+}: {
+  hookSelections: Set<Selection>;
+  eventHandler: EventHandler;
+  onChange: () => void;
+  shouldSubscribe?: boolean;
+}) {
+  useIsomorphicLayoutEffect(() => {
+    if (!shouldSubscribe) return;
+
+    let isMounted = true;
+    const unsubscribeFetch = eventHandler.onFetchSubscribe(
+      (fetchPromise, promiseSelections) => {
+        if (
+          !promiseSelections.some((selection) => hookSelections.has(selection))
+        )
+          return;
+
+        fetchPromise.then(
+          () => {
+            if (isMounted) onChange();
+          },
+          () => {}
+        );
+      }
+    );
+
+    const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
+      ({ selection }) => {
+        if (isMounted && hookSelections.has(selection)) {
+          onChange();
+        }
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      unsubscribeFetch();
+      unsubscribeCache();
+    };
+  }, [shouldSubscribe, hookSelections, eventHandler, onChange]);
+}
+
+export function useInterceptSelections({
+  interceptorManager,
+  staleWhileRevalidate,
+  scheduler,
+  eventHandler,
+}: {
+  staleWhileRevalidate: boolean | undefined;
+  interceptorManager: InterceptorManager;
+  scheduler: Scheduler;
+  eventHandler: EventHandler;
+}) {
+  const hookSelections = useSelectionsState();
+  const forceUpdate = useDeferDispatch(useForceUpdate());
+  const fetchingPromise = useRef<Promise<void> | null>(null);
+
+  const interceptor = interceptorManager.createInterceptor();
+
+  const isFirstMount = useIsFirstMount();
+
+  if (staleWhileRevalidate && isFirstMount.current) {
+    interceptor.selectionCacheRefetchListeners.add((selection) => {
+      interceptorManager.globalInterceptor.addSelectionCacheRefetch(selection);
+
+      hookSelections.add(selection);
+    });
+  }
+
+  interceptor.selectionAddListeners.add((selection) => {
+    hookSelections.add(selection);
+  });
+
+  interceptor.selectionCacheListeners.add((selection) => {
+    hookSelections.add(selection);
+  });
+
+  const unsubscribeResolve = scheduler.subscribeResolve(
+    (promise, selection) => {
+      if (fetchingPromise.current === null && hookSelections.has(selection)) {
+        fetchingPromise.current = new Promise<void>((resolve, reject) => {
+          promise.then(
+            () => {
+              fetchingPromise.current = null;
+              forceUpdate();
+              resolve();
+            },
+            (err: unknown) => {
+              fetchingPromise.current = null;
+              reject(err);
+            }
+          );
+        });
+        forceUpdate();
+      }
+    }
+  );
+
+  function unsubscribe() {
+    unsubscribeResolve();
+    interceptorManager.removeInterceptor(interceptor);
+  }
+
+  setTimeout(unsubscribe, 0);
+
+  useSubscribeCacheChanges({
+    hookSelections,
+    eventHandler,
+    onChange: forceUpdate,
+  });
+
+  return { fetchingPromise, unsubscribe };
 }

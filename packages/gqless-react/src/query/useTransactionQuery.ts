@@ -16,13 +16,15 @@ import {
   IS_BROWSER,
   useDeferDispatch,
   useIsFirstMount,
+  useSelectionsState,
+  useSubscribeCacheChanges,
 } from '../common';
 
 export interface UseTransactionQueryState<TData> {
   data: TData | undefined;
   error?: gqlessError;
   isLoading: boolean;
-  called: boolean;
+  isCalled: boolean;
 }
 
 type UseTransactionQueryReducerAction<TData> =
@@ -44,21 +46,21 @@ function UseTransactionQueryReducer<TData>(
       return {
         data: state.data,
         isLoading: true,
-        called: true,
+        isCalled: true,
       };
     }
     case 'success': {
       return {
         data: action.data,
         isLoading: false,
-        called: true,
+        isCalled: true,
       };
     }
     case 'cache-found': {
       return {
         data: action.data,
         isLoading: state.isLoading,
-        called: true,
+        isCalled: true,
       };
     }
     case 'failure': {
@@ -66,7 +68,7 @@ function UseTransactionQueryReducer<TData>(
         data: state.data,
         isLoading: false,
         error: action.error,
-        called: true,
+        isCalled: true,
       };
     }
     case 'done': {
@@ -74,7 +76,7 @@ function UseTransactionQueryReducer<TData>(
         return {
           data: state.data,
           isLoading: false,
-          called: true,
+          isCalled: true,
         };
       }
       return state;
@@ -94,7 +96,7 @@ function InitUseTransactionQueryReducer<
   return {
     data: undefined,
     isLoading: skip ? false : true,
-    called: false,
+    isCalled: false,
   };
 }
 
@@ -130,7 +132,7 @@ export function createUseTransactionQuery<
   client: ReturnType<typeof createClient>,
   clientOpts: CreateReactClientOptions
 ) {
-  const { resolved } = client;
+  const { resolved, eventHandler } = client;
   const clientQuery: GeneratedSchema['query'] = client.query;
 
   const useTransactionQuery: UseTransactionQuery<GeneratedSchema> = function useTransactionQuery<
@@ -150,6 +152,8 @@ export function createUseTransactionQuery<
     optsRef.current = opts;
 
     const { skip, pollInterval = 0, fetchPolicy, variables } = opts;
+
+    const hookSelections = useSelectionsState();
 
     const resolveOptions = useMemo<ResolveOptions<TData>>(() => {
       return fetchPolicyDefaultResolveOptions(fetchPolicy);
@@ -185,36 +189,35 @@ export function createUseTransactionQuery<
             type: 'done',
           });
 
-        stateRef.current.called = true;
+        stateRef.current.isCalled = true;
         isFetching.current = true;
         dispatch({
           type: 'loading',
         });
         stateRef.current.isLoading = true;
 
-        resolved<TData>(
-          () => fnRef.current(clientQuery, optsRef.current.variables!),
-          {
-            ...resolveOpts,
-            onCacheData(data): boolean {
-              switch (fetchPolicyArg) {
-                case 'cache-and-network': {
-                  dispatch({
-                    type: 'cache-found',
-                    data,
-                  });
-                  stateRef.current.data = data;
-                  return true;
-                }
-                case 'cache-first': {
-                  return false;
-                }
-                default:
-                  return true;
+        const fn = () => fnRef.current(clientQuery, optsRef.current.variables!);
+
+        resolved<TData>(fn, {
+          ...resolveOpts,
+          onCacheData(data): boolean {
+            switch (fetchPolicyArg) {
+              case 'cache-and-network': {
+                dispatch({
+                  type: 'cache-found',
+                  data,
+                });
+                stateRef.current.data = data;
+                return true;
               }
-            },
-          }
-        ).then(
+              case 'cache-first': {
+                return false;
+              }
+              default:
+                return true;
+            }
+          },
+        }).then(
           (data) => {
             optsRef.current.onCompleted?.(data);
             isFetching.current = false;
@@ -310,6 +313,19 @@ export function createUseTransactionQuery<
       dispatch,
       isFetching,
     ]);
+
+    useSubscribeCacheChanges({
+      hookSelections,
+      eventHandler,
+      shouldSubscribe: fetchPolicy !== 'no-cache',
+      onChange: () =>
+        queryCallback(
+          {
+            refetch: false,
+          },
+          'cache-first'
+        ),
+    });
 
     return state;
   };
