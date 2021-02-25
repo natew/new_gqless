@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useQuery } from '../components/client';
 import { useIsomorphicLayoutEffect } from '../components/common';
 
 const C = () => {
@@ -61,4 +62,34 @@ const A = () => {
   return a;
 };
 
-export default A;
+export default function Asd() {
+  const query = useQuery({
+    suspense: false,
+  });
+
+  return (
+    <div>
+      <p style={{ whiteSpace: 'pre-wrap' }}>
+        {JSON.stringify(
+          {
+            a: query.human1.name,
+            b: query.human1.dogs?.map((v) => v.id),
+          },
+          null,
+          2
+        )}
+      </p>
+      <br />
+      <p style={{ whiteSpace: 'pre-wrap' }}>
+        {JSON.stringify(
+          {
+            a: query.human1Other.name,
+            b: query.human1Other.dogs?.map((v) => v.owner?.name),
+          },
+          null,
+          2
+        )}
+      </p>
+    </div>
+  );
+}

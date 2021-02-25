@@ -14,8 +14,8 @@ export const isObjectWithType = <T extends ObjectWithType>(
   v: unknown
 ): v is T => isPlainObject(v) && typeof v.__typename === 'string';
 
-export function merge<T extends object>(
-  target: T,
+export function deepAssign<T extends object>(
+  target: object,
   sources: (object | undefined | null)[],
   onConflict?: (targetValue: object, sourceValue: object) => object | void
 ): T {
@@ -32,11 +32,7 @@ export function merge<T extends object>(
             Reflect.set(
               target,
               sourceKey,
-              merge(
-                Array.isArray(targetValue) ? [] : {},
-                [targetValue, sourceValue],
-                onConflict
-              )
+              deepAssign(targetValue, [sourceValue], onConflict)
             );
           } else {
             Reflect.set(target, sourceKey, onConflictResult);
@@ -48,7 +44,7 @@ export function merge<T extends object>(
     }
   }
 
-  return target;
+  return target as T;
 }
 
 type SetGetPath = readonly (string | number)[] | string | number;

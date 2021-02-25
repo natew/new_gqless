@@ -1,7 +1,5 @@
-import merge from 'lodash/mergeWith';
-
 import { Selection } from '../Selection';
-import { get, isObject, set } from '../Utils';
+import { get, isObject, mergeWith, set } from '../Utils';
 
 import type { NormalizationHandler } from '../Normalization';
 
@@ -67,7 +65,7 @@ export function createCache(normalization?: NormalizationHandler) {
   ) {
     normalization?.scanNormalizedObjects(data);
 
-    merge(cache, { [prefix]: data }, onObjectMergeConflict);
+    mergeWith(cache, { [prefix]: data }, onObjectMergeConflict);
   }
 
   return {

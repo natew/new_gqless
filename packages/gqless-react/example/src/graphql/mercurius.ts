@@ -50,6 +50,8 @@ export type Query = {
   time: Scalars['String'];
   stringList: Array<Scalars['String']>;
   humans: Array<Human>;
+  human1: Human;
+  human1Other: Human;
 };
 
 export type Mutation = {
@@ -249,6 +251,8 @@ export type QueryResolvers<
     ContextType
   >;
   humans?: Resolver<Array<ResolversTypes['Human']>, ParentType, ContextType>;
+  human1?: Resolver<ResolversTypes['Human'], ParentType, ContextType>;
+  human1Other?: Resolver<ResolversTypes['Human'], ParentType, ContextType>;
 };
 
 export type MutationResolvers<

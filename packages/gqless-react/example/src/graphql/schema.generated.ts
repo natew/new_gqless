@@ -37,6 +37,8 @@ export const generatedSchema = {
     time: { __type: 'String!' },
     stringList: { __type: '[String!]!' },
     humans: { __type: '[Human!]!' },
+    human1: { __type: 'Human!' },
+    human1Other: { __type: 'Human!' },
   },
   mutation: {
     __typename: { __type: 'String!' },
@@ -69,6 +71,8 @@ export interface Query {
   time: ScalarsEnums['String'];
   stringList: Array<ScalarsEnums['String']>;
   humans: Array<Human>;
+  human1: Human;
+  human1Other: Human;
 }
 
 export interface Mutation {

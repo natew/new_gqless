@@ -10,7 +10,7 @@ import {
   Schema,
   SchemaUnionsKey,
 } from '../src';
-import { merge } from '../src/Utils';
+import { deepAssign } from '../src/Utils';
 
 export type Maybe<T> = T | null;
 export type Human = {
@@ -248,7 +248,7 @@ export const createTestClient = async (
       newNotification: void;
     };
   }>({
-    schema: merge(generatedSchema, [addedToGeneratedSchema]) as Schema,
+    schema: deepAssign(generatedSchema, [addedToGeneratedSchema]) as Schema,
     scalarsEnumsHash,
     queryFetcher,
     ...clientConfig,

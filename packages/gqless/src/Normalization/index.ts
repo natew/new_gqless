@@ -1,5 +1,3 @@
-import merge from 'lodash/mergeWith';
-
 import { CacheType } from '../Cache';
 import { EventHandler } from '../Events';
 import { Schema } from '../Schema';
@@ -9,6 +7,8 @@ import {
   isObjectWithType,
   ObjectWithType,
   PlainObject,
+  mergeWith,
+  deepAssign,
 } from '../Utils';
 
 export interface NormalizationOptions {
@@ -169,11 +169,10 @@ export function createNormalizationHandler(
 
             if (currentValueNormalizedCache !== value) {
               if (currentValueNormalizedCache) {
-                normalizedCache[id] = data = Object.assign(
-                  {},
+                normalizedCache[id] = data = deepAssign({}, [
                   currentValueNormalizedCache,
-                  value
-                );
+                  value,
+                ]);
               } else {
                 normalizedCache[id] = value;
               }
@@ -216,7 +215,7 @@ export function createNormalizationHandler(
         const currentObject = normalizedCache[idNewValue];
 
         if (currentObject !== incomingValue) {
-          return (normalizedCache[idNewValue] = merge(
+          return (normalizedCache[idNewValue] = mergeWith(
             {},
             currentObject,
             incomingValue,

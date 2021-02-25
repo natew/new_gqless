@@ -72,6 +72,8 @@ const schema = gql`
     time: String!
     stringList: [String!]!
     humans: [Human!]!
+    human1: Human!
+    human1Other: Human!
   }
   type Mutation {
     renameDog(id: ID!, name: String!): Dog
@@ -111,6 +113,12 @@ const resolvers: IResolvers = {
         return true;
       }
       throw Error('nTries=' + nTries);
+    },
+    human1() {
+      return db.getData('/humans')[0];
+    },
+    human1Other() {
+      return db.getData('/humans')[0];
     },
   },
   Mutation: {
