@@ -41,12 +41,7 @@ export const buildQuery = (
   const variableTypes: Record<string, string> = {};
   const variablesMapKeyValue: Record<string, unknown> = {};
 
-  const setSelections: Record<string, boolean> = {};
-
   for (const selection of selections) {
-    if (setSelections[selection.noIndexSelectionsString]) continue;
-    setSelections[selection.noIndexSelectionsString] = true;
-
     const selectionBranches: string[][] = [];
 
     function createSelectionBranch(

@@ -31,7 +31,6 @@ export class Selection {
   selectionsList: readonly Selection[];
 
   noIndexSelections: readonly Selection[];
-  noIndexSelectionsString: string;
 
   constructor({
     key,
@@ -69,12 +68,6 @@ export class Selection {
       typeof key === 'string'
         ? [...prevNoSelectionsList, this]
         : prevNoSelectionsList;
-
-    const prevNoIndexString = prevSelection?.noIndexSelectionsString || '';
-    this.noIndexSelectionsString =
-      typeof key === 'number'
-        ? prevNoIndexString
-        : prevNoIndexString + '.' + key;
 
     // If both lists have the same length, we can assume they are the same and save some memory
     if (this.selectionsList.length === this.noIndexSelections.length) {
