@@ -42,7 +42,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.2.2
     specifiers:
-      '@dish/gqless': workspace:^3.0.8
+      '@dish/gqless': workspace:^3.0.9
       '@dish/gqless-cli': workspace:^4.0.1
       '@graphql-typed-document-node/core': ^3.1.0
       '@size-limit/preset-small-lib': ^4.9.2
@@ -151,7 +151,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.2.2
     specifiers:
-      '@dish/gqless': workspace:^3.0.8
+      '@dish/gqless': workspace:^3.0.9
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.21.0
       '@graphql-tools/delegate': ^7.0.10
@@ -184,7 +184,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.2.2
     specifiers:
-      '@dish/gqless': workspace:^3.0.8
+      '@dish/gqless': workspace:^3.0.9
       '@size-limit/preset-small-lib': ^4.9.2
       '@types/prettier': ^2.2.1
       prettier: ^2.2.1
@@ -219,7 +219,7 @@ importers:
       tslib: 2.1.0
       typescript: 4.2.2
     specifiers:
-      '@dish/gqless': workspace:^3.0.8
+      '@dish/gqless': workspace:^3.0.9
       '@dish/react-ssr-prepass': workspace:^1.3.1
       '@size-limit/preset-small-lib': ^4.9.2
       '@testing-library/react': ^11.2.5
@@ -274,7 +274,7 @@ importers:
     specifiers:
       '@dish/gqless-cli': workspace:^4.0.1
       '@dish/gqless-logger': workspace:^0.1.3
-      '@dish/gqless-react': workspace:^2.0.7
+      '@dish/gqless-react': workspace:^2.0.8
       '@types/lodash': ^4.14.168
       '@types/node': ^14.14.31
       '@types/react': ^17.0.2
@@ -1512,7 +1512,7 @@ packages:
       lower-case: 2.0.1
       param-case: 3.0.3
       pascal-case: 3.1.1
-      tslib: 2.0.3
+      tslib: 2.0.1
       upper-case: 2.0.1
     dev: false
     peerDependencies:
@@ -1526,7 +1526,7 @@ packages:
       auto-bind: 4.0.0
       change-case: 4.1.2
       graphql: 15.5.0
-      tslib: 2.0.3
+      tslib: 2.0.1
     dev: false
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
@@ -1616,17 +1616,17 @@ packages:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
       integrity: sha512-6Di9ia5ohoDvrHuhj2cak1nJGhIefJmUsd3WKZcJ2nu2yZAFawWMxGvQImqv3N7iyaWKiVhrrK8Roi/JrYhdKg==
-  /@graphql-tools/load-files/6.2.5_graphql@15.5.0:
+  /@graphql-tools/load-files/6.2.6_graphql@15.5.0:
     dependencies:
-      globby: 11.0.1
+      globby: 11.0.2
       graphql: 15.5.0
-      tslib: 2.0.3
+      tslib: 2.1.0
       unixify: 1.0.0
     dev: false
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0
     resolution:
-      integrity: sha512-mjfvrRrQZoXAtI/50KKy7WancqHRHBXfJMJa+Vn2TpMQV0uYlu32+WMa3ZM5yTOuT/ipifvjEQDhxOyTIoi67g==
+      integrity: sha512-qcaUBm/ZnEwCnHtoTYz1Uk56D39b0hV7FUV+RDH0h3i32ajUDS3L55X4W17hLus8dsRhmq8WOfhPY3FJDXP5iw==
   /@graphql-tools/merge/6.2.10_graphql@15.5.0:
     dependencies:
       '@graphql-tools/schema': 7.1.3_graphql@15.5.0
@@ -2328,7 +2328,7 @@ packages:
       integrity: sha512-f31TB0xnVmLxjEDD5G2o/K3z5P6fTWypHsBR8Ksbs+TSdrFhZJ4ZlSxFidE0fEsRPFFSBPa12bgLFTQwZK9ZrQ==
   /@size-limit/webpack/4.9.2_32cd1d6dba86a6aa8cbe7305193d5b72:
     dependencies:
-      css-loader: 5.0.2_webpack@4.46.0
+      css-loader: 5.1.0_webpack@4.46.0
       escape-string-regexp: 4.0.0
       file-loader: 6.2.0_webpack@4.46.0
       mkdirp: 1.0.4
@@ -3814,9 +3814,9 @@ packages:
       integrity: sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==
   /browserslist/4.16.1:
     dependencies:
-      caniuse-lite: 1.0.30001191
-      colorette: 1.2.1
-      electron-to-chromium: 1.3.673
+      caniuse-lite: 1.0.30001192
+      colorette: 1.2.2
+      electron-to-chromium: 1.3.674
       escalade: 3.1.1
       node-releases: 1.1.71
     dev: false
@@ -3827,9 +3827,9 @@ packages:
       integrity: sha512-UXhDrwqsNcpTYJBTZsbGATDxZbiVDsx6UjpmRUmtnP10pr8wAYr5LgFoEFw9ixriQH2mv/NX2SfGzE/o8GndLA==
   /browserslist/4.16.3:
     dependencies:
-      caniuse-lite: 1.0.30001191
-      colorette: 1.2.1
-      electron-to-chromium: 1.3.673
+      caniuse-lite: 1.0.30001192
+      colorette: 1.2.2
+      electron-to-chromium: 1.3.674
       escalade: 3.1.1
       node-releases: 1.1.71
     engines:
@@ -4012,7 +4012,7 @@ packages:
       integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==
   /camel-case/4.1.1:
     dependencies:
-      pascal-case: 3.1.2
+      pascal-case: 3.1.1
       tslib: 1.14.1
     dev: false
     resolution:
@@ -4054,15 +4054,15 @@ packages:
   /caniuse-api/3.0.0:
     dependencies:
       browserslist: 4.16.3
-      caniuse-lite: 1.0.30001191
+      caniuse-lite: 1.0.30001192
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
     resolution:
       integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==
-  /caniuse-lite/1.0.30001191:
+  /caniuse-lite/1.0.30001192:
     resolution:
-      integrity: sha512-xJJqzyd+7GCJXkcoBiQ1GuxEiOBCLQ0aVW9HMekifZsAVGdj5eJ4mFB9fEhSHipq9IOk/QXFJUiIr9lZT+EsGw==
+      integrity: sha512-63OrUnwJj5T1rUmoyqYTdRWBqFFxZFlyZnRRjDR8NSUQFB6A+j/uBORU/SyJ5WzDLg4SPiZH40hQCBNdZ/jmAw==
   /capital-case/1.0.4:
     dependencies:
       no-case: 3.0.4
@@ -4449,9 +4449,9 @@ packages:
       color-string: 1.5.4
     resolution:
       integrity: sha512-xgXAcTHa2HeFCGLE9Xs/R82hujGtu9Jd9x4NW3T34+OMs7VoPsjwzRczKHvTAHeJwWFwX5j15+MgAppE8ztObQ==
-  /colorette/1.2.1:
+  /colorette/1.2.2:
     resolution:
-      integrity: sha512-puCDz0CzydiSYOrnXpz/PKd69zRrribezjtE9yd4zvytoRc8+RY/KJPvtPFKZS3E3wP6neGyMe0vOTlHO5L3Pw==
+      integrity: sha512-MKGMzyfeuutC/ZJ1cba9NqcNpfeqMUcYmyF1ZFY6/Cn7CNSAKx6a+s48sqLqyAiZuaP2TcqMhoo+dlwFnVxT9w==
   /combined-stream/1.0.8:
     dependencies:
       delayed-stream: 1.0.0
@@ -4836,7 +4836,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-PJF0SpJT+WdbVVt0AOYp9C8GnuruRlL/UFW7932nLWmFLQTaWEzTBQEx7/hn4BuV+WON75iAViSUJLiU3PKbpA==
-  /css-loader/5.0.2_webpack@4.46.0:
+  /css-loader/5.1.0_webpack@4.46.0:
     dependencies:
       camelcase: 6.2.0
       cssesc: 3.0.0
@@ -4857,7 +4857,7 @@ packages:
     peerDependencies:
       webpack: ^4.27.0 || ^5.0.0
     resolution:
-      integrity: sha512-gbkBigdcHbmNvZ1Cg6aV6qh6k9N6XOr8YWzISLQGrwk2mgOH8LLrizhkxbDhQtaLtktyKHD4970S0xwz5btfTA==
+      integrity: sha512-mFs3Xe2UrzRzL0+ML6e7Q2e/Ozp/WpDcam0l1X+rXgkuFjjsNSrjiyimG6malUOZGVuEjzKp1NqEqN3exG7ZqQ==
   /css-select-base-adapter/0.1.1:
     dev: true
     resolution:
@@ -4944,7 +4944,7 @@ packages:
       integrity: sha512-x0YHHx2h6p0fCl1zY9L9roD7rnlltugGu7zXSKQx6k2rYw0Hi3IqxcoAGF7u9Q5w1nt7vK0ulxV8Lo+EvllGsA==
   /cssnano-preset-simple/1.2.2:
     dependencies:
-      caniuse-lite: 1.0.30001191
+      caniuse-lite: 1.0.30001192
       postcss: 7.0.35
     dev: false
     resolution:
@@ -5384,9 +5384,9 @@ packages:
   /ee-first/1.1.1:
     resolution:
       integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
-  /electron-to-chromium/1.3.673:
+  /electron-to-chromium/1.3.674:
     resolution:
-      integrity: sha512-ms+QR2ckfrrpEAjXweLx6kNCbpAl66DcW//3BZD4BV5KhUgr0RZRce1ON/9J3QyA3JO28nzgb5Xv8DnPr05ILg==
+      integrity: sha512-DBmEKRVYLZAoQSW+AmLcTF5Bpwhk4RUkobtzXVDlfPPYIlbsH3Jfg3QbBjAfFcRARzMIo4YiMhp3N+RnMuo1Eg==
   /elliptic/6.5.4:
     dependencies:
       bn.js: 4.12.0
@@ -5543,12 +5543,12 @@ packages:
     dev: true
     resolution:
       integrity: sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==
-  /esbuild/0.8.51:
+  /esbuild/0.8.52:
     dev: true
     hasBin: true
     requiresBuild: true
     resolution:
-      integrity: sha512-MVIom8fgL1+B6iGqWtrG7QJ1gqd64BycxounlsX1kR/IcIITaSlTo7gghKpg4a+bnxkpo0dwcikuvk4MVSA9ww==
+      integrity: sha512-b5KzFweLLXoXQwdC/e2+Z80c8uo2M5MgP7yQEEebkFw6In4T9CvYcNoM2ElvJt8ByO04zAZUV0fZkXmXoi2s9A==
   /escalade/3.1.1:
     engines:
       node: '>=6'
@@ -6808,19 +6808,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-40oNTM9UfG6aBmuKxk/giHn5nQ8RVz/SS4Ir6zgzOv9/qC3kKZ9v4etGTcJbEl/NyVQH7FGU7d+X1egr57Md2Q==
-  /globby/11.0.1:
-    dependencies:
-      array-union: 2.1.0
-      dir-glob: 3.0.1
-      fast-glob: 3.2.5
-      ignore: 5.1.8
-      merge2: 1.4.1
-      slash: 3.0.0
-    dev: false
-    engines:
-      node: '>=10'
-    resolution:
-      integrity: sha512-iH9RmgwCmUJHi2z5o2l3eTtGBtXek1OYlHrbcxOYugyHLmAsZrPj43OtHThd62Buh/Vv6VyCBD2bdyWcGNQqoQ==
   /globby/11.0.2:
     dependencies:
       array-union: 2.1.0
@@ -6829,7 +6816,6 @@ packages:
       ignore: 5.1.8
       merge2: 1.4.1
       slash: 3.0.0
-    dev: true
     engines:
       node: '>=10'
     resolution:
@@ -9263,7 +9249,7 @@ packages:
       '@graphql-codegen/typescript': 1.21.0_graphql@15.5.0
       '@graphql-codegen/typescript-operations': 1.17.14_graphql@15.5.0
       '@graphql-codegen/typescript-resolvers': 1.18.2_graphql@15.5.0
-      '@graphql-tools/load-files': 6.2.5_graphql@15.5.0
+      '@graphql-tools/load-files': 6.2.6_graphql@15.5.0
       '@graphql-tools/utils': 7.5.0_graphql@15.5.0
       '@graphql-typed-document-node/core': 3.1.0_graphql@15.5.0
       chokidar: 3.5.1
@@ -9666,7 +9652,7 @@ packages:
       ast-types: 0.13.2
       browserslist: 4.16.1
       buffer: 5.6.0
-      caniuse-lite: 1.0.30001191
+      caniuse-lite: 1.0.30001192
       chalk: 2.4.2
       chokidar: 3.5.1
       crypto-browserify: 3.12.0
@@ -11041,7 +11027,7 @@ packages:
       integrity: sha512-3QT8bBJeX/S5zKTTjTCIjRF3If4avAT6kqxcASlTWEtAFCb9NH0OUxNDfgZSWdP5fJnBYCMEWkIFfWeugjzYMg==
   /postcss/8.1.7:
     dependencies:
-      colorette: 1.2.1
+      colorette: 1.2.2
       line-column: 1.0.2
       nanoid: 3.1.20
       source-map: 0.6.1
@@ -11052,7 +11038,7 @@ packages:
       integrity: sha512-llCQW1Pz4MOPwbZLmOddGM9eIJ8Bh7SZ2Oj5sxZva77uVaotYDsYTch1WBTNu7fUY0fpWp0fdt7uW40D4sRiiQ==
   /postcss/8.2.6:
     dependencies:
-      colorette: 1.2.1
+      colorette: 1.2.2
       nanoid: 3.1.20
       source-map: 0.6.1
     dev: true
@@ -12534,7 +12520,7 @@ packages:
       bytes: 3.1.0
       chokidar: 3.5.1
       ci-job-number: 1.2.2
-      colorette: 1.2.1
+      colorette: 1.2.2
       globby: 11.0.2
       lilconfig: 2.0.2
       ora: 5.3.0
@@ -13999,7 +13985,6 @@ packages:
     resolution:
       integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
   /tslib/2.0.1:
-    dev: true
     resolution:
       integrity: sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ==
   /tslib/2.0.3:
@@ -14015,7 +14000,7 @@ packages:
       cac: 6.7.2
       chalk: 4.1.0
       chokidar: 3.5.1
-      esbuild: 0.8.51
+      esbuild: 0.8.52
       globby: 11.0.2
       joycon: 2.2.5
       postcss-load-config: 3.0.1
