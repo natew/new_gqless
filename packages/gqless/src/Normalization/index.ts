@@ -169,10 +169,19 @@ export function createNormalizationHandler(
 
             if (currentValueNormalizedCache !== value) {
               if (currentValueNormalizedCache) {
-                normalizedCache[id] = data = deepAssign({}, [
-                  currentValueNormalizedCache,
-                  value,
-                ]);
+                normalizedCache[id] = data = deepAssign(
+                  {},
+                  [currentValueNormalizedCache, value],
+                  (targetValue, sourceValue): object | void => {
+                    if (
+                      Array.isArray(targetValue) &&
+                      Array.isArray(sourceValue) &&
+                      targetValue.length !== sourceValue.length
+                    ) {
+                      return sourceValue;
+                    }
+                  }
+                );
               } else {
                 normalizedCache[id] = value;
               }
