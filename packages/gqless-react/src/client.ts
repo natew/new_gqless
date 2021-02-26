@@ -1,4 +1,4 @@
-import { createClient } from '@dish/gqless';
+import { createClient, RetryOptions } from '@dish/gqless';
 
 import { FetchPolicy } from './common';
 import { createGraphqlHOC } from './hoc';
@@ -11,31 +11,56 @@ import { createUseRefetch } from './query/useRefetch';
 import { createUseTransactionQuery } from './query/useTransactionQuery';
 import { createSSRHelpers } from './ssr';
 
-export interface CreateReactClientOptions {
+import type { ReactClientOptionsWithDefaults } from './utils';
+
+export interface ReactClientDefaults {
   /**
    * Enable/Disable by default 'React Suspense' features
    *
    * > _Valid for __graphql HOC__ & __useQuery___
    *
-   * > _You can override it on a per-hook basis_
+   * > _You can override it on a per-function basis_
+   *
+   * @default true
    */
-  defaultSuspense?: boolean;
+  suspense?: boolean;
   /**
    * Define default 'fetchPolicy' hooks behaviour
    *
-   * > _Valid for __useTransactionQuery___
+   * > _Valid for __useTransactionQuery___ & __useLazyQuery__
    *
    * > _You can override it on a per-hook basis_
+   *
+   * @default "cache-first"
    */
-  defaultFetchPolicy?: FetchPolicy;
+  fetchPolicy?: FetchPolicy;
   /**
    * __Enable__/__Disable__ default 'stale-while-revalidate' behaviour
    *
    * > _Valid for __graphql HOC__ & __useQuery___
    *
-   * > _You can override it on a per-hook basis_
+   * > _You can override it on a per-function basis_
+   *
+   * @default false
    */
-  defaultStaleWhileRevalidate?: boolean;
+  staleWhileRevalidate?: boolean;
+  /**
+   * Retry on error behaviour
+   *
+   * _You can override these defaults on a per-hook basis_
+   *
+   * > _Valid for __useMutation__, __useLazyQuery__, __useTransactionQuery__ & __useRefetch___
+   *
+   * @default true
+   */
+  retry?: RetryOptions;
+}
+
+export interface CreateReactClientOptions {
+  /**
+   * Default behaviour values
+   */
+  defaults?: ReactClientDefaults;
 }
 
 export function createReactClient<
@@ -46,8 +71,19 @@ export function createReactClient<
   }
 >(
   client: ReturnType<typeof createClient>,
-  opts: CreateReactClientOptions = {}
+  optsCreate: CreateReactClientOptions = {}
 ) {
+  const defaults: ReactClientOptionsWithDefaults['defaults'] = {
+    fetchPolicy: optsCreate.defaults?.fetchPolicy ?? 'cache-first',
+    staleWhileRevalidate: optsCreate.defaults?.staleWhileRevalidate ?? false,
+    suspense: optsCreate.defaults?.suspense ?? true,
+    retry: optsCreate.defaults?.retry ?? true,
+  };
+
+  const opts: ReactClientOptionsWithDefaults = Object.assign({}, optsCreate, {
+    defaults,
+  });
+
   const state = new Proxy(
     {
       isLoading: false,

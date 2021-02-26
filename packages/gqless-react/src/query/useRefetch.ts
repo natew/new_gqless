@@ -2,13 +2,15 @@ import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
 
 import {
   createClient,
+  doRetry,
   gqlessError,
+  RetryOptions,
   Selection,
   SelectionType,
 } from '@dish/gqless';
 
-import { CreateReactClientOptions } from '../client';
 import { useIsomorphicLayoutEffect, useLazyRef } from '../common';
+import { ReactClientOptionsWithDefaults } from '../utils';
 
 function initSelectionsState() {
   return new Set<Selection>();
@@ -70,6 +72,7 @@ export interface UseRefetchState extends UseRefetchReducerState {
 export interface UseRefetchOptions {
   notifyOnNetworkStatusChange?: boolean;
   startWatching?: boolean;
+  retry?: RetryOptions;
 }
 
 export interface UseRefetch {
@@ -81,7 +84,7 @@ export interface UseRefetch {
 
 export function createUseRefetch(
   client: ReturnType<typeof createClient>,
-  _opts: CreateReactClientOptions
+  { defaults: { retry: defaultRetry } }: ReactClientOptionsWithDefaults
 ) {
   const { interceptorManager, buildAndFetchSelections, refetch } = client;
 
@@ -91,10 +94,14 @@ export function createUseRefetch(
     };
   }
 
-  const useRefetch: UseRefetch = function useRefetch(refetchOptions) {
+  const useRefetch: UseRefetch = function useRefetch(
+    refetchOptions
+  ): (<T = undefined>(refetchArg?: T | (() => T)) => Promise<T | undefined>) &
+    UseRefetchState {
     const opts = Object.assign({}, refetchOptions);
     opts.notifyOnNetworkStatusChange ??= true;
     opts.startWatching ??= true;
+    opts.retry ??= true;
 
     const optsRef = useRef(opts);
     optsRef.current = opts;
@@ -210,10 +217,27 @@ export function createUseRefetch(
       [reducerState, startWatching, stopWatching]
     );
 
-    return useMemo(
-      () => Object.assign(refetchCallback.bind(undefined), state),
-      [refetchCallback, state]
-    );
+    const { retry = defaultRetry } = opts;
+
+    return useMemo(() => {
+      const fn = refetchCallback.bind(undefined);
+
+      const returnValue: ReturnType<typeof useRefetch> = Object.assign(
+        retry
+          ? (...args: any[]) => {
+              return fn(...args).catch((err) => {
+                doRetry(retry, {
+                  onRetry: () => fn(...args),
+                });
+                throw err;
+              });
+            }
+          : fn,
+        state
+      );
+
+      return returnValue;
+    }, [refetchCallback, state, retry]);
   };
 
   return useRefetch;

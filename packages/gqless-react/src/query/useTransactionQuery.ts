@@ -7,9 +7,14 @@ import {
   useRef,
 } from 'react';
 
-import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
+import {
+  createClient,
+  doRetry,
+  gqlessError,
+  ResolveOptions,
+  RetryOptions,
+} from '@dish/gqless';
 
-import { CreateReactClientOptions } from '../client';
 import {
   FetchPolicy,
   fetchPolicyDefaultResolveOptions,
@@ -17,6 +22,7 @@ import {
   useSelectionsState,
   useSubscribeCacheChanges,
 } from '../common';
+import { ReactClientOptionsWithDefaults } from '../utils';
 
 export interface UseTransactionQueryState<TData> {
   data: TData | undefined;
@@ -109,6 +115,7 @@ export interface UseTransactionQueryOptions<
   variables?: Variables;
   onCompleted?: (data: TData) => void;
   onError?: (error: gqlessError) => void;
+  retry?: RetryOptions;
 }
 
 export interface UseTransactionQuery<
@@ -128,7 +135,9 @@ export function createUseTransactionQuery<
   }
 >(
   client: ReturnType<typeof createClient>,
-  clientOpts: CreateReactClientOptions
+  {
+    defaults: { fetchPolicy: defaultFetchPolicy, retry: defaultRetry },
+  }: ReactClientOptionsWithDefaults
 ) {
   const { resolved, eventHandler } = client;
   const clientQuery: GeneratedSchema['query'] = client.query;
@@ -142,7 +151,8 @@ export function createUseTransactionQuery<
   ) {
     const opts = Object.assign({}, queryOptions);
 
-    opts.fetchPolicy ??= clientOpts.defaultFetchPolicy || 'cache-first';
+    opts.fetchPolicy ??= defaultFetchPolicy;
+    opts.retry ??= defaultRetry;
 
     opts.notifyOnNetworkStatusChange ??= true;
 
@@ -180,12 +190,13 @@ export function createUseTransactionQuery<
         resolveOpts: ResolveOptions<TData> = resolveOptions,
         fetchPolicyArg: FetchPolicy | undefined = fetchPolicy
       ) => {
-        if (skip)
+        if (skip) {
           return Promise.resolve(
             dispatch({
               type: 'done',
             })
           );
+        }
 
         stateRef.current.isCalled = true;
         isFetching.current = true;
@@ -239,6 +250,8 @@ export function createUseTransactionQuery<
             });
             stateRef.current.error = error;
             stateRef.current.isLoading = false;
+
+            return error;
           }
         );
       },
@@ -250,8 +263,21 @@ export function createUseTransactionQuery<
     }, [variables]);
 
     useEffect(() => {
-      if (!skip) queryCallback();
-    }, [skip, queryCallback, serializedVariables]);
+      if (!skip) {
+        queryCallback().then((result) => {
+          if (result instanceof gqlessError && optsRef.current.retry) {
+            doRetry(optsRef.current.retry, {
+              async onRetry() {
+                const result = await queryCallback();
+                if (result instanceof gqlessError) {
+                  throw result;
+                }
+              },
+            });
+          }
+        });
+      }
+    }, [skip, queryCallback, serializedVariables, optsRef]);
 
     useEffect(() => {
       if (skip || pollInterval <= 0) return;

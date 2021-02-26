@@ -1,3 +1,5 @@
+import type { CreateReactClientOptions, ReactClientDefaults } from './client';
+
 export function areArraysEqual(
   a: unknown[] | null | undefined,
   b: unknown[] | null | undefined
@@ -10,3 +12,10 @@ export function areArraysEqual(
 
   return true;
 }
+
+export type ReactClientOptionsWithDefaults = Omit<
+  CreateReactClientOptions,
+  'defaults'
+> & {
+  defaults: Required<ReactClientDefaults>;
+};

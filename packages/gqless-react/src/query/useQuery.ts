@@ -1,7 +1,7 @@
 import { createClient } from '@dish/gqless';
 
-import { CreateReactClientOptions } from '../client';
 import { useInterceptSelections, useIsomorphicLayoutEffect } from '../common';
+import { ReactClientOptionsWithDefaults } from '../utils';
 
 export interface UseQueryOptions {
   suspense?: boolean;
@@ -16,8 +16,14 @@ export function createUseQuery<
   GeneratedSchema extends {
     query: object;
   }
->(client: ReturnType<typeof createClient>, opts: CreateReactClientOptions) {
-  const { defaultSuspense, defaultStaleWhileRevalidate } = opts;
+>(
+  client: ReturnType<typeof createClient>,
+  opts: ReactClientOptionsWithDefaults
+) {
+  const {
+    suspense: defaultSuspense,
+    staleWhileRevalidate: defaultStaleWhileRevalidate,
+  } = opts.defaults;
   const { scheduler, eventHandler, interceptorManager } = client;
 
   const clientQuery: GeneratedSchema['query'] = client.query;

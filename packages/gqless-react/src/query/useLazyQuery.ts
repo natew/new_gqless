@@ -1,14 +1,15 @@
 import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
-import { createClient, gqlessError } from '@dish/gqless';
+import { createClient, doRetry, gqlessError, RetryOptions } from '@dish/gqless';
 
-import { CreateReactClientOptions } from '../client';
 import { FetchPolicy, fetchPolicyDefaultResolveOptions } from '../common';
+import { ReactClientOptionsWithDefaults } from '../utils';
 
 export interface UseLazyQueryOptions<TData> {
   onCompleted?: (data: TData) => void;
   onError?: (error: gqlessError) => void;
   fetchPolicy?: FetchPolicy;
+  retry?: RetryOptions;
 }
 
 export interface UseLazyQueryState<TData> {
@@ -102,7 +103,10 @@ export function createUseLazyQuery<
   GeneratedSchema extends {
     query: object;
   }
->(client: ReturnType<typeof createClient>, _opts: CreateReactClientOptions) {
+>(
+  client: ReturnType<typeof createClient>,
+  { defaults: { retry: defaultRetry } }: ReactClientOptionsWithDefaults
+) {
   const { resolved } = client;
   const clientQuery: GeneratedSchema['query'] = client.query;
 
@@ -112,7 +116,13 @@ export function createUseLazyQuery<
   >(
     fn: (query: typeof clientQuery, args: TArgs) => TData,
     opts: UseLazyQueryOptions<TData> = {}
-  ) {
+  ): readonly [
+    (callbackArgs?: {
+      fn?: (query: GeneratedSchema['query'], args: TArgs) => TData;
+      args?: TArgs;
+    }) => Promise<TData>,
+    UseLazyQueryState<TData>
+  ] {
     const [state, dispatch] = useReducer(
       UseLazyQueryReducer,
       undefined,
@@ -198,7 +208,23 @@ export function createUseLazyQuery<
       [fnRef, dispatch, optsRef]
     );
 
-    return useMemo(() => [queryFn, state] as const, [queryFn, state]);
+    const { retry = defaultRetry } = opts;
+
+    return useMemo(() => {
+      const fn: typeof queryFn = retry
+        ? (...args: any[]) => {
+            return queryFn(...args).catch((err) => {
+              doRetry(retry, {
+                onRetry: () => queryFn(...args).then(),
+              });
+
+              throw err;
+            });
+          }
+        : queryFn;
+
+      return [fn, state];
+    }, [queryFn, state, retry]);
   };
 
   return useLazyQuery;

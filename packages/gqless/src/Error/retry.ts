@@ -14,7 +14,7 @@ export type RetryOptions =
        * Amount of milliseconds between each attempt, it can be a static number,
        * or a function based on the attempt number
        *
-       * @default attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+       * @default (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
        */
       retryDelay?: number | ((attemptIndex: number) => number);
     }
@@ -30,7 +30,11 @@ export type RetryOptions =
 export interface RetryConfigState {
   /**
    * Error incremental attempt index
+   *
+   * You shouldn't set it manually
    * @default 0
+   *
+   * @private
    */
   attemptIndex?: number;
   /**

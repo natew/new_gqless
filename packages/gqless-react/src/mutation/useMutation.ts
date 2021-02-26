@@ -1,14 +1,15 @@
 import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
-import { createClient, gqlessError, ResolveOptions } from '@dish/gqless';
+import { createClient, doRetry, gqlessError, RetryOptions } from '@dish/gqless';
 
-import { CreateReactClientOptions } from '../client';
 import { useDeferDispatch } from '../common';
+import { ReactClientOptionsWithDefaults } from '../utils';
 
-export interface UseMutationOptions<TData>
-  extends Pick<ResolveOptions<TData>, 'noCache'> {
+export interface UseMutationOptions<TData> {
+  noCache?: boolean;
   onCompleted?: (data: TData) => void;
   onError?: (error: gqlessError) => void;
+  retry?: RetryOptions;
 }
 
 export interface UseMutationState<TData> {
@@ -95,7 +96,10 @@ export function createUseMutation<
   GeneratedSchema extends {
     mutation: object;
   }
->(client: ReturnType<typeof createClient>, _opts: CreateReactClientOptions) {
+>(
+  client: ReturnType<typeof createClient>,
+  { defaults: { retry: defaultRetry } }: ReactClientOptionsWithDefaults
+) {
   const { resolved } = client;
   const clientMutation: GeneratedSchema['mutation'] = client.mutation;
 
@@ -104,10 +108,17 @@ export function createUseMutation<
     TArgs = undefined
   >(
     mutationFn?: (mutation: typeof clientMutation, args: TArgs) => TData,
-    mutationOptions?: UseMutationOptions<TData>
-  ) {
-    const opts = Object.assign({}, mutationOptions);
-
+    opts: UseMutationOptions<TData> = {}
+  ): readonly [
+    ({
+      fn: fnArg,
+      args,
+    }?: {
+      fn?: (mutation: GeneratedSchema['mutation'], args: TArgs) => TData;
+      args?: TArgs;
+    }) => Promise<TData>,
+    UseMutationState<TData>
+  ] {
     const optsRef = useRef(opts);
     optsRef.current = opts;
 
@@ -171,7 +182,23 @@ export function createUseMutation<
       [optsRef, fnRef, dispatch]
     );
 
-    return useMemo(() => [mutate, state] as const, [mutate, state]);
+    const { retry = defaultRetry } = opts;
+
+    return useMemo(() => {
+      const fn: typeof mutate = retry
+        ? (...args: any[]) => {
+            return mutate(...args).catch((err) => {
+              doRetry(retry, {
+                onRetry: () => mutate(...args).then(),
+              });
+
+              throw err;
+            });
+          }
+        : mutate;
+
+      return [fn, state];
+    }, [mutate, state, retry]);
   };
 
   return useMutation;

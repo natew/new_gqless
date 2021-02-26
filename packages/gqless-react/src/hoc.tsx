@@ -2,8 +2,8 @@ import React, { ReactElement } from 'react';
 
 import { createClient } from '@dish/gqless';
 
-import { CreateReactClientOptions } from './client';
 import { useInterceptSelections } from './common';
+import { ReactClientOptionsWithDefaults } from './utils';
 
 export interface GraphQLHOCOptions {
   suspense?: boolean;
@@ -23,7 +23,12 @@ export function createGraphqlHOC(
     eventHandler,
     interceptorManager,
   }: ReturnType<typeof createClient>,
-  { defaultSuspense, defaultStaleWhileRevalidate }: CreateReactClientOptions
+  {
+    defaults: {
+      suspense: defaultSuspense,
+      staleWhileRevalidate: defaultStaleWhileRevalidate,
+    },
+  }: ReactClientOptionsWithDefaults
 ) {
   const graphql: GraphQLHOC = function graphql<
     R extends ReactElement<any, any> | null,
