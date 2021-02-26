@@ -38,15 +38,14 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
     } = useBuildSelections(opts.filterSelections, buildSelection, useMetaState);
 
     const getState = useCallback((): MetaState => {
-      const isFetching =
-        scheduler.pendingSelectionsGroups.size > 0
-          ? hasFilterSelections
-            ? isAnySelectionIncludedInMatrix(
-                selectionsToFilter,
-                scheduler.pendingSelectionsGroups
-              )
-            : true
-          : false;
+      const isFetching = scheduler.pendingSelectionsGroups.size
+        ? hasFilterSelections
+          ? isAnySelectionIncludedInMatrix(
+              selectionsToFilter,
+              scheduler.pendingSelectionsGroups
+            )
+          : true
+        : false;
 
       let errors: gqlessError[] | undefined;
 
@@ -89,32 +88,38 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
           prevState.isFetching !== newState.isFetching ||
           !areArraysEqual(prevState.errors, newState.errors)
         ) {
-          setState((stateRef.current = newState));
+          stateRef.current = newState;
+          setTimeout(() => {
+            setState(newState);
+          }, 0);
         }
       }
 
       const promisesInFly = new Set<Promise<unknown>>();
       const unsubscribeIsFetching = scheduler.subscribeResolve(
         (promise, selection) => {
-          if (!isSelectionIncluded(selection, selectionsToFilter)) {
+          if (promisesInFly.has(promise)) return;
+
+          if (
+            hasFilterSelections &&
+            !isSelectionIncluded(selection, selectionsToFilter)
+          ) {
             return;
           }
 
-          if (!promisesInFly.has(promise)) {
-            if (promisesInFly.size === 0) optsRef.current.onIsFetching?.();
+          if (promisesInFly.size === 0) optsRef.current.onIsFetching?.();
 
-            promisesInFly.add(promise);
+          promisesInFly.add(promise);
+
+          setStateIfChanged();
+
+          promise.then(() => {
+            promisesInFly.delete(promise);
+
+            if (promisesInFly.size === 0) optsRef.current.onDoneFetching?.();
 
             setStateIfChanged();
-
-            promise.then(() => {
-              promisesInFly.delete(promise);
-
-              if (promisesInFly.size === 0) optsRef.current.onDoneFetching?.();
-
-              setStateIfChanged();
-            });
-          }
+          });
         }
       );
 

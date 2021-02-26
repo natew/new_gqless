@@ -94,7 +94,10 @@ test('scheduler resolve subscriptions', async () => {
   });
   interceptorManager.globalInterceptor.addSelection(selectionA);
   expect(scheduler.resolving).toBeTruthy();
-  expect(subscriptionCalls).toBe(1);
+
+  waitForExpect(() => {
+    expect(subscriptionCalls).toBe(1);
+  }, 5);
   expect(fetchCalls).toBe(0);
 
   const unsubscribe = await subscribePromise;

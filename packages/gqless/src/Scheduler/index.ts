@@ -62,6 +62,8 @@ export const createScheduler = (
     ResolvedLazyPromise
   >();
 
+  const selectionsOnTheFly = new Set<Selection>();
+
   const scheduler = {
     resolving: null as null | ResolvingLazyPromise,
     subscribeResolve,
@@ -134,6 +136,10 @@ export const createScheduler = (
 
     const selectionsToFetch = new Set(globalInterceptor.fetchSelections);
 
+    selectionsOnTheFly.clear();
+    pendingSelectionsGroups.delete(selectionsOnTheFly);
+    pendingSelectionsGroupsPromises.delete(selectionsOnTheFly);
+
     pendingSelectionsGroups.add(selectionsToFetch);
     pendingSelectionsGroupsPromises.set(selectionsToFetch, lazyPromise.promise);
 
@@ -190,6 +196,13 @@ export const createScheduler = (
     } else {
       lazyPromise = resolvingPromise;
     }
+
+    pendingSelectionsGroups.add(selectionsOnTheFly);
+    selectionsOnTheFly.add(selection);
+    pendingSelectionsGroupsPromises.set(
+      selectionsOnTheFly,
+      lazyPromise.promise
+    );
 
     if (notifyResolve) {
       const promise = lazyPromise.promise;
