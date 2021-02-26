@@ -17,20 +17,24 @@ const {
   useRefetch,
 } = createReactClient<GeneratedSchema>(client, {
   defaultSuspense,
+  defaultStaleWhileRevalidate: true,
 });
 
 const Comp = graphql(function Asd() {
-  const queryFromHook = useQuery({
-    staleWhileRevalidate: true,
-  });
-  const { data } = useTransactionQuery((query) => {
-    return query.dogs.map((dog) => {
-      return {
-        dogName: dog.name,
-        owner: dog.owner?.__typename ? 'has owner 😁' : 'no owner 😔',
-      };
-    });
-  }, {});
+  const queryFromHook = useQuery({});
+  const { data } = useTransactionQuery(
+    (query) => {
+      return query.dogs.map((dog) => {
+        return {
+          dogName: dog.name,
+          owner: dog.owner?.__typename ? 'has owner 😁' : 'no owner 😔',
+        };
+      });
+    },
+    {
+      skip: false,
+    }
+  );
 
   const [n, dispatch] = useReducer(
     (state: number, action: 'add' | 'substact') => {

@@ -73,12 +73,7 @@ export function createResolvers(innerState: InnerClientState) {
 
   async function resolved<T = unknown>(
     dataFn: () => T,
-    {
-      refetch,
-      noCache,
-      onCacheData,
-      onSelection: onSelectionAdd,
-    }: ResolveOptions<T> = {}
+    { refetch, noCache, onCacheData, onSelection }: ResolveOptions<T> = {}
   ): Promise<T> {
     const prevFoundValidCache = innerState.foundValidCache;
     innerState.foundValidCache = true;
@@ -99,10 +94,10 @@ export function createResolvers(innerState: InnerClientState) {
 
     const interceptor = interceptorManager.createInterceptor();
 
-    if (onSelectionAdd) {
-      interceptor.selectionAddListeners.add(onSelectionAdd);
-      interceptor.selectionCacheListeners.add(onSelectionAdd);
-      interceptor.selectionCacheRefetchListeners.add(onSelectionAdd);
+    if (onSelection) {
+      interceptor.selectionAddListeners.add(onSelection);
+      interceptor.selectionCacheListeners.add(onSelection);
+      interceptor.selectionCacheRefetchListeners.add(onSelection);
     }
 
     try {

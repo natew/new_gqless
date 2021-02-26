@@ -13,9 +13,7 @@ import { CreateReactClientOptions } from '../client';
 import {
   FetchPolicy,
   fetchPolicyDefaultResolveOptions,
-  IS_BROWSER,
   useDeferDispatch,
-  useIsFirstMount,
   useSelectionsState,
   useSubscribeCacheChanges,
 } from '../common';
@@ -177,17 +175,17 @@ export function createUseTransactionQuery<
 
     const isFetching = useRef(false);
 
-    const isFirstMount = useIsFirstMount();
-
     const queryCallback = useCallback(
       (
         resolveOpts: ResolveOptions<TData> = resolveOptions,
         fetchPolicyArg: FetchPolicy | undefined = fetchPolicy
       ) => {
         if (skip)
-          return dispatch({
-            type: 'done',
-          });
+          return Promise.resolve(
+            dispatch({
+              type: 'done',
+            })
+          );
 
         stateRef.current.isCalled = true;
         isFetching.current = true;
@@ -198,8 +196,11 @@ export function createUseTransactionQuery<
 
         const fn = () => fnRef.current(clientQuery, optsRef.current.variables!);
 
-        resolved<TData>(fn, {
+        return resolved<TData>(fn, {
           ...resolveOpts,
+          onSelection(selection) {
+            hookSelections.add(selection);
+          },
           onCacheData(data): boolean {
             switch (fetchPolicyArg) {
               case 'cache-and-network': {
@@ -214,7 +215,7 @@ export function createUseTransactionQuery<
                 return false;
               }
               default:
-                return true;
+                return false;
             }
           },
         }).then(
@@ -244,18 +245,12 @@ export function createUseTransactionQuery<
       [fetchPolicy, skip, stateRef, resolveOptions, fnRef, dispatch]
     );
 
-    if (IS_BROWSER && isFirstMount.current) {
-      queryCallback();
-    }
-
     const serializedVariables = useMemo(() => {
       return variables ? JSON.stringify(variables) : '';
     }, [variables]);
 
     useEffect(() => {
-      if (!skip && !isFirstMount.current) {
-        queryCallback();
-      }
+      if (!skip) queryCallback();
     }, [skip, queryCallback, serializedVariables]);
 
     useEffect(() => {
@@ -314,17 +309,23 @@ export function createUseTransactionQuery<
       isFetching,
     ]);
 
+    const isChanging = useRef(false);
+
     useSubscribeCacheChanges({
       hookSelections,
       eventHandler,
       shouldSubscribe: fetchPolicy !== 'no-cache',
-      onChange: () =>
+      onChange: () => {
+        if (isChanging.current) return;
+        isChanging.current = true;
+
         queryCallback(
           {
             refetch: false,
           },
           'cache-first'
-        ),
+        ).finally(() => (isChanging.current = false));
+      },
     });
 
     return state;

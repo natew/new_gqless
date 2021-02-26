@@ -33,7 +33,7 @@ export type IsFetchingSubscriptionFn = (isFetching: boolean) => void;
 
 export const createScheduler = (
   { globalInterceptor }: InterceptorManager,
-  resolveSelections: (selections: Set<Selection>) => Promise<void>,
+  resolveSchedulerSelections: (selections: Set<Selection>) => Promise<void>,
   catchSelectionsTimeMS: number
 ) => {
   type ResolvingLazyPromise = LazyPromise<SchedulerPromiseValue>;
@@ -143,7 +143,7 @@ export const createScheduler = (
     pendingSelectionsGroups.add(selectionsToFetch);
     pendingSelectionsGroupsPromises.set(selectionsToFetch, lazyPromise.promise);
 
-    resolveSelections(selectionsToFetch).then(
+    resolveSchedulerSelections(selectionsToFetch).then(
       () => {
         pendingSelectionsGroups.delete(selectionsToFetch);
         pendingSelectionsGroupsPromises.delete(selectionsToFetch);

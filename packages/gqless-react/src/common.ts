@@ -45,23 +45,13 @@ export const useLazyRef = <T>(initialValFunc: () => T) => {
   return ref;
 };
 
-export const useIsFirstMount = () => {
-  const isFirstMount = useRef(true);
-
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-    }
-  }, [isFirstMount]);
-
-  return isFirstMount;
-};
-
 export const useUpdateEffect: typeof useEffect = (effect, deps) => {
-  const isFirstMount = useIsFirstMount();
+  const firstEffectCall = useRef(true);
 
   useEffect(() => {
-    if (!isFirstMount) return effect();
+    if (firstEffectCall.current) {
+      firstEffectCall.current = false;
+    } else return effect();
   }, deps);
 };
 
@@ -69,7 +59,7 @@ export const useIsRendering = () => {
   const isRendering = useRef(true);
   isRendering.current = true;
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     isRendering.current = false;
   });
 
@@ -300,8 +290,12 @@ export function useSubscribeCacheChanges({
 }
 
 export function useInterceptSelections({
-  interceptorManager,
-  staleWhileRevalidate,
+  interceptorManager: {
+    globalInterceptor,
+    createInterceptor,
+    removeInterceptor,
+  },
+  staleWhileRevalidate = false,
   scheduler,
   eventHandler,
 }: {
@@ -314,17 +308,24 @@ export function useInterceptSelections({
   const forceUpdate = useDeferDispatch(useForceUpdate());
   const fetchingPromise = useRef<Promise<void> | null>(null);
 
-  const interceptor = interceptorManager.createInterceptor();
+  const interceptor = createInterceptor();
 
-  const isFirstMount = useIsFirstMount();
+  let cacheRefetchSelections: Set<Selection> | undefined;
 
-  if (staleWhileRevalidate && isFirstMount.current) {
+  if (staleWhileRevalidate) {
+    let selectionsSet = (cacheRefetchSelections = new Set());
     interceptor.selectionCacheRefetchListeners.add((selection) => {
-      interceptorManager.globalInterceptor.addSelectionCacheRefetch(selection);
-
-      hookSelections.add(selection);
+      selectionsSet.add(selection);
     });
   }
+
+  useEffect(() => {
+    if (staleWhileRevalidate && cacheRefetchSelections?.size) {
+      for (const selection of cacheRefetchSelections) {
+        globalInterceptor.addSelectionCacheRefetch(selection);
+      }
+    }
+  }, [staleWhileRevalidate]);
 
   interceptor.selectionAddListeners.add((selection) => {
     hookSelections.add(selection);
@@ -334,10 +335,25 @@ export function useInterceptSelections({
     hookSelections.add(selection);
   });
 
+  const deferredCall = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (deferredCall.current) {
+      deferredCall.current();
+      deferredCall.current = null;
+    }
+  });
+
+  const isRendering = useIsRendering();
+
   const unsubscribeResolve = scheduler.subscribeResolve(
     (promise, selection) => {
-      if (fetchingPromise.current === null && hookSelections.has(selection)) {
-        fetchingPromise.current = new Promise<void>((resolve, reject) => {
+      if (
+        fetchingPromise.current === null &&
+        deferredCall.current === null &&
+        hookSelections.has(selection)
+      ) {
+        const newPromise = new Promise<void>((resolve, reject) => {
           promise.then(
             () => {
               fetchingPromise.current = null;
@@ -350,14 +366,22 @@ export function useInterceptSelections({
             }
           );
         });
-        forceUpdate();
+        if (staleWhileRevalidate && isRendering.current) {
+          deferredCall.current = () => {
+            fetchingPromise.current = newPromise;
+            forceUpdate();
+          };
+        } else {
+          fetchingPromise.current = newPromise;
+          forceUpdate();
+        }
       }
     }
   );
 
   function unsubscribe() {
     unsubscribeResolve();
-    interceptorManager.removeInterceptor(interceptor);
+    removeInterceptor(interceptor);
   }
 
   setTimeout(unsubscribe, 0);
