@@ -19,6 +19,8 @@ importers:
       prettier: ^2.2.1
       pretty-quick: ^3.1.0
       rimraf: ^3.0.2
+  ../AppData/Roaming/npm/pnpm-global:
+    specifiers: {}
   examples/mercurius:
     dependencies:
       '@dish/gqless': link:../../packages/gqless

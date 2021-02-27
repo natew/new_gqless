@@ -3,8 +3,9 @@ import { createTestApp } from 'test-utils';
 
 import { inspectWriteGenerate } from '../src/inspectWriteGenerate';
 import { getTempDir } from './utils';
+import tmp from 'tmp-promise';
 
-const { readFile, writeFile } = fs.promises;
+const { readFile } = fs.promises;
 const { server, isReady } = createTestApp({
   schema: `
     type Query {
@@ -37,14 +38,15 @@ test('basic inspectWriteGenerate functionality', async () => {
   try {
     await inspectWriteGenerate({
       endpoint,
-      overwrite: true,
       destination: tempDir.clientPath,
     });
 
     expect(
-      await readFile(tempDir.clientPath, {
-        encoding: 'utf-8',
-      })
+      (
+        await readFile(tempDir.clientPath, {
+          encoding: 'utf-8',
+        })
+      ).replace(new RegExp(endpoint, 'g'), '/graphql')
     ).toMatchSnapshot('basic inspectWriteGenerate client');
 
     expect(
@@ -57,6 +59,68 @@ test('basic inspectWriteGenerate functionality', async () => {
   }
 });
 
+describe('from file', () => {
+  test('generate from graphql schema file', async () => {
+    const tempFile = await tmp.file();
+    const tempDir = await getTempDir();
+
+    try {
+      await fs.promises.writeFile(
+        tempFile.path,
+        `
+      type Query {
+        hello: Int!
+      }
+      `
+      );
+
+      await inspectWriteGenerate({
+        endpoint: tempFile.path,
+        destination: tempDir.clientPath,
+      });
+
+      const generatedFileContentClient = await readFile(tempDir.clientPath, {
+        encoding: 'utf-8',
+      });
+
+      const generatedFileContentSchema = await readFile(tempDir.schemaPath, {
+        encoding: 'utf-8',
+      });
+
+      expect(
+        generatedFileContentClient.replace(
+          new RegExp(endpoint, 'g'),
+          '/graphql'
+        )
+      ).toMatchSnapshot('from file client');
+      expect(generatedFileContentSchema).toMatchSnapshot('from file schema');
+    } finally {
+      await tempFile.cleanup();
+      await tempDir.cleanup();
+    }
+  });
+
+  test('non-existant file', async () => {
+    const tempDir = await getTempDir();
+
+    try {
+      const endpoint = './non-existant-file.gql';
+      const result = await inspectWriteGenerate({
+        endpoint,
+        destination: tempDir.clientPath,
+      }).catch((err) => err);
+
+      expect(result).toStrictEqual(
+        Error(
+          `File "${endpoint}" doesn't exists. If you meant to inspect a GraphQL API, make sure to put http:// or https:// in front of it.`
+        )
+      );
+    } finally {
+      tempDir.cleanup();
+    }
+  });
+});
+
 test('specify generateOptions to inspectWriteGenerate', async () => {
   const tempDir = await getTempDir();
 
@@ -65,7 +129,6 @@ test('specify generateOptions to inspectWriteGenerate', async () => {
   try {
     await inspectWriteGenerate({
       endpoint,
-      overwrite: true,
       destination: tempDir.clientPath,
       generateOptions: {
         preImport: `
@@ -82,15 +145,20 @@ test('specify generateOptions to inspectWriteGenerate', async () => {
       encoding: 'utf-8',
     });
 
-    expect(generatedFileContentClient).toMatchSnapshot(
-      'generateOptions client'
-    );
+    expect(
+      generatedFileContentClient.replace(new RegExp(endpoint, 'g'), '/graphql')
+    ).toMatchSnapshot('generateOptions client');
     expect(generatedFileContentSchema).toMatchSnapshot(
       'generateOptions schema'
     );
 
     expect(
-      generatedFileContentSchema.startsWith(shouldBeIncluded)
+      generatedFileContentSchema
+        .split('\n')
+        .slice(3)
+        .join('\n')
+        .trim()
+        .startsWith(shouldBeIncluded)
     ).toBeTruthy();
   } finally {
     await tempDir.cleanup();
@@ -140,7 +208,6 @@ describe('inspect headers', () => {
     try {
       await inspectWriteGenerate({
         endpoint,
-        overwrite: true,
         destination: tempDir.clientPath,
         headers: {
           authorization: secretToken,
@@ -156,7 +223,13 @@ describe('inspect headers', () => {
 
       expect(generatedFileContent).toMatchSnapshot('specify headers');
 
-      expect(generatedFileContent.startsWith(shouldBeIncluded)).toBeTruthy();
+      expect(
+        generatedFileContent
+          .split('\n')
+          .slice(3)
+          .join('\n')
+          .startsWith(shouldBeIncluded)
+      ).toBeTruthy();
     } finally {
       await tempDir.cleanup();
     }
@@ -171,7 +244,6 @@ describe('inspect headers', () => {
       await expect(
         inspectWriteGenerate({
           endpoint,
-          overwrite: true,
           destination: tempDir.clientPath,
         })
       ).rejects.toEqual({
@@ -189,64 +261,7 @@ describe('inspect headers', () => {
   });
 });
 
-test('should respect to not overwrite', async () => {
-  const tempDir = await getTempDir();
-
-  try {
-    await writeFile(tempDir.clientPath, 'this should be kept', {
-      encoding: 'utf-8',
-    });
-
-    await expect(
-      inspectWriteGenerate({
-        endpoint,
-        overwrite: false,
-        destination: tempDir.clientPath,
-      })
-    ).rejects.toThrow(
-      `File '${tempDir.clientPath}' already exists, specify 'overwrite: true' to overwrite the existing file.`
-    );
-
-    expect(
-      await readFile(tempDir.clientPath, {
-        encoding: 'utf-8',
-      })
-    ).toBe('this should be kept');
-  } finally {
-    await tempDir.cleanup();
-  }
-});
-
 describe('CLI behavior', () => {
-  test('overwrite message', async () => {
-    const tempDir = await getTempDir();
-
-    try {
-      await writeFile(tempDir.clientPath, 'this should be kept', {
-        encoding: 'utf-8',
-      });
-
-      await expect(
-        inspectWriteGenerate({
-          endpoint,
-          overwrite: false,
-          destination: tempDir.clientPath,
-          cli: true,
-        })
-      ).rejects.toThrow(
-        `File '${tempDir.clientPath}' already exists, specify '--overwrite' to overwrite the existing file.`
-      );
-
-      expect(
-        await readFile(tempDir.clientPath, {
-          encoding: 'utf-8',
-        })
-      ).toBe('this should be kept');
-    } finally {
-      await tempDir.cleanup();
-    }
-  });
-
   test('final message', async () => {
     const spy = jest.spyOn(console, 'log').mockImplementation();
     const tempDir = await getTempDir();
@@ -254,7 +269,6 @@ describe('CLI behavior', () => {
     try {
       await inspectWriteGenerate({
         endpoint,
-        overwrite: true,
         destination: tempDir.clientPath,
         cli: true,
       });
@@ -266,9 +280,11 @@ describe('CLI behavior', () => {
       );
 
       expect(
-        await readFile(tempDir.clientPath, {
-          encoding: 'utf-8',
-        })
+        (
+          await readFile(tempDir.clientPath, {
+            encoding: 'utf-8',
+          })
+        ).replace(new RegExp(endpoint, 'g'), '/graphql')
       ).toMatchSnapshot('basic functionality with cli final messsage');
 
       expect(

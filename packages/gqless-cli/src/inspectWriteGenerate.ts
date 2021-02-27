@@ -1,28 +1,24 @@
 import { existsSync } from 'fs';
+import { GraphQLSchema, buildSchema } from 'graphql';
 import { resolve } from 'path';
+import { readFile } from 'fs/promises';
 
-import { GenerateOptions } from './generate';
-import { getRemoteSchema } from './introspection';
-import { writeGenerate } from './writeGenerate';
+import type { GenerateOptions } from './generate';
 
 export async function inspectWriteGenerate({
   endpoint,
-  overwrite,
   destination,
   generateOptions,
   cli,
   headers,
 }: {
   /**
-   * GraphQL API endpoint
+   * GraphQL API endpoint or GraphQL Schema file
    *
    * @example 'http://localhost:3000/graphql'
+   * @example './schema.gql'
    */
   endpoint: string;
-  /**
-   * Whether the generation should overwrite if file already exists
-   */
-  overwrite?: boolean;
   /**
    * File path destination
    * @example './src/generated/graphql.ts'
@@ -43,26 +39,33 @@ export async function inspectWriteGenerate({
 }) {
   destination = resolve(destination);
 
-  const schema = await getRemoteSchema(endpoint, {
-    headers,
-  });
+  const genOptions = Object.assign({}, generateOptions);
 
-  if (!overwrite && existsSync(destination)) {
-    const err = Error(
-      `File '${destination}' already exists, specify ${
-        cli ? "'--overwrite'" : "'overwrite: true'"
-      } to overwrite the existing file.`
-    );
+  let schema: GraphQLSchema;
 
-    Error.captureStackTrace(err, inspectWriteGenerate);
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    schema = await (await import('./introspection')).getRemoteSchema(endpoint, {
+      headers,
+    });
+    genOptions.endpoint = endpoint;
+  } else {
+    if (existsSync(endpoint)) {
+      const file = await readFile(endpoint, {
+        encoding: 'utf-8',
+      });
 
-    throw err;
+      schema = buildSchema(file);
+    } else {
+      throw Error(
+        `File "${endpoint}" doesn't exists. If you meant to inspect a GraphQL API, make sure to put http:// or https:// in front of it.`
+      );
+    }
   }
 
-  const generatedPath = await writeGenerate(
+  const generatedPath = await (await import('./writeGenerate')).writeGenerate(
     schema,
     destination,
-    generateOptions
+    genOptions
   );
 
   if (cli) {

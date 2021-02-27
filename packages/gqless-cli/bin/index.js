@@ -3,13 +3,15 @@
 const { program } = require('commander');
 const { inspectWriteGenerate } = require('../dist/index');
 
-program.version('1.0.0').description('CLI for gqless');
+program.version('4.0.2').description('CLI for gqless');
 
 program
   .command('generate <endpoint> [destination]')
-  .option('--overwrite', 'Overwrite file if already exists')
+  .option('--react', 'Create React client')
   .description(
-    'generate the gqless schema and client in the specified directory (./src/generated/graphql.ts by default). \nexample: "gqless-cli generate http://localhost:3000/graphql src/generated/index.ts"'
+    `Inspect or read from a file a GraphQL Schema and generate the gqless client in the specified directory (./src/generated/graphql.ts by default).
+EXAMPLE 1: "gqless generate ./schema.gql --react" 
+EXAMPLE 2: "gqless generate http://localhost:3000/graphql src/generated/index.ts"`
   )
   .action(
     async (endpoint, destination = './src/generated/graphql.ts', opts) => {
@@ -17,8 +19,11 @@ program
         endpoint,
         destination,
         cli: true,
-        overwrite: !!opts.overwrite,
+        generateOptions: {
+          react: !!opts.react,
+        },
       }).catch((err) => {
+        if (err instanceof Error) delete err.stack;
         console.error(err);
         process.exit(1);
       });

@@ -21,7 +21,12 @@ import {
 import { codegen } from '@graphql-codegen/core';
 import * as typescriptPlugin from '@graphql-codegen/typescript';
 
-export type GenerateOptions = {
+export interface GenerateOptions {
+  /**
+   * Target Query Fetcher endpoint
+   * @default '/graphql'
+   */
+  endpoint?: string;
   /**
    * Add a custom string at the beginning of the file, for example, add imports.
    */
@@ -30,11 +35,20 @@ export type GenerateOptions = {
    * Specify the types of custom scalars
    */
   scalars?: Record<string, string>;
-};
+  /**
+   * Generate React Client code
+   */
+  react?: boolean;
+}
 
 export async function generate(
   schema: GraphQLSchema,
-  { preImport = '', scalars }: GenerateOptions = {}
+  {
+    preImport = '',
+    scalars,
+    react,
+    endpoint = '/graphql',
+  }: GenerateOptions = {}
 ) {
   const prettierConfigPromise = resolveConfig(process.cwd()).then((config) =>
     Object.assign({}, config, {
@@ -458,7 +472,8 @@ export async function generate(
 
   const queryFetcher = `
     const queryFetcher : QueryFetcher = async function (query, variables) {
-        const response = await fetch("/graphql", {
+        // Modify "${endpoint}" if needed
+        const response = await fetch("${endpoint}", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -489,6 +504,9 @@ export async function generate(
 
   const schemaCode = format(
     `
+/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
   ${preImport}
 
   import { ScalarsEnumsHash${
@@ -514,14 +532,45 @@ export async function generate(
 
   const clientCode = format(
     `
+/**
+ * GQLESS: You can safely modify this file and Query Fetcher based on your needs
+ */
+
+  ${react ? `import { createReactClient } from "@dish/gqless-react"` : ''}
   import { createClient, QueryFetcher } from "@dish/gqless";
   import { GeneratedSchema, generatedSchema, scalarsEnumsHash, SchemaObjectTypes, SchemaObjectTypesNames } from "./schema.generated";
 
   ${queryFetcher}
 
-  export const client = createClient<GeneratedSchema, SchemaObjectTypesNames, SchemaObjectTypes>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher});
+  export const client = createClient<GeneratedSchema, SchemaObjectTypesNames, SchemaObjectTypes>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
 
   export const { query, mutation, mutate, subscription, resolved, refetch } = client;
+
+  ${
+    react
+      ? `export const {
+    graphql,
+    useQuery,
+    useTransactionQuery,
+    useLazyQuery,
+    usePolling,
+    useMutation,
+    useRefetch,
+    useMetaState    
+  } = createReactClient<GeneratedSchema>(client, {
+    defaults: {
+      // Set this flag as "false" if your usage doesn't involve React Suspense
+      suspense: true,
+
+      // Set this Policy based on your needs
+      fetchPolicy: "cache-first",
+
+      // Set this flag based on your needs
+      staleWhileRevalidate: false
+    }
+  });`
+      : ''
+  }
 
   export * from "./schema.generated";
   `,

@@ -2,6 +2,8 @@ import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '../src';
 
+export const clientPreComment = '';
+
 test('basic functionality works', async () => {
   const { server, isReady } = createTestApp({
     schema: gql`
@@ -22,16 +24,21 @@ test('basic functionality works', async () => {
 
   const shouldBeIncluded = '// This should be included';
 
-  const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
-    server.graphql.schema,
-    {
-      preImport: `
+  const {
+    schemaCode,
+    clientCode,
+    generatedSchema,
+    scalarsEnumsHash,
+  } = await generate(server.graphql.schema, {
+    preImport: `
         ${shouldBeIncluded}
         `,
-    }
-  );
+    react: true,
+  });
 
   expect(schemaCode).toMatchSnapshot('generate_code');
+
+  expect(clientCode).toMatchSnapshot('generate_client_code');
 
   expect(JSON.stringify(generatedSchema, null, 2)).toMatchSnapshot(
     'generate_generatedSchema'
@@ -41,7 +48,16 @@ test('basic functionality works', async () => {
     'generate_scalarsEnumHash'
   );
 
-  expect(schemaCode.startsWith(shouldBeIncluded)).toBeTruthy();
+  expect(clientCode.includes('= createReactClient')).toBeTruthy();
+
+  expect(
+    schemaCode
+      .split('\n')
+      .slice(3)
+      .join('\n')
+      .trim()
+      .startsWith(shouldBeIncluded)
+  ).toBeTruthy();
 });
 
 test('custom scalars works', async () => {
@@ -63,14 +79,18 @@ test('custom scalars works', async () => {
 
   await isReady;
 
-  const { schemaCode, generatedSchema, scalarsEnumsHash } = await generate(
-    server.graphql.schema,
-    {
-      scalars: {
-        Custom: '"hello world"',
-      },
-    }
-  );
+  const {
+    schemaCode,
+    clientCode,
+    generatedSchema,
+    scalarsEnumsHash,
+  } = await generate(server.graphql.schema, {
+    scalars: {
+      Custom: '"hello world"',
+    },
+  });
+
+  expect(clientCode).toMatchSnapshot('generate_client_code');
 
   expect(schemaCode).toMatchSnapshot('generate_code');
 
@@ -188,7 +208,7 @@ test('prettier detects invalid code', async () => {
         con a; // invalid code
         `,
     })
-  ).rejects.toThrow("';' expected. (3:13)");
+  ).rejects.toThrow("';' expected. (6:13)");
 });
 
 describe('mutation', () => {

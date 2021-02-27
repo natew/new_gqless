@@ -1,3 +1,7 @@
+/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
+
 import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;

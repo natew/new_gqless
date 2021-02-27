@@ -1,7 +1,90 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`basic functionality works: generate_client_code 1`] = `
+"/**
+ * GQLESS: You can safely modify this file and Query Fetcher based on your needs
+ */
+
+import { createReactClient } from '@dish/gqless-react';
+import { createClient, QueryFetcher } from '@dish/gqless';
+import {
+  GeneratedSchema,
+  generatedSchema,
+  scalarsEnumsHash,
+  SchemaObjectTypes,
+  SchemaObjectTypesNames,
+} from './schema.generated';
+
+const queryFetcher: QueryFetcher = async function (query, variables) {
+  // Modify \\"/graphql\\" if needed
+  const response = await fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+    mode: 'cors',
+  });
+
+  if (!response.ok) {
+    throw new Error(\`Network error, received status code \${response.status}\`);
+  }
+
+  const json = await response.json();
+
+  return json;
+};
+
+export const client = createClient<
+  GeneratedSchema,
+  SchemaObjectTypesNames,
+  SchemaObjectTypes
+>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+
+export const {
+  query,
+  mutation,
+  mutate,
+  subscription,
+  resolved,
+  refetch,
+} = client;
+
+export const {
+  graphql,
+  useQuery,
+  useTransactionQuery,
+  useLazyQuery,
+  usePolling,
+  useMutation,
+  useRefetch,
+  useMetaState,
+} = createReactClient<GeneratedSchema>(client, {
+  defaults: {
+    // Set this flag as \\"false\\" if your usage doesn't involve React Suspense
+    suspense: true,
+
+    // Set this Policy based on your needs
+    fetchPolicy: 'cache-first',
+
+    // Set this flag based on your needs
+    staleWhileRevalidate: false,
+  },
+});
+
+export * from './schema.generated';
+"
+`;
+
 exports[`basic functionality works: generate_code 1`] = `
-"// This should be included
+"/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
+
+// This should be included
 
 import { ScalarsEnumsHash } from '@dish/gqless';
 
@@ -88,8 +171,68 @@ exports[`basic functionality works: generate_scalarsEnumHash 1`] = `
 }"
 `;
 
+exports[`custom scalars works: generate_client_code 1`] = `
+"/**
+ * GQLESS: You can safely modify this file and Query Fetcher based on your needs
+ */
+
+import { createClient, QueryFetcher } from '@dish/gqless';
+import {
+  GeneratedSchema,
+  generatedSchema,
+  scalarsEnumsHash,
+  SchemaObjectTypes,
+  SchemaObjectTypesNames,
+} from './schema.generated';
+
+const queryFetcher: QueryFetcher = async function (query, variables) {
+  // Modify \\"/graphql\\" if needed
+  const response = await fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+    mode: 'cors',
+  });
+
+  if (!response.ok) {
+    throw new Error(\`Network error, received status code \${response.status}\`);
+  }
+
+  const json = await response.json();
+
+  return json;
+};
+
+export const client = createClient<
+  GeneratedSchema,
+  SchemaObjectTypesNames,
+  SchemaObjectTypes
+>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+
+export const {
+  query,
+  mutation,
+  mutate,
+  subscription,
+  resolved,
+  refetch,
+} = client;
+
+export * from './schema.generated';
+"
+`;
+
 exports[`custom scalars works: generate_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
+
+import { ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -178,7 +321,11 @@ exports[`custom scalars works: generate_customScalars_scalarsEnumHash 1`] = `
 `;
 
 exports[`feature complete app generate works: featureComplete_code 1`] = `
-"import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
+"/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
+
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -401,7 +548,11 @@ exports[`feature complete app generate works: featureComplete_generatedSchema 1`
 exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
 
 exports[`mutation generates mutation: mutation_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
+
+import { ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -503,7 +654,11 @@ Object {
 `;
 
 exports[`subscription generates subscription: subscription_code 1`] = `
-"import { ScalarsEnumsHash } from '@dish/gqless';
+"/**
+ * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
+ */
+
+import { ScalarsEnumsHash } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {

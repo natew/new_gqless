@@ -55,7 +55,13 @@ test('generates code and writes existing file', async () => {
       encoding: 'utf-8',
     });
 
-    expect(generatedContent.startsWith(shouldBeIncluded)).toBeTruthy();
+    expect(
+      generatedContent
+        .split('\n')
+        .slice(3)
+        .join('\n')
+        .startsWith(shouldBeIncluded)
+    ).toBeTruthy();
 
     expect(generatedContent).toMatchSnapshot('overwrite');
   } finally {
@@ -89,7 +95,13 @@ test('creates dir, generates code and writes new file', async () => {
       }
     );
 
-    expect(generatedContentSchema.startsWith(shouldBeIncluded)).toBeTruthy();
+    expect(
+      generatedContentSchema
+        .split('\n')
+        .slice(3)
+        .join('\n')
+        .startsWith(shouldBeIncluded)
+    ).toBeTruthy();
 
     expect(generatedContentSchema).toMatchSnapshot('new schema');
 
