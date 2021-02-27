@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless-cli",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",
@@ -33,7 +33,7 @@
     "prettier": "^2.2.1"
   },
   "devDependencies": {
-    "@dish/gqless": "workspace:^3.0.9",
+    "@dish/gqless": "workspace:^3.0.10",
     "@size-limit/preset-small-lib": "^4.9.2",
     "@types/mkdirp": "^1.0.1",
     "rimraf": "^3.0.2",
