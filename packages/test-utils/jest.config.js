@@ -9,4 +9,5 @@ module.exports = {
   testPathIgnorePatterns: ['/node_modules/', '/test/generated'],
   collectCoverage: true,
   collectCoverageFrom: ['./src/**/*.ts', './src/**/*.tsx'],
+  testTimeout: 10000,
 };

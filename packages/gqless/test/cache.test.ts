@@ -368,15 +368,22 @@ describe('data normalization', () => {
       normalizedCache,
       getCacheFromSelection,
     } = createCache(
-      createNormalizationHandler(true, new EventHandler(), {
-        mutation: {},
-        query: {},
-        subscription: {},
-        a: {
-          __typename: { __type: 'String!' },
-          id: { __type: 'Int!' },
+      createNormalizationHandler(
+        true,
+        new EventHandler(),
+        {
+          mutation: {},
+          query: {},
+          subscription: {},
+          a: {
+            __typename: { __type: 'String!' },
+            id: { __type: 'Int!' },
+          },
         },
-      })
+        {
+          Int: true,
+        }
+      )
     );
 
     assertIsDefined(normalizedCache);

@@ -7,6 +7,8 @@ import {
   GeneratedSchema,
   generatedSchema,
   scalarsEnumsHash,
+  SchemaObjectTypes,
+  SchemaObjectTypesNames,
 } from './schema.generated';
 
 const testClient = createMercuriusTestClient(app);
@@ -16,10 +18,27 @@ const queryFetcher: QueryFetcher = function (query, variables) {
   });
 };
 
-export const client = createClient<GeneratedSchema>({
+export const client = createClient<
+  GeneratedSchema,
+  SchemaObjectTypesNames,
+  SchemaObjectTypes
+>({
   schema: generatedSchema,
   scalarsEnumsHash,
   queryFetcher,
+  normalization: {
+    identifier(obj) {
+      switch (obj.__typename) {
+        case 'A': {
+          return obj.a;
+        }
+        default: {
+          return;
+        }
+      }
+    },
+    keyFields: {},
+  },
 });
 
 export const {

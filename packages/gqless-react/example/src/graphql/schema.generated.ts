@@ -106,6 +106,20 @@ export interface Human {
   dogs?: Maybe<Array<Dog>>;
 }
 
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+  Dog: Dog;
+  Human: Human;
+}
+export type SchemaObjectTypesNames =
+  | 'Query'
+  | 'Mutation'
+  | 'Subscription'
+  | 'Dog'
+  | 'Human';
+
 export interface GeneratedSchema {
   query: Query;
   mutation: Mutation;

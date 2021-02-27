@@ -3,6 +3,8 @@ import {
   GeneratedSchema,
   generatedSchema,
   scalarsEnumsHash,
+  SchemaObjectTypes,
+  SchemaObjectTypesNames,
 } from './schema.generated';
 
 const queryFetcher: QueryFetcher = async function (query, variables) {
@@ -27,11 +29,18 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const client = createClient<GeneratedSchema>({
+export const client = createClient<
+  GeneratedSchema,
+  SchemaObjectTypesNames,
+  SchemaObjectTypes
+>({
   schema: generatedSchema,
   scalarsEnumsHash,
   queryFetcher,
   catchSelectionsTimeMS: 10,
+  normalization: {
+    keyFields: {},
+  },
 });
 
 export const {

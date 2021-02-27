@@ -1,6 +1,6 @@
 import { CacheType } from '../Cache';
 import { EventHandler } from '../Events';
-import { Schema } from '../Schema';
+import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '../Schema';
 import { Selection } from '../Selection';
 import {
   isObject,
@@ -9,11 +9,71 @@ import {
   PlainObject,
   mergeWith,
   deepAssign,
+  DeepPartial,
 } from '../Utils';
 
-export interface NormalizationOptions {
-  identifier?: (obj: ObjectWithType) => string | null | undefined | void;
-  keyFields?: Record<string, string[] | null | undefined>;
+type MakeTypenamesNonNullable<Obj extends { __typename?: string | null }> = {
+  [K in keyof Obj]: K extends '__typename' ? NonNullable<Obj[K]> : Obj[K];
+};
+
+export interface NormalizationOptions<
+  ObjectTypesNames extends string = never,
+  ObjectTypes extends {
+    [P in ObjectTypesNames]: {
+      __typename: P | null;
+    };
+  } = never
+> {
+  /**
+   * ### Custom object identifier.
+   *
+   * It receives the received object with it's ___typename_ and it should return:
+   *
+   * - A __string__ if successfully identified
+   * - '__null__' if it shouldn't be normalized,
+   * - Or '__undefined__', to fallback to either default or custom keyFields.
+   *
+   * @example
+   * identifier(obj) {
+   *   switch (obj.__typename) {
+   *    case "Human": {
+   *      if (obj.customId) {
+   *         return `${obj.__typename}${obj.customId}`
+   *      }
+   *      return null;
+   *    }
+   *    default: {
+   *      return;
+   *    }
+   *  }
+   * }
+   *
+   */
+  identifier?: (
+    obj: MakeTypenamesNonNullable<DeepPartial<ObjectTypes[ObjectTypesNames]>>
+  ) => string | null | undefined | void;
+  /**
+   * ### Auto-fetch & object identifier customization
+   *
+   * Keep in mind that `gqless` already checks your schema and looks for the fields **id** or **__id**
+   * and it add thems **automatically**.
+   *
+   * Set the __id's__ of any object type in your schema.
+   *
+   * __IMPORTANT__: Please make sure to only put [`Scalars`](https://graphql.org/learn/schema/#scalar-types)
+   * without any variable needed as keyFields
+   *
+   * @example
+   * keyFields: {
+   *    Human: ["customId"]
+   * }
+   */
+  keyFields?: {
+    [P in ObjectTypesNames]?:
+      | Array<Exclude<keyof ObjectTypes[P], '__typename'>>
+      | null
+      | undefined;
+  };
 }
 
 function toString(v: unknown): string | null {
@@ -33,9 +93,13 @@ function toString(v: unknown): string | null {
 }
 
 export function createNormalizationHandler(
-  options: NormalizationOptions | undefined | boolean,
+  options:
+    | NormalizationOptions<string, Record<string, any>>
+    | undefined
+    | boolean,
   eventHandler: EventHandler,
-  schema: Readonly<Schema>
+  schema: Readonly<Schema>,
+  scalarsEnumsHash: ScalarsEnumsHash
 ) {
   if (!options) return;
 
@@ -43,10 +107,29 @@ export function createNormalizationHandler(
     ? options
     : ({} as NormalizationOptions);
 
-  const schemaKeys = keyFields ? Object.assign({}, keyFields) : {};
+  const schemaKeys: Record<string, string[] | null | undefined> = keyFields
+    ? Object.assign({}, keyFields)
+    : {};
 
   const idSchemaKey: ['id'] = ['id'];
   const _idSchemaKey: ['_id'] = ['_id'];
+
+  function addIdIfValid(
+    idKey: string,
+    typeName: string,
+    schemaType: Record<string, Type>,
+    idsList: string[]
+  ) {
+    const type = schemaType[idKey] as Type | undefined;
+    if (!type || type.__args) return;
+
+    const { pureType, isArray } = parseSchemaType(type.__type);
+    if (isArray || !scalarsEnumsHash[pureType]) return;
+
+    schemaKeys[typeName] = idsList;
+
+    return true;
+  }
 
   for (const [typeName, schemaType] of Object.entries(schema)) {
     if (
@@ -55,39 +138,36 @@ export function createNormalizationHandler(
       typeName === 'query' ||
       typeName === 'mutation' ||
       typeName === 'subscription' ||
-      !('__typename' in schemaType)
+      !schemaType.__typename
     ) {
       continue;
     }
 
-    if (schemaType.id && !schemaType.id.__args) {
-      schemaKeys[typeName] = idSchemaKey;
-    } else if (schemaType._id && !schemaType._id.__args) {
-      schemaKeys[typeName] = _idSchemaKey;
-    }
+    addIdIfValid('id', typeName, schemaType, idSchemaKey) ||
+      addIdIfValid('_id', typeName, schemaType, _idSchemaKey);
   }
 
-  function getId(
-    obj: ObjectWithType
-  ): ReturnType<NonNullable<typeof identifier>> {
+  function getId(obj: ObjectWithType): string | undefined | null {
     if (identifier) {
-      const result = identifier(obj);
+      const result = identifier(obj as never);
 
       if (result !== undefined) return result;
     }
 
     const keys = schemaKeys[obj.__typename];
 
-    if (keys) {
-      let id: string = '';
+    if (!keys) return;
 
-      for (const key of keys) {
-        const value = toString(obj[key]);
-        if (value !== null) id += value;
-      }
+    let id: string = '';
 
-      return id && obj.__typename + id;
+    for (const key of keys) {
+      if (typeof key !== 'string') continue;
+
+      const value = toString(obj[key]);
+      if (value !== null) id += value;
     }
+
+    return id && obj.__typename + id;
   }
 
   const normalizedCache: Record<string, PlainObject | undefined> = {};
@@ -107,7 +187,7 @@ export function createNormalizationHandler(
     let currentSelection: Selection;
 
     function getNormalized() {
-      let id: string | void | null;
+      let id: string | undefined | null;
       if (isObjectWithType(currentValue) && (id = getId(currentValue))) {
         let selectionsSet = normalizedSelections.get(id);
         if (!selectionsSet) {

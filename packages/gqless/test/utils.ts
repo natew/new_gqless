@@ -12,6 +12,21 @@ import {
 } from '../src';
 import { deepAssign } from '../src/Utils';
 
+type ObjectTypesNames = 'Human' | 'Query' | 'Mutation' | 'Subscription';
+
+type ObjectTypes = {
+  Human: Human;
+  Query: {
+    __typename: 'Query';
+  };
+  Mutation: {
+    __typename: 'Mutation';
+  };
+  Subscription: {
+    __typename: 'Subscription';
+  };
+};
+
 export type Maybe<T> = T | null;
 export type Human = {
   __typename: 'Human';
@@ -53,7 +68,7 @@ export const createTestClient = async (
   addedToGeneratedSchema?: DeepPartial<Schema>,
   queryFetcher?: QueryFetcher,
   config?: TestClientConfig,
-  clientConfig: Partial<ClientOptions> = {}
+  clientConfig: Partial<ClientOptions<ObjectTypesNames, ObjectTypes>> = {}
 ) => {
   const dogs: { name: string }[] = [
     {
@@ -226,28 +241,32 @@ export const createTestClient = async (
     };
   }
 
-  return createClient<{
-    query: {
-      hello: string;
-      stringArg: (args: { arg: string }) => string;
-      human: (args?: { name?: string }) => Human;
-      nullArray?: Maybe<Array<Maybe<Human>>>;
-      nullStringArray?: Maybe<Array<Maybe<string>>>;
-      nFetchCalls: number;
-      throw?: boolean;
-      throw2?: boolean;
-      time: string;
-      species: Array<Species>;
-      throwUntilThirdTry: boolean;
-    };
-    mutation: {
-      sendNotification(args: { message: string }): boolean;
-      humanMutation: (args?: { nameArg?: string }) => Human;
-    };
-    subscription: {
-      newNotification: void;
-    };
-  }>({
+  return createClient<
+    {
+      query: {
+        hello: string;
+        stringArg: (args: { arg: string }) => string;
+        human: (args?: { name?: string }) => Human;
+        nullArray?: Maybe<Array<Maybe<Human>>>;
+        nullStringArray?: Maybe<Array<Maybe<string>>>;
+        nFetchCalls: number;
+        throw?: boolean;
+        throw2?: boolean;
+        time: string;
+        species: Array<Species>;
+        throwUntilThirdTry: boolean;
+      };
+      mutation: {
+        sendNotification(args: { message: string }): boolean;
+        humanMutation: (args?: { nameArg?: string }) => Human;
+      };
+      subscription: {
+        newNotification: void;
+      };
+    },
+    ObjectTypesNames,
+    ObjectTypes
+  >({
     schema: deepAssign(generatedSchema, [addedToGeneratedSchema]) as Schema,
     scalarsEnumsHash,
     queryFetcher,

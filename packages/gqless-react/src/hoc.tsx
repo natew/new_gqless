@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactNode, Suspense, SuspenseProps } from 'react';
 
 import { createClient } from '@dish/gqless';
 
@@ -6,15 +6,21 @@ import { useInterceptSelections } from './common';
 import { ReactClientOptionsWithDefaults } from './utils';
 
 export interface GraphQLHOCOptions {
-  suspense?: boolean;
+  suspense?:
+    | boolean
+    | {
+        fallback: SuspenseProps['fallback'];
+      };
   staleWhileRevalidate?: boolean;
 }
 
+<Suspense fallback></Suspense>;
+
 export interface GraphQLHOC {
-  <R extends ReactElement<any, any> | null, P = unknown>(
-    component: (props: P) => R,
+  <P>(
+    component: (props: P) => ReactNode,
     options?: GraphQLHOCOptions
-  ): (props: P) => R;
+  ): ReactNode;
 }
 
 export function createGraphqlHOC(
@@ -30,20 +36,17 @@ export function createGraphqlHOC(
     },
   }: ReactClientOptionsWithDefaults
 ) {
-  const graphql: GraphQLHOC = function graphql<
-    R extends ReactElement<any, any> | null,
-    P = unknown
-  >(
-    component: ((props: P) => R) & { displayName?: string },
+  const graphql: GraphQLHOC = function graphql<P>(
+    component: ((props: P) => ReactNode) & { displayName?: string },
     {
       suspense = defaultSuspense,
       staleWhileRevalidate = defaultStaleWhileRevalidate,
     }: GraphQLHOCOptions = {}
   ) {
     const withGraphQL: {
-      (props: P): R;
+      (props: P): ReactNode;
       displayName: string;
-    } = function WithGraphQL(props) {
+    } = function WithGraphQL(props): ReactNode {
       const { fetchingPromise, unsubscribe } = useInterceptSelections({
         interceptorManager,
         eventHandler,
@@ -51,9 +54,9 @@ export function createGraphqlHOC(
         staleWhileRevalidate,
       });
 
-      let returnValue: R = null as R;
+      let returnValue: ReactNode = null;
       try {
-        returnValue = (component(props) ?? null) as R;
+        returnValue = component(props) ?? null;
       } finally {
         unsubscribe();
       }
@@ -64,12 +67,16 @@ export function createGraphqlHOC(
 
           throw fetchingPromise.current;
         };
-        return (
+        const value = (
           <>
             {returnValue}
             <Suspend />
           </>
-        ) as R;
+        );
+        if (typeof suspense === 'object') {
+          return <Suspense fallback={suspense.fallback} children={value} />;
+        }
+        return value;
       }
       return returnValue;
     };

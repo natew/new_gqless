@@ -45,6 +45,13 @@ export interface Subscription {
   __typename: 'Subscription' | null;
 }
 
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+}
+export type SchemaObjectTypesNames = 'Query' | 'Mutation' | 'Subscription';
+
 export interface GeneratedSchema {
   query: Query;
   mutation: Mutation;
@@ -125,6 +132,13 @@ export interface Mutation {
 export interface Subscription {
   __typename: 'Subscription' | null;
 }
+
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+}
+export type SchemaObjectTypesNames = 'Query' | 'Mutation' | 'Subscription';
 
 export interface GeneratedSchema {
   query: Query;
@@ -317,6 +331,20 @@ export interface OtherHuman {
   withArgs2: (args?: { a?: Maybe<ScalarsEnums['Int']> }) => ScalarsEnums['Int'];
 }
 
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+  Human: Human;
+  OtherHuman: OtherHuman;
+}
+export type SchemaObjectTypesNames =
+  | 'Query'
+  | 'Mutation'
+  | 'Subscription'
+  | 'Human'
+  | 'OtherHuman';
+
 export type HumanType =
   | {
       __typename: 'Human' | null;
@@ -421,6 +449,13 @@ export interface Subscription {
   __typename: 'Subscription' | null;
 }
 
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+}
+export type SchemaObjectTypesNames = 'Query' | 'Mutation' | 'Subscription';
+
 export interface GeneratedSchema {
   query: Query;
   mutation: Mutation;
@@ -513,6 +548,13 @@ export interface Subscription {
   __typename: 'Subscription' | null;
   newNotification: ScalarsEnums['String'];
 }
+
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+}
+export type SchemaObjectTypesNames = 'Query' | 'Mutation' | 'Subscription';
 
 export interface GeneratedSchema {
   query: Query;

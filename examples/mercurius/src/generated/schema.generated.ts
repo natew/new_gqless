@@ -173,6 +173,24 @@ export interface C {
   z?: Maybe<ScalarsEnums['String']>;
 }
 
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+  Human: Human;
+  A: A;
+  B: B;
+  C: C;
+}
+export type SchemaObjectTypesNames =
+  | 'Query'
+  | 'Mutation'
+  | 'Subscription'
+  | 'Human'
+  | 'A'
+  | 'B'
+  | 'C';
+
 export type TestUnion =
   | {
       __typename: 'A' | null;

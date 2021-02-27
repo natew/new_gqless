@@ -44,13 +44,22 @@ export interface InnerClientState {
   readonly normalizationHandler: NormalizationHandler;
 }
 
-export interface ClientOptions {
+export interface ClientOptions<
+  ObjectTypesNames extends string = never,
+  SchemaObjectTypes extends {
+    [P in ObjectTypesNames]: {
+      __typename: P | null;
+    };
+  } = never
+> {
   schema: Readonly<Schema>;
   scalarsEnumsHash: ScalarsEnumsHash;
   queryFetcher: QueryFetcher;
   catchSelectionsTimeMS?: number;
   retry?: RetryOptions;
-  normalization?: NormalizationOptions | boolean;
+  normalization?:
+    | NormalizationOptions<ObjectTypesNames, SchemaObjectTypes>
+    | boolean;
 }
 
 export function createClient<
@@ -58,6 +67,12 @@ export function createClient<
     query: {};
     mutation: {};
     subscription: {};
+  } = never,
+  ObjectTypesNames extends string = never,
+  ObjectTypes extends {
+    [P in ObjectTypesNames]: {
+      __typename: P | null;
+    };
   } = never
 >({
   schema,
@@ -66,7 +81,7 @@ export function createClient<
   catchSelectionsTimeMS = 10,
   retry,
   normalization = true,
-}: ClientOptions) {
+}: ClientOptions<ObjectTypesNames, ObjectTypes>) {
   const interceptorManager = createInterceptorManager();
 
   const { globalInterceptor } = interceptorManager;
@@ -78,7 +93,8 @@ export function createClient<
   const normalizationHandler = createNormalizationHandler(
     normalization,
     eventHandler,
-    schema
+    schema,
+    scalarsEnumsHash
   );
 
   const clientCache = createCache(normalizationHandler);

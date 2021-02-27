@@ -6,8 +6,9 @@ export const isObject = (v: unknown): v is object =>
 export const isPlainObject = (v: unknown): v is PlainObject =>
   isObject(v) && !Array.isArray(v);
 
-export interface ObjectWithType extends Record<string, unknown> {
-  __typename: string;
+export interface ObjectWithType<Typename extends string = string>
+  extends Record<string, unknown> {
+  __typename: Typename;
 }
 
 export const isObjectWithType = <T extends ObjectWithType>(
@@ -124,3 +125,18 @@ export function get<Value = unknown, DefaultValue = undefined>(
       : (defaultValue as DefaultValue);
   return value === undefined ? defaultValue : value;
 }
+
+export type DeepPartial<T> = T extends Function
+  ? T
+  : T extends Array<infer U>
+  ? _DeepPartialArray<U>
+  : T extends object
+  ? _DeepPartialObject<T>
+  : T | undefined;
+
+interface _DeepPartialArray<T> extends Array<DeepPartial<T>> {}
+type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
+
+export type NonNullableObject<T> = {
+  [P in keyof T]-?: NonNullable<T[P]>;
+};

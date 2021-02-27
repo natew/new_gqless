@@ -5,7 +5,7 @@ export interface Type {
   __type: string;
 }
 
-export const SchemaUnionsKey = Symbol('unionsKey' + Date.now());
+export const SchemaUnionsKey = Symbol('unionsKey');
 export interface Schema extends Record<string, Record<string, Type>> {
   query: Record<string, Type>;
   mutation: Record<string, Type>;

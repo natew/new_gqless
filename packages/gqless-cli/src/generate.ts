@@ -331,6 +331,20 @@ export async function generate(
     ''
   );
 
+  const objectTypesEntries = Array.from(objectTypeTSTypes.entries());
+
+  typescriptTypes += `
+  export interface SchemaObjectTypes {
+    ${objectTypesEntries.reduce((acum, [typeName]) => {
+      acum += `${typeName}:${typeName};`;
+      return acum;
+    }, '')}
+  }
+  export type SchemaObjectTypesNames = ${objectTypesEntries
+    .map(([key]) => `"${key}"`)
+    .join(' | ')};
+  `;
+
   if (unionsMap.size) {
     typescriptTypes += `
     ${Array.from(unionsMap.entries()).reduce((acum, [unionName, types]) => {
@@ -501,11 +515,11 @@ export async function generate(
   const clientCode = format(
     `
   import { createClient, QueryFetcher } from "@dish/gqless";
-  import { GeneratedSchema, generatedSchema, scalarsEnumsHash } from "./schema.generated";
+  import { GeneratedSchema, generatedSchema, scalarsEnumsHash, SchemaObjectTypes, SchemaObjectTypesNames } from "./schema.generated";
 
   ${queryFetcher}
 
-  export const client = createClient<GeneratedSchema>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher});
+  export const client = createClient<GeneratedSchema, SchemaObjectTypesNames, SchemaObjectTypes>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher});
 
   export const { query, mutation, mutate, subscription, resolved, refetch } = client;
 

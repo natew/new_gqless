@@ -6,6 +6,8 @@ import {
   GeneratedSchema,
   generatedSchema,
   scalarsEnumsHash,
+  SchemaObjectTypes,
+  SchemaObjectTypesNames,
 } from './schema.generated';
 
 const queryFetcher: QueryFetcher = async function (query, variables) {
@@ -30,11 +32,11 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
-export const client = createClient<GeneratedSchema>({
-  schema: generatedSchema,
-  scalarsEnumsHash,
-  queryFetcher,
-});
+export const client = createClient<
+  GeneratedSchema,
+  SchemaObjectTypesNames,
+  SchemaObjectTypes
+>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
 
 export const {
   query,
@@ -94,6 +96,13 @@ export interface Subscription {
   __typename: 'Subscription' | null;
 }
 
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+}
+export type SchemaObjectTypesNames = 'Query' | 'Mutation' | 'Subscription';
+
 export interface GeneratedSchema {
   query: Query;
   mutation: Mutation;
@@ -152,6 +161,13 @@ export interface Mutation {
 export interface Subscription {
   __typename: 'Subscription' | null;
 }
+
+export interface SchemaObjectTypes {
+  Query: Query;
+  Mutation: Mutation;
+  Subscription: Subscription;
+}
+export type SchemaObjectTypesNames = 'Query' | 'Mutation' | 'Subscription';
 
 export interface GeneratedSchema {
   query: Query;

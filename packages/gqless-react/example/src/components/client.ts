@@ -3,8 +3,6 @@ import { createLogger } from '@dish/gqless-logger';
 import { createReactClient } from '@dish/gqless-react';
 import { client, GeneratedSchema } from '../graphql/gqless';
 
-export const defaultSuspense = true;
-
 export const {
   useTransactionQuery,
   useQuery,
@@ -18,7 +16,9 @@ export const {
   useMutation,
   useMetaState,
 } = createReactClient<GeneratedSchema>(client, {
-  defaultSuspense,
+  defaults: {
+    suspense: true,
+  },
 });
 
 if (typeof window !== 'undefined') {
