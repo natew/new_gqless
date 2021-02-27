@@ -3,7 +3,7 @@
 const { program } = require('commander');
 const { inspectWriteGenerate } = require('../dist/index');
 
-program.version('4.0.2').description('CLI for gqless');
+program.version('4.0.3').description('CLI for gqless');
 
 program
   .command('generate <endpoint> [destination]')
