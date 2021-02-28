@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { GraphQLSchema, buildSchema } from 'graphql';
 import { resolve } from 'path';
-import { readFile } from 'fs/promises';
+import { promises } from 'fs';
 
 import type { GenerateOptions } from './generate';
 
@@ -50,7 +50,7 @@ export async function inspectWriteGenerate({
     genOptions.endpoint = endpoint;
   } else {
     if (existsSync(endpoint)) {
-      const file = await readFile(endpoint, {
+      const file = await promises.readFile(endpoint, {
         encoding: 'utf-8',
       });
 
