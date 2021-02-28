@@ -3,7 +3,7 @@ module.exports = {
   tagline: `A GraphQL client without queries`,
   url: 'https://gqless.dev',
   baseUrl: '/',
-  favicon: 'img/favicon.ico',
+  favicon: '/graphql.ico',
   organizationName: 'samdenty',
   projectName: 'gqless',
   themeConfig: {
@@ -128,9 +128,10 @@ module.exports = {
           showLastUpdateTime: true,
         },
         theme: {
-          customCss: require.resolve('./src/index.css'),
+          customCss: require.resolve('./src/style.css'),
         },
       },
     ],
   ],
+  stylesheets: ['/fonts.css'],
 };

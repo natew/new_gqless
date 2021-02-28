@@ -8,9 +8,9 @@
     "build": "docusaurus build"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.fd17476c3",
-    "@docusaurus/module-type-aliases": "^2.0.0-alpha.fd17476c3",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.fd17476c3",
+    "@docusaurus/core": "^2.0.0-alpha.70",
+    "@docusaurus/module-type-aliases": "^2.0.0-alpha.70",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.70",
     "@emotion/core": "^11.0.0",
     "@emotion/react": "^11.1.5",
     "@emotion/styled": "^11.1.5",
