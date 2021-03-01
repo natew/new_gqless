@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -55,7 +55,7 @@
     "tsc-watch": "^4.2.9",
     "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
-    "tsup": "^4.5.1",
+    "tsup": "^4.6.0",
     "typescript": "^4.2.2",
     "wait-on": "^5.2.1"
   },
