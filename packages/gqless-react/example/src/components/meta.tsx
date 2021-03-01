@@ -54,6 +54,18 @@ export const MetaClient = () => {
           <a>/playground</a>
         </Link>{' '}
         <br />
+        <Link href="/pagination">
+          <a>/pagination</a>
+        </Link>{' '}
+        <br />
+        <Link href="/pagination_infinite_scroll">
+          <a>/pagination_infinite_scroll</a>
+        </Link>{' '}
+        <br />
+        <Link href="/cache">
+          <a>/cache</a>
+        </Link>{' '}
+        <br />
       </nav>
     </div>
   );

@@ -228,7 +228,7 @@ export function createResolvers(
       const { data, errors } = executionResult;
 
       if (data) {
-        if (!errors && !options.ignoreResolveCache) {
+        if (!errors && cacheKey) {
           resolutionTempCache.set(cacheKey, data);
           setTimeout(
             () => resolutionTempCache.delete(cacheKey),

@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense, SuspenseProps } from 'react';
+import React, { Suspense, SuspenseProps, ReactElement } from 'react';
 
 import { createClient } from '@dish/gqless';
 
@@ -18,9 +18,9 @@ export interface GraphQLHOCOptions {
 
 export interface GraphQLHOC {
   <P>(
-    component: (props: P) => ReactNode,
+    component: (props: P) => ReactElement | null,
     options?: GraphQLHOCOptions
-  ): ReactNode;
+  ): (props: P) => ReactElement | null;
 }
 
 export function createGraphqlHOC(
@@ -37,16 +37,18 @@ export function createGraphqlHOC(
   }: ReactClientOptionsWithDefaults
 ) {
   const graphql: GraphQLHOC = function graphql<P>(
-    component: ((props: P) => ReactNode) & { displayName?: string },
+    component: ((props: P) => ReactElement | null) & {
+      displayName?: string;
+    },
     {
       suspense = defaultSuspense,
       staleWhileRevalidate = defaultStaleWhileRevalidate,
     }: GraphQLHOCOptions = {}
   ) {
     const withGraphQL: {
-      (props: P): ReactNode;
+      (props: P): ReactElement | null;
       displayName: string;
-    } = function WithGraphQL(props): ReactNode {
+    } = function WithGraphQL(props): ReactElement | null {
       const { fetchingPromise, unsubscribe } = useInterceptSelections({
         interceptorManager,
         eventHandler,
@@ -54,7 +56,7 @@ export function createGraphqlHOC(
         staleWhileRevalidate,
       });
 
-      let returnValue: ReactNode = null;
+      let returnValue: ReactElement | null = null;
       try {
         returnValue = component(props) ?? null;
       } finally {
