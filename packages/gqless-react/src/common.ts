@@ -12,6 +12,7 @@ import { BuildSelectionInput, ResolveOptions, Selection } from '@dish/gqless';
 import { EventHandler } from '@dish/gqless/dist/Events';
 import { InterceptorManager } from '@dish/gqless/dist/Interceptor';
 import { Scheduler } from '@dish/gqless/dist/Scheduler';
+import { areSetsEqual } from './utils';
 
 export function useOnFirstMount(fn: () => void) {
   const isFirstMount = useRef(true);
@@ -310,22 +311,31 @@ export function useInterceptSelections({
 
   const interceptor = createInterceptor();
 
-  let cacheRefetchSelections: Set<Selection> | undefined;
+  const cacheRefetchSelections = staleWhileRevalidate
+    ? new Set<Selection>()
+    : null;
 
-  if (staleWhileRevalidate) {
-    let selectionsSet = (cacheRefetchSelections = new Set());
+  const prevCacheRefetchSelection = usePrevious(cacheRefetchSelections);
+
+  if (cacheRefetchSelections) {
     interceptor.selectionCacheRefetchListeners.add((selection) => {
-      selectionsSet.add(selection);
+      cacheRefetchSelections.add(selection);
     });
   }
 
   useEffect(() => {
-    if (staleWhileRevalidate && cacheRefetchSelections?.size) {
+    if (
+      staleWhileRevalidate &&
+      cacheRefetchSelections?.size &&
+      (prevCacheRefetchSelection
+        ? !areSetsEqual(cacheRefetchSelections, prevCacheRefetchSelection)
+        : true)
+    ) {
       for (const selection of cacheRefetchSelections) {
         globalInterceptor.addSelectionCacheRefetch(selection);
       }
     }
-  }, [staleWhileRevalidate]);
+  });
 
   interceptor.selectionAddListeners.add((selection) => {
     hookSelections.add(selection);
@@ -372,6 +382,7 @@ export function useInterceptSelections({
             forceUpdate();
           };
         } else {
+          deferredCall.current = null;
           fetchingPromise.current = newPromise;
           forceUpdate();
         }
@@ -393,4 +404,12 @@ export function useInterceptSelections({
   });
 
   return { fetchingPromise, unsubscribe };
+}
+
+export function usePrevious<T>(value: T) {
+  const ref = useRef<typeof value | undefined>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 }

@@ -1,5 +1,5 @@
 import { InnerClientState } from '../Client/client';
-import { Selection } from '../Selection';
+import { Resolvers } from '../Client/resolvers';
 
 export function isFunction<T>(v: T | (() => T)): v is () => T {
   return typeof v === 'function';
@@ -7,7 +7,7 @@ export function isFunction<T>(v: T | (() => T)): v is () => T {
 
 export function createRefetch(
   innerState: InnerClientState,
-  resolveSelections: (selections: Set<Selection>) => Promise<unknown>
+  resolveSelections: Resolvers['resolveSelections']
 ) {
   const { interceptorManager, scheduler, accessorCache } = innerState;
 
@@ -53,7 +53,9 @@ export function createRefetch(
       const selectionSet = accessorCache.getSelectionSetHistory(refetchArg);
 
       if (selectionSet) {
-        await resolveSelections(selectionSet);
+        await resolveSelections(selectionSet, undefined, {
+          ignoreResolveCache: true,
+        });
       }
       return refetchArg;
     }

@@ -3,6 +3,7 @@ import { CacheInstance, CacheNotFound, createCache } from '../Cache';
 import { gqlessError } from '../Error';
 import { doRetry } from '../Error/retry';
 import { FetchEventData } from '../Events';
+import { NormalizationHandler } from '../Normalization';
 import { buildQuery } from '../QueryBuilder';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
@@ -60,9 +61,16 @@ export interface FetchResolveOptions {
   retry?: RetryOptions;
 
   scheduler?: boolean;
+
+  ignoreResolveCache?: boolean;
 }
 
-export function createResolvers(innerState: InnerClientState) {
+export type Resolvers = ReturnType<typeof createResolvers>;
+
+export function createResolvers(
+  innerState: InnerClientState,
+  catchSelectionsTimeMS: number
+) {
   const {
     interceptorManager,
     eventHandler,
@@ -123,7 +131,8 @@ export function createResolvers(innerState: InnerClientState) {
 
       await resolveSelections(
         interceptor.fetchSelections,
-        tempCache || innerState.clientCache
+        tempCache || innerState.clientCache,
+        { ignoreResolveCache: refetch || noCache }
       );
 
       prevAllowCache = innerState.allowCache;
@@ -148,6 +157,39 @@ export function createResolvers(innerState: InnerClientState) {
     }
   }
 
+  const resolutionTempCache = new Map<string, unknown>();
+  const resolutionTempCacheTimeout = catchSelectionsTimeMS * 5;
+
+  function buildQueryAndCheckTempCache<TData>(
+    selections: Selection[],
+    type: 'query' | 'mutation' | 'subscription',
+    normalizationHandler: NormalizationHandler,
+    ignoreResolveCache: boolean | undefined
+  ) {
+    const { query, variables } = buildQuery(
+      selections,
+      {
+        type,
+      },
+      normalizationHandler
+    );
+
+    const cacheKey = ignoreResolveCache
+      ? ''
+      : query + (variables ? JSON.stringify(variables) : '') + type;
+
+    const cachedData = ignoreResolveCache
+      ? undefined
+      : (resolutionTempCache.get(cacheKey) as TData | undefined);
+
+    return {
+      query,
+      variables,
+      cacheKey,
+      cachedData,
+    };
+  }
+
   async function buildAndFetchSelections<TData = unknown>(
     selections: Selection[],
     type: 'query' | 'mutation' | 'subscription',
@@ -156,29 +198,44 @@ export function createResolvers(innerState: InnerClientState) {
   ): Promise<TData | null | undefined> {
     if (selections.length === 0) return;
 
-    const { query, variables } = buildQuery(
+    const {
+      query,
+      variables,
+      cachedData,
+      cacheKey,
+    } = buildQueryAndCheckTempCache<TData>(
       selections,
-      {
-        type,
-      },
-      innerState.normalizationHandler
+      type,
+      innerState.normalizationHandler,
+      options.ignoreResolveCache
     );
+
+    let executionData: ExecutionResult['data'];
 
     let loggingPromise: LazyPromise<FetchEventData> | undefined;
 
-    if (eventHandler.hasFetchSubscribers) {
-      loggingPromise = createLazyPromise<FetchEventData>();
-
-      eventHandler.sendFetchPromise(loggingPromise.promise, selections);
-    }
-
-    let executionData: ExecutionResult['data'];
     try {
+      if (cachedData != null) return cachedData;
+
+      if (eventHandler.hasFetchSubscribers) {
+        loggingPromise = createLazyPromise<FetchEventData>();
+
+        eventHandler.sendFetchPromise(loggingPromise.promise, selections);
+      }
+
       const executionResult = await queryFetcher(query, variables);
 
       const { data, errors } = executionResult;
 
       if (data) {
+        if (!errors && !options.ignoreResolveCache) {
+          resolutionTempCache.set(cacheKey, data);
+          setTimeout(
+            () => resolutionTempCache.delete(cacheKey),
+            resolutionTempCacheTimeout
+          );
+        }
+
         cache.mergeCache(data, type);
         executionData = data;
       }
@@ -281,6 +338,7 @@ export function createResolvers(innerState: InnerClientState) {
               cache,
               Object.assign({}, options, {
                 retry: false,
+                ignoreResolveCache: true,
               } as FetchResolveOptions)
             )
               .then((data) => ({ data }))

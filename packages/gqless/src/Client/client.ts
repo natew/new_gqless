@@ -127,7 +127,7 @@ export function createClient<
     resolved,
     buildAndFetchSelections,
     resolveSelections,
-  } = createResolvers(innerState);
+  } = createResolvers(innerState, catchSelectionsTimeMS);
 
   async function resolveSchedulerSelections(selections: Set<Selection>) {
     const resolvingPromise = scheduler.resolving;

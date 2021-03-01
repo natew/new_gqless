@@ -82,7 +82,7 @@ export function createGraphqlHOC(
     };
     withGraphQL.displayName = `GraphQLComponent(${
       component?.displayName || component?.name || 'Anonymous'
-    })`;
+    })${Date.now}`;
 
     return withGraphQL;
   };

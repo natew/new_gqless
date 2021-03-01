@@ -250,7 +250,7 @@ export async function generate(
       ];
     }
 
-    if (isNullable) {
+    if (isNullable && !scalarsEnumsHash[pureType]) {
       typeToReturn = ['Maybe<', ...typeToReturn, '>'];
     }
 

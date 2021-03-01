@@ -114,11 +114,11 @@ export interface Query {
   }) => ScalarsEnums['String'];
   stringNullableWithArgs: (args: {
     hello: ScalarsEnums['String'];
-    helloTwo?: Maybe<ScalarsEnums['String']>;
-  }) => Maybe<ScalarsEnums['String']>;
+    helloTwo?: ScalarsEnums['String'];
+  }) => ScalarsEnums['String'];
   stringNullableWithArgsArray: (args: {
     hello: Array<Maybe<ScalarsEnums['String']>>;
-  }) => Maybe<ScalarsEnums['String']>;
+  }) => ScalarsEnums['String'];
   object?: Maybe<Human>;
   objectArray?: Maybe<Array<Maybe<Human>>>;
   objectWithArgs: (args: { who: ScalarsEnums['String'] }) => Human;
@@ -148,33 +148,27 @@ export interface Human extends NamedEntity {
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
   sons?: Maybe<Array<Human>>;
   union: Array<TestUnion>;
-  args: (args?: {
-    a?: Maybe<ScalarsEnums['String']>;
-  }) => Maybe<ScalarsEnums['Int']>;
+  args: (args?: { a?: ScalarsEnums['String'] }) => ScalarsEnums['Int'];
 }
 
 export interface A {
   __typename: 'A' | null;
   a: ScalarsEnums['String'];
-  common: (args?: {
-    a?: Maybe<ScalarsEnums['String']>;
-  }) => Maybe<ScalarsEnums['Int']>;
-  z?: Maybe<ScalarsEnums['String']>;
+  common: (args?: { a?: ScalarsEnums['String'] }) => ScalarsEnums['Int'];
+  z?: ScalarsEnums['String'];
 }
 
 export interface B {
   __typename: 'B' | null;
   b: ScalarsEnums['Int'];
-  common: (args?: {
-    b?: Maybe<ScalarsEnums['Int']>;
-  }) => Maybe<ScalarsEnums['String']>;
-  z?: Maybe<ScalarsEnums['String']>;
+  common: (args?: { b?: ScalarsEnums['Int'] }) => ScalarsEnums['String'];
+  z?: ScalarsEnums['String'];
 }
 
 export interface C {
   __typename: 'C' | null;
   c: ScalarsEnums['GreetingsEnum'];
-  z?: Maybe<ScalarsEnums['String']>;
+  z?: ScalarsEnums['String'];
 }
 
 export interface SchemaObjectTypes {
@@ -201,20 +195,16 @@ export type TestUnion =
       a: ScalarsEnums['String'];
       b?: undefined;
       c?: undefined;
-      common: (args?: {
-        a?: Maybe<ScalarsEnums['String']>;
-      }) => Maybe<ScalarsEnums['Int']>;
-      z?: Maybe<ScalarsEnums['String']>;
+      common: (args?: { a?: ScalarsEnums['String'] }) => ScalarsEnums['Int'];
+      z?: ScalarsEnums['String'];
     }
   | {
       __typename: 'B' | null;
       a?: undefined;
       b: ScalarsEnums['Int'];
       c?: undefined;
-      common: (args?: {
-        b?: Maybe<ScalarsEnums['Int']>;
-      }) => Maybe<ScalarsEnums['String']>;
-      z?: Maybe<ScalarsEnums['String']>;
+      common: (args?: { b?: ScalarsEnums['Int'] }) => ScalarsEnums['String'];
+      z?: ScalarsEnums['String'];
     }
   | {
       __typename: 'C' | null;
@@ -222,7 +212,7 @@ export type TestUnion =
       b?: undefined;
       c: ScalarsEnums['GreetingsEnum'];
       common?: undefined;
-      z?: Maybe<ScalarsEnums['String']>;
+      z?: ScalarsEnums['String'];
     };
 
 export interface NamedEntity {

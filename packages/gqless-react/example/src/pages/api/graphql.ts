@@ -5,6 +5,7 @@ import { codegenMercurius, gql } from 'mercurius-codegen';
 import { NextApiHandler } from 'next';
 import { JsonDB } from 'node-json-db';
 import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
+import { name, seed } from 'faker';
 
 import { writeGenerate } from '@dish/gqless-cli';
 
@@ -13,6 +14,20 @@ import type { Dog, Human } from '../../graphql/mercurius';
 const app = Fastify();
 
 const db = new JsonDB(new Config('db.json', true, true, '/'));
+
+seed(2021);
+
+const paginatedData: {
+  id: string;
+  name: string;
+}[] = new Array(200).fill(0).map((_, index) => {
+  return {
+    id: index + '',
+    name: name.firstName(),
+  };
+});
+
+db.push('/paginatedData', paginatedData, true);
 
 const initialDogs = [
   {
@@ -74,14 +89,33 @@ const schema = gql`
     humans: [Human!]!
     human1: Human!
     human1Other: Human!
+    paginatedHumans(input: ConnectionArgs!): HumansConnection!
   }
   type Mutation {
     renameDog(id: ID!, name: String!): Dog
     renameHuman(id: ID!, name: String!): Human
     other(arg: inputTypeExample!): Int
+    createHuman(id: ID!, name: String!): Human!
   }
   input inputTypeExample {
     a: String!
+  }
+  type HumansConnection {
+    pageInfo: PageInfo!
+    nodes: [Human!]!
+  }
+  type PageInfo {
+    hasPreviousPage: Boolean!
+    hasNextPage: Boolean!
+    startCursor: String
+    endCursor: String
+  }
+  input ConnectionArgs {
+    first: Int
+    after: String
+
+    last: Int
+    before: String
   }
 `;
 
@@ -120,16 +154,88 @@ const resolvers: IResolvers = {
     human1Other() {
       return db.getData('/humans')[0];
     },
+    paginatedHumans(_root, { input: { after, first, last, before } }) {
+      let nodes: { id: string; name: string }[];
+      let startSlice: number;
+      let endSlice: number;
+      if (first != null) {
+        if (after) {
+          const foundIndex = paginatedData.findIndex((v) => v.id === after);
+          if (foundIndex === -1) {
+            nodes = [];
+            startSlice = -1;
+            endSlice = paginatedData.length + 1;
+          } else {
+            endSlice = foundIndex + 1 + first;
+            nodes = paginatedData.slice(
+              (startSlice = foundIndex + 1),
+              endSlice
+            );
+          }
+        } else {
+          nodes = paginatedData.slice((startSlice = 0), (endSlice = first));
+        }
+      } else if (last != null) {
+        if (before) {
+          const foundIndex = paginatedData.findIndex((v) => v.id === before);
+          if (foundIndex === -1) {
+            nodes = [];
+            startSlice = -1;
+            endSlice = paginatedData.length + 1;
+          } else {
+            nodes = paginatedData.slice(
+              (startSlice = Math.max(0, foundIndex - last)),
+              (endSlice = foundIndex)
+            );
+          }
+        } else {
+          nodes = paginatedData.slice(
+            (startSlice = paginatedData.length - last),
+            (endSlice = paginatedData.length)
+          );
+        }
+      } else {
+        throw Error('You have to specify pagination arguments');
+      }
+
+      const startCursor = nodes[0]?.id;
+      const endCursor = nodes[nodes.length - 1]?.id;
+
+      const hasNextPage = endCursor
+        ? paginatedData.findIndex((v) => v.id === endCursor) + 1 <
+          paginatedData.length
+        : false;
+
+      const hasPreviousPage = startCursor
+        ? paginatedData.findIndex((v) => v.id === startCursor) - 1 >= 0
+        : false;
+
+      return {
+        nodes,
+        pageInfo: {
+          startCursor,
+          endCursor,
+          hasNextPage,
+          hasPreviousPage,
+        },
+      };
+    },
   },
   Mutation: {
+    createHuman(_root, { id, name }) {
+      initialHumans.push({ id: parseInt(id), name });
+      db.push('/humans', initialHumans, true);
+
+      return { id, name };
+    },
     renameDog(_root, { id, name }) {
       const dog = initialDogs.find((v) => {
         return v.id + '' === id;
       });
 
       if (dog) {
-        db.push('/dogs', initialDogs, true);
         dog.name = name;
+        db.push('/dogs', initialDogs, true);
         return {
           ...dog,
           id: dog.id + '',

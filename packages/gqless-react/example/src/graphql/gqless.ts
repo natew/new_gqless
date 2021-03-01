@@ -8,7 +8,7 @@ import {
 } from './schema.generated';
 
 const queryFetcher: QueryFetcher = async function (query, variables) {
-  const response = await fetch('http://localhost:4141/api/graphql', {
+  const response = await fetch('/api/graphql', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

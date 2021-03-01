@@ -7,6 +7,7 @@ import {
   isAnySelectionIncludedInMatrix,
   isSelectionIncluded,
   useBuildSelections,
+  useIsomorphicLayoutEffect,
 } from '../common';
 import { areArraysEqual } from '../utils';
 
@@ -37,34 +38,80 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
       selections: selectionsToFilter,
     } = useBuildSelections(opts.filterSelections, buildSelection, useMetaState);
 
-    const getState = useCallback((): MetaState => {
-      const isFetching = scheduler.pendingSelectionsGroups.size
-        ? hasFilterSelections
-          ? isAnySelectionIncludedInMatrix(
+    const [promisesInFly] = useState(() => {
+      return new Set<Promise<unknown>>();
+    });
+
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+      return () => {
+        isMountedRef.current = false;
+      };
+    }, []);
+
+    const getState = useCallback(
+      (isMounted: { current: boolean } = isMountedRef): MetaState => {
+        let isFetching: boolean;
+        if (scheduler.pendingSelectionsGroups.size) {
+          if (hasFilterSelections) {
+            isFetching = isAnySelectionIncludedInMatrix(
               selectionsToFilter,
               scheduler.pendingSelectionsGroups
-            )
-          : true
-        : false;
+            );
+          } else {
+            isFetching = true;
+          }
 
-      let errors: gqlessError[] | undefined;
+          if (isFetching) {
+            Promise.all(
+              scheduler.pendingSelectionsGroupsPromises.values()
+            ).finally(() => setStateIfChanged(isMounted));
+          }
+        } else {
+          isFetching = false;
+        }
 
-      if (hasFilterSelections) {
-        const errorsSet = new Set<gqlessError>();
+        let errors: gqlessError[] | undefined;
 
-        selectionsToFilter.forEach((selection) => {
-          const error = errorsMap.get(selection);
+        if (hasFilterSelections) {
+          const errorsSet = new Set<gqlessError>();
 
-          if (error) errorsSet.add(error);
-        });
+          selectionsToFilter.forEach((selection) => {
+            const error = errorsMap.get(selection);
 
-        if (errorsSet.size) errors = Array.from(errorsSet);
-      } else if (errorsMap.size) {
-        errors = Array.from(new Set(errorsMap.values()));
-      }
+            if (error) errorsSet.add(error);
+          });
 
-      return errors ? { isFetching, errors } : { isFetching };
-    }, [hasFilterSelections, selectionsToFilter]);
+          if (errorsSet.size) errors = Array.from(errorsSet);
+        } else if (errorsMap.size) {
+          errors = Array.from(new Set(errorsMap.values()));
+        }
+
+        return errors ? { isFetching, errors } : { isFetching };
+      },
+      [hasFilterSelections, selectionsToFilter]
+    );
+
+    const setStateIfChanged = useCallback(
+      function setStateIfChanged(isMounted: { current: boolean }) {
+        if (!isMounted.current) return;
+
+        const prevState = stateRef.current;
+
+        const newState = getState(isMounted);
+
+        if (
+          prevState.isFetching !== newState.isFetching ||
+          !areArraysEqual(prevState.errors, newState.errors)
+        ) {
+          stateRef.current = newState;
+          setTimeout(() => {
+            if (isMounted.current) setState(newState);
+          }, 0);
+        }
+      },
+      []
+    );
 
     const [state, setState] = useState(getState);
 
@@ -74,28 +121,9 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
     const optsRef = useRef(opts);
     optsRef.current = opts;
 
-    useEffect(() => {
-      let isMounted = true;
+    useIsomorphicLayoutEffect(() => {
+      const isMounted = { current: true };
 
-      function setStateIfChanged() {
-        if (!isMounted) return;
-
-        const prevState = stateRef.current;
-
-        const newState = getState();
-
-        if (
-          prevState.isFetching !== newState.isFetching ||
-          !areArraysEqual(prevState.errors, newState.errors)
-        ) {
-          stateRef.current = newState;
-          setTimeout(() => {
-            setState(newState);
-          }, 0);
-        }
-      }
-
-      const promisesInFly = new Set<Promise<unknown>>();
       const unsubscribeIsFetching = scheduler.subscribeResolve(
         (promise, selection) => {
           if (promisesInFly.has(promise)) return;
@@ -111,14 +139,14 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
 
           promisesInFly.add(promise);
 
-          setStateIfChanged();
+          setStateIfChanged(isMounted);
 
           promise.then(() => {
             promisesInFly.delete(promise);
 
             if (promisesInFly.size === 0) optsRef.current.onDoneFetching?.();
 
-            setStateIfChanged();
+            setStateIfChanged(isMounted);
           });
         }
       );
@@ -151,28 +179,28 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
             );
 
             if (isIncluded) {
-              setStateIfChanged();
+              setStateIfChanged(isMounted);
               data.retryPromise.finally(() => {
                 setTimeout(() => {
-                  setStateIfChanged();
-                });
+                  setStateIfChanged(isMounted);
+                }, 0);
               });
             }
           } else {
-            setStateIfChanged();
+            setStateIfChanged(isMounted);
             data.retryPromise.finally(() => {
               setTimeout(() => {
-                setStateIfChanged();
+                setStateIfChanged(isMounted);
               }, 0);
             });
           }
         }
 
-        setStateIfChanged();
+        setStateIfChanged(isMounted);
       });
 
       return () => {
-        isMounted = false;
+        isMounted.current = false;
         unsubscribeIsFetching();
         unsubscribeErrors();
       };

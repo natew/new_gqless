@@ -289,7 +289,26 @@ export function AccessorCreators<
               return true;
             }
 
-            throw TypeError('Invalid array assignation');
+            if (key === 'length') {
+              if (!Array.isArray(arrayCacheValue)) {
+                console.warn(
+                  'Invalid array assignation to unresolved proxy array'
+                );
+                return true;
+              }
+
+              Reflect.set(arrayCacheValue, key, value);
+
+              eventHandler.sendCacheChange({
+                selection: prevSelection,
+                data: innerState.clientCache.getCacheFromSelection(
+                  prevSelection
+                ),
+              });
+              return true;
+            }
+
+            throw TypeError('Invalid array assignation: ' + key);
           },
           get(target, key: string, receiver) {
             if (key === 'toJSON')

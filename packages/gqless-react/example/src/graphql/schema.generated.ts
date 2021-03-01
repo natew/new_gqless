@@ -25,6 +25,13 @@ export interface inputTypeExample {
   a: Scalars['String'];
 }
 
+export interface ConnectionArgs {
+  first?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
+}
+
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   ID: true,
   String: true,
@@ -43,12 +50,17 @@ export const generatedSchema = {
     humans: { __type: '[Human!]!' },
     human1: { __type: 'Human!' },
     human1Other: { __type: 'Human!' },
+    paginatedHumans: {
+      __type: 'HumansConnection!',
+      __args: { input: 'ConnectionArgs!' },
+    },
   },
   mutation: {
     __typename: { __type: 'String!' },
     renameDog: { __type: 'Dog', __args: { id: 'ID!', name: 'String!' } },
     renameHuman: { __type: 'Human', __args: { id: 'ID!', name: 'String!' } },
     other: { __type: 'Int', __args: { arg: 'inputTypeExample!' } },
+    createHuman: { __type: 'Human!', __args: { id: 'ID!', name: 'String!' } },
   },
   subscription: {},
   Dog: {
@@ -64,12 +76,30 @@ export const generatedSchema = {
     dogs: { __type: '[Dog!]' },
   },
   inputTypeExample: { a: { __type: 'String!' } },
+  HumansConnection: {
+    __typename: { __type: 'String!' },
+    pageInfo: { __type: 'PageInfo!' },
+    nodes: { __type: '[Human!]!' },
+  },
+  PageInfo: {
+    __typename: { __type: 'String!' },
+    hasPreviousPage: { __type: 'Boolean!' },
+    hasNextPage: { __type: 'Boolean!' },
+    startCursor: { __type: 'String' },
+    endCursor: { __type: 'String' },
+  },
+  ConnectionArgs: {
+    first: { __type: 'Int' },
+    after: { __type: 'String' },
+    last: { __type: 'Int' },
+    before: { __type: 'String' },
+  },
 } as const;
 
 export interface Query {
   __typename: 'Query' | null;
   expectedError: ScalarsEnums['Boolean'];
-  expectedNullableError?: Maybe<ScalarsEnums['Boolean']>;
+  expectedNullableError?: ScalarsEnums['Boolean'];
   thirdTry: ScalarsEnums['Boolean'];
   dogs: Array<Dog>;
   time: ScalarsEnums['String'];
@@ -77,6 +107,7 @@ export interface Query {
   humans: Array<Human>;
   human1: Human;
   human1Other: Human;
+  paginatedHumans: (args: { input: ConnectionArgs }) => HumansConnection;
 }
 
 export interface Mutation {
@@ -89,7 +120,11 @@ export interface Mutation {
     id: ScalarsEnums['ID'];
     name: ScalarsEnums['String'];
   }) => Maybe<Human>;
-  other: (args: { arg: inputTypeExample }) => Maybe<ScalarsEnums['Int']>;
+  other: (args: { arg: inputTypeExample }) => ScalarsEnums['Int'];
+  createHuman: (args: {
+    id: ScalarsEnums['ID'];
+    name: ScalarsEnums['String'];
+  }) => Human;
 }
 
 export interface Subscription {
@@ -110,19 +145,37 @@ export interface Human {
   dogs?: Maybe<Array<Dog>>;
 }
 
+export interface HumansConnection {
+  __typename: 'HumansConnection' | null;
+  pageInfo: PageInfo;
+  nodes: Array<Human>;
+}
+
+export interface PageInfo {
+  __typename: 'PageInfo' | null;
+  hasPreviousPage: ScalarsEnums['Boolean'];
+  hasNextPage: ScalarsEnums['Boolean'];
+  startCursor?: ScalarsEnums['String'];
+  endCursor?: ScalarsEnums['String'];
+}
+
 export interface SchemaObjectTypes {
   Query: Query;
   Mutation: Mutation;
   Subscription: Subscription;
   Dog: Dog;
   Human: Human;
+  HumansConnection: HumansConnection;
+  PageInfo: PageInfo;
 }
 export type SchemaObjectTypesNames =
   | 'Query'
   | 'Mutation'
   | 'Subscription'
   | 'Dog'
-  | 'Human';
+  | 'Human'
+  | 'HumansConnection'
+  | 'PageInfo';
 
 export interface GeneratedSchema {
   query: Query;

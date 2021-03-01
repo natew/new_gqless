@@ -1,3 +1,4 @@
+import { waitForExpect } from 'test-utils';
 import { SelectionType } from '../src';
 import { CacheChangeEventData } from '../src/Events';
 import { createTestClient } from './utils';
@@ -144,9 +145,11 @@ describe('setCache', () => {
     expect(scheduler.resolving).toBeTruthy();
     await scheduler.resolving!.promise;
 
-    const name6 = humanQuery.name;
+    await waitForExpect(() => {
+      const name6 = humanQuery.name;
 
-    expect(name6).toBe('aaa');
+      expect(name6).toBe('aaa');
+    }, 60);
 
     humanQuery.sons[0] = humanQuery;
 

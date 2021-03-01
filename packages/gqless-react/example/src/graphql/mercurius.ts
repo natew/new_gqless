@@ -52,6 +52,11 @@ export type Query = {
   humans: Array<Human>;
   human1: Human;
   human1Other: Human;
+  paginatedHumans: HumansConnection;
+};
+
+export type QuerypaginatedHumansArgs = {
+  input: ConnectionArgs;
 };
 
 export type Mutation = {
@@ -59,6 +64,7 @@ export type Mutation = {
   renameDog?: Maybe<Dog>;
   renameHuman?: Maybe<Human>;
   other?: Maybe<Scalars['Int']>;
+  createHuman: Human;
 };
 
 export type MutationrenameDogArgs = {
@@ -75,8 +81,34 @@ export type MutationotherArgs = {
   arg: inputTypeExample;
 };
 
+export type MutationcreateHumanArgs = {
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
 export type inputTypeExample = {
   a: Scalars['String'];
+};
+
+export type HumansConnection = {
+  __typename?: 'HumansConnection';
+  pageInfo: PageInfo;
+  nodes: Array<Human>;
+};
+
+export type PageInfo = {
+  __typename?: 'PageInfo';
+  hasPreviousPage: Scalars['Boolean'];
+  hasNextPage: Scalars['Boolean'];
+  startCursor?: Maybe<Scalars['String']>;
+  endCursor?: Maybe<Scalars['String']>;
+};
+
+export type ConnectionArgs = {
+  first?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -197,6 +229,9 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   inputTypeExample: inputTypeExample;
+  HumansConnection: ResolverTypeWrapper<HumansConnection>;
+  PageInfo: ResolverTypeWrapper<PageInfo>;
+  ConnectionArgs: ConnectionArgs;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -210,6 +245,9 @@ export type ResolversParentTypes = {
   Mutation: {};
   Int: Scalars['Int'];
   inputTypeExample: inputTypeExample;
+  HumansConnection: HumansConnection;
+  PageInfo: PageInfo;
+  ConnectionArgs: ConnectionArgs;
 };
 
 export type DogResolvers<
@@ -253,6 +291,12 @@ export type QueryResolvers<
   humans?: Resolver<Array<ResolversTypes['Human']>, ParentType, ContextType>;
   human1?: Resolver<ResolversTypes['Human'], ParentType, ContextType>;
   human1Other?: Resolver<ResolversTypes['Human'], ParentType, ContextType>;
+  paginatedHumans?: Resolver<
+    ResolversTypes['HumansConnection'],
+    ParentType,
+    ContextType,
+    RequireFields<QuerypaginatedHumansArgs, 'input'>
+  >;
 };
 
 export type MutationResolvers<
@@ -277,6 +321,44 @@ export type MutationResolvers<
     ContextType,
     RequireFields<MutationotherArgs, 'arg'>
   >;
+  createHuman?: Resolver<
+    ResolversTypes['Human'],
+    ParentType,
+    ContextType,
+    RequireFields<MutationcreateHumanArgs, 'id' | 'name'>
+  >;
+};
+
+export type HumansConnectionResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['HumansConnection'] = ResolversParentTypes['HumansConnection']
+> = {
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  nodes?: Resolver<Array<ResolversTypes['Human']>, ParentType, ContextType>;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PageInfoResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']
+> = {
+  hasPreviousPage?: Resolver<
+    ResolversTypes['Boolean'],
+    ParentType,
+    ContextType
+  >;
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  startCursor?: Resolver<
+    Maybe<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >;
+  endCursor?: Resolver<
+    Maybe<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >;
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
@@ -284,6 +366,8 @@ export type Resolvers<ContextType = any> = {
   Human?: HumanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  HumansConnection?: HumansConnectionResolvers<ContextType>;
+  PageInfo?: PageInfoResolvers<ContextType>;
 };
 
 /**
@@ -324,6 +408,33 @@ export interface Loaders<
     id?: LoaderResolver<Scalars['ID'], Human, {}, TContext>;
     name?: LoaderResolver<Scalars['String'], Human, {}, TContext>;
     dogs?: LoaderResolver<Maybe<Array<Dog>>, Human, {}, TContext>;
+  };
+
+  HumansConnection?: {
+    pageInfo?: LoaderResolver<PageInfo, HumansConnection, {}, TContext>;
+    nodes?: LoaderResolver<Array<Human>, HumansConnection, {}, TContext>;
+  };
+
+  PageInfo?: {
+    hasPreviousPage?: LoaderResolver<
+      Scalars['Boolean'],
+      PageInfo,
+      {},
+      TContext
+    >;
+    hasNextPage?: LoaderResolver<Scalars['Boolean'], PageInfo, {}, TContext>;
+    startCursor?: LoaderResolver<
+      Maybe<Scalars['String']>,
+      PageInfo,
+      {},
+      TContext
+    >;
+    endCursor?: LoaderResolver<
+      Maybe<Scalars['String']>,
+      PageInfo,
+      {},
+      TContext
+    >;
   };
 }
 export type DeepPartial<T> = T extends Function

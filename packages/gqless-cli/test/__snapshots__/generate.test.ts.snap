@@ -426,18 +426,16 @@ export interface Query {
   }) => ScalarsEnums['String'];
   stringNullableWithArgs: (args: {
     hello: ScalarsEnums['String'];
-    helloTwo?: Maybe<ScalarsEnums['String']>;
-  }) => Maybe<ScalarsEnums['String']>;
+    helloTwo?: ScalarsEnums['String'];
+  }) => ScalarsEnums['String'];
   stringNullableWithArgsArray: (args: {
     hello: Array<Maybe<ScalarsEnums['String']>>;
-  }) => Maybe<ScalarsEnums['String']>;
+  }) => ScalarsEnums['String'];
   object?: Maybe<Human>;
   objectArray?: Maybe<Array<Maybe<Human>>>;
   objectWithArgs: (args: { who: ScalarsEnums['String'] }) => Human;
   arrayString: Array<ScalarsEnums['String']>;
-  arrayObjectArgs: (args?: {
-    limit?: Maybe<ScalarsEnums['Int']>;
-  }) => Array<Human>;
+  arrayObjectArgs: (args?: { limit?: ScalarsEnums['Int'] }) => Array<Human>;
   greetings: ScalarsEnums['GreetingsEnum'];
   giveGreetingsInput: (args: {
     input: GreetingsInput;
@@ -457,25 +455,25 @@ export interface Subscription {
 export interface Human extends NamedEntity {
   __typename: 'Human' | null;
   name: ScalarsEnums['String'];
-  other?: Maybe<ScalarsEnums['String']>;
+  other?: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
   withArgs: (args: {
     a: ScalarsEnums['Int'];
-    b?: Maybe<ScalarsEnums['Int']>;
-  }) => Maybe<ScalarsEnums['Int']>;
-  withArgs2: (args?: { a?: Maybe<ScalarsEnums['Int']> }) => ScalarsEnums['Int'];
+    b?: ScalarsEnums['Int'];
+  }) => ScalarsEnums['Int'];
+  withArgs2: (args?: { a?: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface OtherHuman {
   __typename: 'OtherHuman' | null;
   name: ScalarsEnums['String'];
-  other?: Maybe<ScalarsEnums['String']>;
+  other?: ScalarsEnums['String'];
   withArgs: (args: {
     a: ScalarsEnums['Int'];
-    b?: Maybe<ScalarsEnums['Int']>;
-  }) => Maybe<ScalarsEnums['Int']>;
-  withArgs2: (args?: { a?: Maybe<ScalarsEnums['Int']> }) => ScalarsEnums['Int'];
+    b?: ScalarsEnums['Int'];
+  }) => ScalarsEnums['Int'];
+  withArgs2: (args?: { a?: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface SchemaObjectTypes {
@@ -498,33 +496,29 @@ export type HumanType =
       father: Human;
       fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
       name: ScalarsEnums['String'];
-      other?: Maybe<ScalarsEnums['String']>;
+      other?: ScalarsEnums['String'];
       withArgs: (args: {
         a: ScalarsEnums['Int'];
-        b?: Maybe<ScalarsEnums['Int']>;
-      }) => Maybe<ScalarsEnums['Int']>;
-      withArgs2: (args?: {
-        a?: Maybe<ScalarsEnums['Int']>;
+        b?: ScalarsEnums['Int'];
       }) => ScalarsEnums['Int'];
+      withArgs2: (args?: { a?: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
     }
   | {
       __typename: 'OtherHuman' | null;
       father?: undefined;
       fieldWithArgs?: undefined;
       name: ScalarsEnums['String'];
-      other?: Maybe<ScalarsEnums['String']>;
+      other?: ScalarsEnums['String'];
       withArgs: (args: {
         a: ScalarsEnums['Int'];
-        b?: Maybe<ScalarsEnums['Int']>;
-      }) => Maybe<ScalarsEnums['Int']>;
-      withArgs2: (args?: {
-        a?: Maybe<ScalarsEnums['Int']>;
+        b?: ScalarsEnums['Int'];
       }) => ScalarsEnums['Int'];
+      withArgs2: (args?: { a?: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
     };
 
 export interface NamedEntity {
   name: ScalarsEnums['String'];
-  other?: Maybe<ScalarsEnums['String']>;
+  other?: ScalarsEnums['String'];
 }
 
 export interface GeneratedSchema {
