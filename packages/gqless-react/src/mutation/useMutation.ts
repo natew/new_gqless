@@ -10,6 +10,8 @@ export interface UseMutationOptions<TData> {
   onCompleted?: (data: TData) => void;
   onError?: (error: gqlessError) => void;
   retry?: RetryOptions;
+  refetchQueries?: unknown[];
+  awaitRefetchQueries?: boolean;
 }
 
 export interface UseMutationState<TData> {
@@ -100,7 +102,7 @@ export function createUseMutation<
   client: ReturnType<typeof createClient>,
   { defaults: { retry: defaultRetry } }: ReactClientOptionsWithDefaults
 ) {
-  const { resolved } = client;
+  const { resolved, refetch } = client;
   const clientMutation: GeneratedSchema['mutation'] = client.mutation;
 
   const useMutation: UseMutation<GeneratedSchema> = function useMutation<
@@ -132,6 +134,25 @@ export function createUseMutation<
     const fnRef = useRef(mutationFn);
     fnRef.current = mutationFn;
 
+    const callRefetchQueries = useCallback(async () => {
+      const { refetchQueries, awaitRefetchQueries } = optsRef.current;
+
+      if (refetchQueries?.length) {
+        const refetchPromise = Promise.all(
+          refetchQueries.map((v) => refetch(v))
+        ).catch((err) => {
+          dispatch({
+            type: 'failure',
+            error: gqlessError.create(err, useMutation),
+          });
+        });
+
+        if (awaitRefetchQueries) {
+          await refetchPromise;
+        }
+      }
+    }, [optsRef, dispatch]);
+
     const mutate = useCallback(
       function mutateFn({
         fn: fnArg,
@@ -158,7 +179,9 @@ export function createUseMutation<
           noCache: optsRef.current.noCache,
           refetch: true,
         }).then(
-          (data) => {
+          async (data) => {
+            await callRefetchQueries();
+
             optsRef.current.onCompleted?.(data);
             dispatch({
               type: 'success',
@@ -179,7 +202,7 @@ export function createUseMutation<
           }
         );
       },
-      [optsRef, fnRef, dispatch]
+      [optsRef, fnRef, dispatch, callRefetchQueries]
     );
 
     const { retry = defaultRetry } = opts;

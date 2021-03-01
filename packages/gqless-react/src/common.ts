@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from 'react';
-
 import { BuildSelectionInput, ResolveOptions, Selection } from '@dish/gqless';
 import { EventHandler } from '@dish/gqless/dist/Events';
 import { InterceptorManager } from '@dish/gqless/dist/Interceptor';
@@ -30,21 +29,31 @@ export const useIsomorphicLayoutEffect = IS_BROWSER
 
 const updateReducer = (num: number): number => (num + 1) % 1_000_000;
 
-export const useForceUpdate = () => {
+export function useForceUpdate() {
   const [, update] = useReducer(updateReducer, 0);
 
-  return update;
-};
+  const wasCalled = useRef(false);
+
+  useEffect(() => {
+    wasCalled.current = false;
+  });
+
+  return useCallback(() => {
+    if (wasCalled.current) return;
+    wasCalled.current = true;
+    update();
+  }, [update]);
+}
 
 const InitSymbol: any = Symbol();
 
-export const useLazyRef = <T>(initialValFunc: () => T) => {
+export function useLazyRef<T>(initialValFunc: () => T) {
   const ref: MutableRefObject<T> = useRef(InitSymbol);
   if (ref.current === InitSymbol) {
     ref.current = initialValFunc();
   }
   return ref;
-};
+}
 
 export const useUpdateEffect: typeof useEffect = (effect, deps) => {
   const firstEffectCall = useRef(true);
@@ -56,7 +65,7 @@ export const useUpdateEffect: typeof useEffect = (effect, deps) => {
   }, deps);
 };
 
-export const useIsRendering = () => {
+export function useIsRendering() {
   const isRendering = useRef(true);
   isRendering.current = true;
 
@@ -65,11 +74,11 @@ export const useIsRendering = () => {
   });
 
   return isRendering;
-};
+}
 
-export const useDeferDispatch = <F extends (...args: any[]) => void>(
+export function useDeferDispatch<F extends (...args: any[]) => void>(
   dispatchFn: F
-) => {
+) {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -101,7 +110,7 @@ export const useDeferDispatch = <F extends (...args: any[]) => void>(
     },
     [dispatchFn, isRendering, pendingDispatch, isMounted]
   ) as F;
-};
+}
 
 export type FetchPolicy =
   | 'cache-and-network'
@@ -254,6 +263,10 @@ export function useSubscribeCacheChanges({
   onChange: () => void;
   shouldSubscribe?: boolean;
 }) {
+  const wasCalled = useRef(false);
+  useEffect(() => {
+    wasCalled.current = false;
+  });
   useIsomorphicLayoutEffect(() => {
     if (!shouldSubscribe) return;
 
@@ -267,6 +280,8 @@ export function useSubscribeCacheChanges({
 
         fetchPromise.then(
           () => {
+            if (wasCalled.current) return;
+            wasCalled.current = true;
             if (isMounted) onChange();
           },
           () => {}
@@ -277,6 +292,8 @@ export function useSubscribeCacheChanges({
     const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
       ({ selection }) => {
         if (isMounted && hookSelections.has(selection)) {
+          wasCalled.current = true;
+          if (wasCalled.current) return;
           onChange();
         }
       }
@@ -287,7 +304,7 @@ export function useSubscribeCacheChanges({
       unsubscribeFetch();
       unsubscribeCache();
     };
-  }, [shouldSubscribe, hookSelections, eventHandler, onChange]);
+  }, [shouldSubscribe, hookSelections, eventHandler, onChange, wasCalled]);
 }
 
 export function useInterceptSelections({
@@ -317,11 +334,11 @@ export function useInterceptSelections({
 
   const prevCacheRefetchSelection = usePrevious(cacheRefetchSelections);
 
-  if (cacheRefetchSelections) {
-    interceptor.selectionCacheRefetchListeners.add((selection) => {
-      cacheRefetchSelections.add(selection);
-    });
-  }
+  interceptor.selectionCacheRefetchListeners.add((selection) => {
+    if (cacheRefetchSelections) cacheRefetchSelections.add(selection);
+
+    hookSelections.add(selection);
+  });
 
   useEffect(() => {
     if (

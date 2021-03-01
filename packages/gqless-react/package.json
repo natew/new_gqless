@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless-react",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "license": "MIT",
   "author": "PabloSz",
   "main": "dist/index.js",

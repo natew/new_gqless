@@ -61,7 +61,7 @@ export function createRefetch(
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('gqless: Invalid proxy to refetch!');
+      console.warn('gqless: Invalid proxy to refetch!', refetchArg);
     }
     return refetchArg;
   }
