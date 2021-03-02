@@ -234,11 +234,11 @@ export function createNormalizationHandler(
     return currentValue === undefined ? notFoundValue : (currentValue as Value);
   }
 
-  function scanNormalizedObjects(obj: object, shouldMutate?: boolean) {
+  function scanNormalizedObjects(obj: object) {
     const pendingObjects = new Set<object>([obj]);
 
     for (const container of pendingObjects) {
-      for (const [key, value] of Object.entries(container)) {
+      for (const value of Object.values(container)) {
         if (Array.isArray(value)) {
           pendingObjects.add(value);
         } else if (isObjectWithType(value)) {
@@ -265,9 +265,6 @@ export function createNormalizationHandler(
               } else {
                 normalizedCache[id] = value;
               }
-
-              //@ts-expect-error
-              if (shouldMutate) container[key] = value;
 
               if (eventHandler) {
                 const selections = normalizedSelections.get(id);

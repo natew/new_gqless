@@ -1,4 +1,4 @@
-import React, { Suspense, SuspenseProps, ReactElement } from 'react';
+import React, { ReactElement, Suspense, SuspenseProps } from 'react';
 
 import { createClient } from '@dish/gqless';
 
@@ -13,8 +13,6 @@ export interface GraphQLHOCOptions {
       };
   staleWhileRevalidate?: boolean;
 }
-
-<Suspense fallback></Suspense>;
 
 export interface GraphQLHOC {
   <P>(

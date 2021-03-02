@@ -5,7 +5,7 @@ import { ReactClientOptionsWithDefaults } from '../utils';
 
 export interface UseQueryOptions {
   suspense?: boolean;
-  staleWhileRevalidate?: boolean;
+  staleWhileRevalidate?: boolean | object | number | string | null;
 }
 
 export interface UseQuery<GeneratedSchema extends { query: object }> {

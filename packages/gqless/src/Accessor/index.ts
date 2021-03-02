@@ -9,7 +9,14 @@ import {
   Type,
 } from '../Schema';
 import { Selection, SelectionType } from '../Selection';
-import { isInteger, isObject, isObjectWithType } from '../Utils';
+import {
+  decycle,
+  isInteger,
+  isObject,
+  isObjectWithType,
+  PlainObject,
+  retrocycle,
+} from '../Utils';
 
 const ProxySymbol = Symbol('gqless-proxy');
 
@@ -159,7 +166,7 @@ export function AccessorCreators<
        * This is necessary to be able to extract data from proxies
        * inside user-made objects and arrays
        */
-      return JSON.parse(JSON.stringify(value));
+      return retrocycle<object>(JSON.parse(JSON.stringify(decycle(value))));
     }
     return value;
   }
@@ -311,7 +318,14 @@ export function AccessorCreators<
             throw TypeError('Invalid array assignation: ' + key);
           },
           get(target, key: string, receiver) {
-            if (key === 'toJSON') return () => [];
+            if (key === 'toJSON')
+              return () =>
+                decycle<unknown[]>(
+                  innerState.clientCache.getCacheFromSelection(
+                    prevSelection,
+                    []
+                  )
+                );
 
             let index: number | undefined;
 
@@ -510,7 +524,14 @@ export function AccessorCreators<
             return true;
           },
           get(target, key: string, receiver) {
-            if (key === 'toJSON') return () => ({});
+            if (key === 'toJSON')
+              return () =>
+                decycle<PlainObject>(
+                  innerState.clientCache.getCacheFromSelection(
+                    prevSelection,
+                    {}
+                  )
+                );
 
             if (!proxyValue.hasOwnProperty(key))
               return Reflect.get(target, key, receiver);

@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '../components/client';
 
 export default function NormalizedPage() {
   const query = useQuery({
-    suspense: false,
+    suspense: true,
     staleWhileRevalidate: true,
   });
 
@@ -29,6 +29,7 @@ export default function NormalizedPage() {
 
   return (
     <div>
+      <p>{query.time}</p>
       <button onClick={() => renameDog()}>rename dog</button>
       <button onClick={() => renameHuman()}>rename human</button>
       <p style={{ whiteSpace: 'pre-wrap' }}>

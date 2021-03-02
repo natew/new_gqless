@@ -18,6 +18,7 @@ export const {
 } = createReactClient<GeneratedSchema>(client, {
   defaults: {
     suspense: true,
+    staleWhileRevalidate: false,
   },
 });
 

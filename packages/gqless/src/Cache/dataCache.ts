@@ -35,7 +35,7 @@ export function createCache(normalization?: NormalizationHandler) {
 
   function setCacheFromSelection(selection: Selection, value: unknown) {
     if (normalization && isObject(value))
-      normalization.scanNormalizedObjects(value, true);
+      normalization.scanNormalizedObjects(value);
 
     set(cache, selection.cachePath, value);
   }

@@ -24,3 +24,4 @@ export const isInteger = (v: any): v is number => Number.isInteger(v);
 export * from './debounce';
 export * from './object';
 export * from './lodashMerge';
+export * from './cycle';

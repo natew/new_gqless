@@ -13,12 +13,6 @@ export function areArraysEqual(
   return true;
 }
 
-export function areSetsEqual(a: Set<unknown>, b: Set<unknown>) {
-  if (a.size !== b.size) return false;
-
-  return Array.from(a).every((value) => b.has(value));
-}
-
 export type ReactClientOptionsWithDefaults = Omit<
   CreateReactClientOptions,
   'defaults'

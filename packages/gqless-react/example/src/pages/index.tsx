@@ -1,25 +1,13 @@
 import { Suspense, useReducer } from 'react';
 
-import { selectFields } from '@dish/gqless';
-
-import { createReactClient } from '../../../';
-import { client, GeneratedSchema, query } from '../graphql/gqless';
+import { query } from '../graphql/gqless';
 import NormalizedPage from './normalized';
-
-const defaultSuspense = true;
-
-const {
-  useTransactionQuery,
-  useQuery,
+import {
   graphql,
-  state,
+  useQuery,
   useRefetch,
-} = createReactClient<GeneratedSchema>(client, {
-  defaults: {
-    suspense: true,
-    staleWhileRevalidate: false,
-  },
-});
+  useTransactionQuery,
+} from '../components/client';
 
 const Comp = graphql(function Asd() {
   const queryFromHook = useQuery({});
@@ -57,9 +45,6 @@ const Comp = graphql(function Asd() {
       <label>Depth: {n}</label>
       <button onClick={() => dispatch('add')}>add</button>
       <button onClick={() => dispatch('substact')}>substract</button>
-      {!defaultSuspense && state.isLoading
-        ? 'LOADING NO SUSPENSE'
-        : JSON.stringify(selectFields(query.dogs, '*', n))}
       <br />
       <br />
       useTransactionQuery: "{JSON.stringify(data, null, 2)}"

@@ -11,7 +11,6 @@ import { BuildSelectionInput, ResolveOptions, Selection } from '@dish/gqless';
 import { EventHandler } from '@dish/gqless/dist/Events';
 import { InterceptorManager } from '@dish/gqless/dist/Interceptor';
 import { Scheduler } from '@dish/gqless/dist/Scheduler';
-import { areSetsEqual } from './utils';
 
 export function useOnFirstMount(fn: () => void) {
   const isFirstMount = useRef(true);
@@ -263,10 +262,6 @@ export function useSubscribeCacheChanges({
   onChange: () => void;
   shouldSubscribe?: boolean;
 }) {
-  const wasCalled = useRef(false);
-  useEffect(() => {
-    wasCalled.current = false;
-  });
   useIsomorphicLayoutEffect(() => {
     if (!shouldSubscribe) return;
 
@@ -280,9 +275,7 @@ export function useSubscribeCacheChanges({
 
         fetchPromise.then(
           () => {
-            if (wasCalled.current) return;
-            wasCalled.current = true;
-            if (isMounted) onChange();
+            if (isMounted) Promise.resolve().then(onChange);
           },
           () => {}
         );
@@ -292,9 +285,7 @@ export function useSubscribeCacheChanges({
     const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
       ({ selection }) => {
         if (isMounted && hookSelections.has(selection)) {
-          wasCalled.current = true;
-          if (wasCalled.current) return;
-          onChange();
+          Promise.resolve().then(onChange);
         }
       }
     );
@@ -304,7 +295,7 @@ export function useSubscribeCacheChanges({
       unsubscribeFetch();
       unsubscribeCache();
     };
-  }, [shouldSubscribe, hookSelections, eventHandler, onChange, wasCalled]);
+  }, [shouldSubscribe, hookSelections, eventHandler, onChange]);
 }
 
 export function useInterceptSelections({
@@ -317,7 +308,7 @@ export function useInterceptSelections({
   scheduler,
   eventHandler,
 }: {
-  staleWhileRevalidate: boolean | undefined;
+  staleWhileRevalidate: boolean | object | number | string | undefined | null;
   interceptorManager: InterceptorManager;
   scheduler: Scheduler;
   eventHandler: EventHandler;
@@ -332,27 +323,24 @@ export function useInterceptSelections({
     ? new Set<Selection>()
     : null;
 
-  const prevCacheRefetchSelection = usePrevious(cacheRefetchSelections);
-
   interceptor.selectionCacheRefetchListeners.add((selection) => {
     if (cacheRefetchSelections) cacheRefetchSelections.add(selection);
 
     hookSelections.add(selection);
   });
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (
-      staleWhileRevalidate &&
-      cacheRefetchSelections?.size &&
-      (prevCacheRefetchSelection
-        ? !areSetsEqual(cacheRefetchSelections, prevCacheRefetchSelection)
-        : true)
+      (typeof staleWhileRevalidate === 'boolean'
+        ? staleWhileRevalidate
+        : staleWhileRevalidate != null) &&
+      cacheRefetchSelections?.size
     ) {
       for (const selection of cacheRefetchSelections) {
         globalInterceptor.addSelectionCacheRefetch(selection);
       }
     }
-  });
+  }, [staleWhileRevalidate]);
 
   interceptor.selectionAddListeners.add((selection) => {
     hookSelections.add(selection);
@@ -412,7 +400,7 @@ export function useInterceptSelections({
     removeInterceptor(interceptor);
   }
 
-  setTimeout(unsubscribe, 0);
+  Promise.resolve().then(unsubscribe);
 
   useSubscribeCacheChanges({
     hookSelections,
@@ -421,12 +409,4 @@ export function useInterceptSelections({
   });
 
   return { fetchingPromise, unsubscribe };
-}
-
-export function usePrevious<T>(value: T) {
-  const ref = useRef<typeof value | undefined>();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
 }
