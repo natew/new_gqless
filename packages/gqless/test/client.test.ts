@@ -11,7 +11,7 @@ describe('core', () => {
 
     expect(typeof query).toBe('object');
 
-    expect(query.hello).toBe(null);
+    expect(query.hello).toBe(undefined);
 
     waitForExpect(
       () => {
@@ -344,7 +344,7 @@ describe('custom query fetcher', () => {
     const data = await resolved(() => {
       return query.hello;
     });
-    expect(data).toBe(null);
+    expect(data).toBe(undefined);
   });
 });
 

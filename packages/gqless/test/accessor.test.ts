@@ -97,7 +97,7 @@ describe('setCache', () => {
 
     const name1 = humanQuery.name;
 
-    expect(name1).toBe(null);
+    expect(name1).toBe(undefined);
 
     expect(scheduler.resolving).toBeTruthy();
     await scheduler.resolving!.promise;
@@ -112,7 +112,7 @@ describe('setCache', () => {
 
     const name3 = humanMutation.name;
 
-    expect(name3).toBe(null);
+    expect(name3).toBe(undefined);
 
     expect(scheduler.resolving).toBeTruthy();
     await scheduler.resolving!.promise;
@@ -140,7 +140,7 @@ describe('setCache', () => {
 
     const name5 = humanQuery.name;
 
-    expect(name5).toBe(null);
+    expect(name5).toBe(undefined);
 
     expect(scheduler.resolving).toBeTruthy();
     await scheduler.resolving!.promise;

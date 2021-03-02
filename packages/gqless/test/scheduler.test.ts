@@ -229,7 +229,7 @@ describe('retry', () => {
     try {
       const firstTry = query.throwUntilThirdTry;
 
-      expect(firstTry).toBe(null);
+      expect(firstTry).toBe(undefined);
 
       await readyPromise.promise;
       expect(callNumber).toBe(6);

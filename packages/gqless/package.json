@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -71,8 +71,5 @@
       "path": "dist/gqless.esm.js",
       "limit": "20 KB"
     }
-  ],
-  "dependencies": {
-    "flatted": "^3.1.1"
-  }
+  ]
 }

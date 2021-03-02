@@ -199,7 +199,7 @@ describe('refetch function', () => {
 
     const a = query.hello;
 
-    expect(a).toBe(null);
+    expect(a).toBe(undefined);
 
     expect(scheduler.resolving).toBeTruthy();
 

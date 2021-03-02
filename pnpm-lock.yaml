@@ -62,8 +62,6 @@ importers:
       tslib: ^2.1.0
       typescript: ^4.2.2
   packages/gqless:
-    dependencies:
-      flatted: 3.1.1
     devDependencies:
       '@dish/gqless-cli': link:../gqless-cli
       '@size-limit/preset-small-lib': 4.9.2_32cd1d6dba86a6aa8cbe7305193d5b72
@@ -112,7 +110,6 @@ importers:
       '@types/tsc-watch': ^4.2.0
       '@types/wait-on': ^5.2.0
       concurrently: ^6.0.0
-      flatted: ^3.1.1
       graphql: ^15.5.0
       mercurius: ^7.1.0
       mkdirp: ^1.0.4
@@ -8264,10 +8261,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-r5wGx7YeOwNWNlCA0wQ86zKyDLMQr+/RB8xy74M4hTphfmjlijTSSXGuH8rnvKZnfT9i+75zmd8jcKdMR4O6jA==
-  /flatted/3.1.1:
-    dev: false
-    resolution:
-      integrity: sha512-zAoAQiudy+r5SvnSw3KJy5os/oRJYHzrzja/tBDqrZtNhUw8bt6y8OBzMWcjWr+8liV8Eb6yOhw8WZ7VFZ5ZzA==
   /flatten/1.0.3:
     dev: false
     resolution:

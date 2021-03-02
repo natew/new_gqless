@@ -107,7 +107,7 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   simpleString: ScalarsEnums['String'];
   stringWithArgs: (args: {
     hello: ScalarsEnums['String'];
@@ -133,16 +133,16 @@ export interface Query {
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
   increment: (args: { n: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface Human extends NamedEntity {
-  __typename: 'Human' | null;
+  __typename: 'Human' | undefined;
   name: ScalarsEnums['String'];
   father: Human;
   fieldWithArgs: (args: { id: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
@@ -152,21 +152,21 @@ export interface Human extends NamedEntity {
 }
 
 export interface A {
-  __typename: 'A' | null;
+  __typename: 'A' | undefined;
   a: ScalarsEnums['String'];
   common: (args?: { a?: ScalarsEnums['String'] }) => ScalarsEnums['Int'];
   z?: ScalarsEnums['String'];
 }
 
 export interface B {
-  __typename: 'B' | null;
+  __typename: 'B' | undefined;
   b: ScalarsEnums['Int'];
   common: (args?: { b?: ScalarsEnums['Int'] }) => ScalarsEnums['String'];
   z?: ScalarsEnums['String'];
 }
 
 export interface C {
-  __typename: 'C' | null;
+  __typename: 'C' | undefined;
   c: ScalarsEnums['GreetingsEnum'];
   z?: ScalarsEnums['String'];
 }
@@ -191,7 +191,7 @@ export type SchemaObjectTypesNames =
 
 export type TestUnion =
   | {
-      __typename: 'A' | null;
+      __typename: 'A' | undefined;
       a: ScalarsEnums['String'];
       b?: undefined;
       c?: undefined;
@@ -199,7 +199,7 @@ export type TestUnion =
       z?: ScalarsEnums['String'];
     }
   | {
-      __typename: 'B' | null;
+      __typename: 'B' | undefined;
       a?: undefined;
       b: ScalarsEnums['Int'];
       c?: undefined;
@@ -207,7 +207,7 @@ export type TestUnion =
       z?: ScalarsEnums['String'];
     }
   | {
-      __typename: 'C' | null;
+      __typename: 'C' | undefined;
       a?: undefined;
       b?: undefined;
       c: ScalarsEnums['GreetingsEnum'];
@@ -226,9 +226,9 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {
-  GreetingsEnum: GreetingsEnum | null;
+  GreetingsEnum: GreetingsEnum | undefined;
 }

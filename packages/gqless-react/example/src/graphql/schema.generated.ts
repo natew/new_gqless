@@ -97,7 +97,7 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   expectedError: ScalarsEnums['Boolean'];
   expectedNullableError?: ScalarsEnums['Boolean'];
   thirdTry: ScalarsEnums['Boolean'];
@@ -111,7 +111,7 @@ export interface Query {
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
   renameDog: (args: {
     id: ScalarsEnums['ID'];
     name: ScalarsEnums['String'];
@@ -128,31 +128,31 @@ export interface Mutation {
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface Dog {
-  __typename: 'Dog' | null;
+  __typename: 'Dog' | undefined;
   id: ScalarsEnums['ID'];
   name: ScalarsEnums['String'];
   owner?: Maybe<Human>;
 }
 
 export interface Human {
-  __typename: 'Human' | null;
+  __typename: 'Human' | undefined;
   id: ScalarsEnums['ID'];
   name: ScalarsEnums['String'];
   dogs?: Maybe<Array<Dog>>;
 }
 
 export interface HumansConnection {
-  __typename: 'HumansConnection' | null;
+  __typename: 'HumansConnection' | undefined;
   pageInfo: PageInfo;
   nodes: Array<Human>;
 }
 
 export interface PageInfo {
-  __typename: 'PageInfo' | null;
+  __typename: 'PageInfo' | undefined;
   hasPreviousPage: ScalarsEnums['Boolean'];
   hasNextPage: ScalarsEnums['Boolean'];
   startCursor?: ScalarsEnums['String'];
@@ -184,7 +184,7 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {}

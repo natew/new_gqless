@@ -311,9 +311,7 @@ export function AccessorCreators<
             throw TypeError('Invalid array assignation: ' + key);
           },
           get(target, key: string, receiver) {
-            if (key === 'toJSON')
-              return () =>
-                innerState.clientCache.getCacheFromSelection(prevSelection, []);
+            if (key === 'toJSON') return () => [];
 
             let index: number | undefined;
 
@@ -512,9 +510,7 @@ export function AccessorCreators<
             return true;
           },
           get(target, key: string, receiver) {
-            if (key === 'toJSON')
-              return () =>
-                innerState.clientCache.getCacheFromSelection(prevSelection, {});
+            if (key === 'toJSON') return () => ({});
 
             if (!proxyValue.hasOwnProperty(key))
               return Reflect.get(target, key, receiver);
@@ -592,7 +588,7 @@ export function AccessorCreators<
                       interceptorManager.addSelection(selection);
                     }
 
-                    return isArray ? emptyScalarArray : null;
+                    return isArray ? emptyScalarArray : undefined;
                   } else if (!innerState.allowCache) {
                     autoFetchKeys?.();
 

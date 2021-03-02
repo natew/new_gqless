@@ -290,53 +290,52 @@ export async function generate(
       export interface ${typeName} ${
         objectTypeInterfaces ? 'extends ' + objectTypeInterfaces.join(', ') : ''
       }{ 
-        __typename: "${typeName}" | null; ${Object.entries(typeValue).reduce(
-        (acum, [fieldKey, fieldValue]) => {
-          if (fieldKey === '__typename') {
-            objectTypeMap.set(fieldKey, `: "${typeName}" | null`);
-            return acum;
-          }
-
-          const fieldValueProps = parseSchemaType(fieldValue.__type);
-          const typeToReturn = parseFinalType(fieldValueProps);
-          let finalType: string;
-          if (fieldValue.__args) {
-            const argsEntries = Object.entries(fieldValue.__args);
-            let onlyNullableArgs = true;
-            const argTypes = argsEntries.reduce(
-              (acum, [argKey, argValue], index) => {
-                const argValueProps = parseSchemaType(argValue);
-                const connector = argValueProps.isNullable ? '?:' : ':';
-
-                if (!argValueProps.isNullable) {
-                  onlyNullableArgs = false;
-                }
-
-                const argTypeValue = parseFinalType(argValueProps);
-
-                acum += `${argKey}${connector} ${argTypeValue}`;
-                if (index < argsEntries.length - 1) {
-                  acum += '; ';
-                }
-                return acum;
-              },
-              ''
-            );
-            const argsConnector = onlyNullableArgs ? '?:' : ':';
-            finalType = `: (args${argsConnector} {${argTypes}}) => ${typeToReturn}`;
-          } else {
-            const connector = fieldValueProps.isNullable ? '?:' : ':';
-            finalType = `${connector} ${typeToReturn}`;
-          }
-
-          objectTypeMap.set(fieldKey, finalType);
-
-          acum += '\n' + fieldKey + finalType;
-
+        __typename: "${typeName}" | undefined; ${Object.entries(
+        typeValue
+      ).reduce((acum, [fieldKey, fieldValue]) => {
+        if (fieldKey === '__typename') {
+          objectTypeMap.set(fieldKey, `: "${typeName}" | undefined`);
           return acum;
-        },
-        ''
-      )}
+        }
+
+        const fieldValueProps = parseSchemaType(fieldValue.__type);
+        const typeToReturn = parseFinalType(fieldValueProps);
+        let finalType: string;
+        if (fieldValue.__args) {
+          const argsEntries = Object.entries(fieldValue.__args);
+          let onlyNullableArgs = true;
+          const argTypes = argsEntries.reduce(
+            (acum, [argKey, argValue], index) => {
+              const argValueProps = parseSchemaType(argValue);
+              const connector = argValueProps.isNullable ? '?:' : ':';
+
+              if (!argValueProps.isNullable) {
+                onlyNullableArgs = false;
+              }
+
+              const argTypeValue = parseFinalType(argValueProps);
+
+              acum += `${argKey}${connector} ${argTypeValue}`;
+              if (index < argsEntries.length - 1) {
+                acum += '; ';
+              }
+              return acum;
+            },
+            ''
+          );
+          const argsConnector = onlyNullableArgs ? '?:' : ':';
+          finalType = `: (args${argsConnector} {${argTypes}}) => ${typeToReturn}`;
+        } else {
+          const connector = fieldValueProps.isNullable ? '?:' : ':';
+          finalType = `${connector} ${typeToReturn}`;
+        }
+
+        objectTypeMap.set(fieldKey, finalType);
+
+        acum += '\n' + fieldKey + finalType;
+
+        return acum;
+      }, '')}
       }
       `;
 
@@ -459,12 +458,12 @@ export async function generate(
 
   typescriptTypes += `
     export type MakeNullable<T> = {
-      [K in keyof T]: T[K] | null;
+      [K in keyof T]: T[K] | undefined;
     };
   
     export interface ScalarsEnums extends MakeNullable<Scalars> {
       ${enumsNames.reduce((acum, enumName) => {
-        acum += `${enumName}: ${enumName} | null;`;
+        acum += `${enumName}: ${enumName} | undefined;`;
         return acum;
       }, '')}
     }

@@ -35,16 +35,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface SchemaObjectTypes {
@@ -61,7 +61,7 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {}
@@ -215,16 +215,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface SchemaObjectTypes {
@@ -241,7 +241,7 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {}
@@ -340,16 +340,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   hello: ScalarsEnums['Int'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface SchemaObjectTypes {
@@ -366,7 +366,7 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {}
@@ -409,16 +409,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface SchemaObjectTypes {
@@ -435,7 +435,7 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {}
@@ -535,16 +535,16 @@ export const generatedSchema = {
 } as const;
 
 export interface Query {
-  __typename: 'Query' | null;
+  __typename: 'Query' | undefined;
   hello: ScalarsEnums['String'];
 }
 
 export interface Mutation {
-  __typename: 'Mutation' | null;
+  __typename: 'Mutation' | undefined;
 }
 
 export interface Subscription {
-  __typename: 'Subscription' | null;
+  __typename: 'Subscription' | undefined;
 }
 
 export interface SchemaObjectTypes {
@@ -561,7 +561,7 @@ export interface GeneratedSchema {
 }
 
 export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | null;
+  [K in keyof T]: T[K] | undefined;
 };
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {}

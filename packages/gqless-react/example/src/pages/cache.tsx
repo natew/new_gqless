@@ -32,7 +32,11 @@ export default graphql(
           {isCreatingHuman ? 'Creating human...' : 'Create human'}
         </button>
         <p style={{ whiteSpace: 'pre-wrap' }}>
-          {JSON.stringify(humans, null, 2)}
+          {JSON.stringify(
+            humans.map(({ id, name }) => ({ id, name })),
+            null,
+            2
+          )}
         </p>
       </div>
     );

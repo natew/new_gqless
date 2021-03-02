@@ -122,11 +122,11 @@ describe('gqless integration tests', () => {
 
   test('scheduler', async () => {
     const hello = 'zxczxc';
-    const shoudBeNull = generatedClient.query.stringWithArgs({
+    const shouldBeUndefined = generatedClient.query.stringWithArgs({
       hello,
     });
 
-    expect(shoudBeNull).toBe(null);
+    expect(shouldBeUndefined).toBe(undefined);
 
     waitForExpect(() => {
       const shouldBeString = generatedClient.query.stringWithArgs({
@@ -152,11 +152,11 @@ describe('gqless integration tests', () => {
 
     expect(helloQueryString).toBe(hello);
 
-    const shouldBeNull = generatedClient.query.stringWithArgs({
+    const shouldBeUndefined = generatedClient.query.stringWithArgs({
       hello,
     });
 
-    expect(shouldBeNull).toBe(null);
+    expect(shouldBeUndefined).toBe(undefined);
   });
 
   test('arrays', async () => {
