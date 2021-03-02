@@ -1,17 +1,21 @@
 import type { AppProps } from 'next/app';
 import { MetaClient } from '../components/meta';
 import { NoSSR } from '../components/NoSSR';
-import { Suspense } from '../components/Suspense';
-
-Suspense;
+import SSRPage from './ssr';
 
 function MyApp({ Component, pageProps }: AppProps) {
+  if (Component === SSRPage) {
+    return (
+      <>
+        <MetaClient />
+        <Component {...pageProps} />
+      </>
+    );
+  }
   return (
     <NoSSR>
-      {/* <Suspense fallback="Loading..."> */}
       <MetaClient />
       <Component {...pageProps} />
-      {/* </Suspense> */}
     </NoSSR>
   );
 }

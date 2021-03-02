@@ -54,6 +54,8 @@ export const generatedSchema = {
       __type: 'HumansConnection!',
       __args: { input: 'ConnectionArgs!' },
     },
+    emptyScalarArray: { __type: '[Int!]!' },
+    emptyHumanArray: { __type: '[Human!]!' },
   },
   mutation: {
     __typename: { __type: 'String!' },
@@ -108,6 +110,8 @@ export interface Query {
   human1: Human;
   human1Other: Human;
   paginatedHumans: (args: { input: ConnectionArgs }) => HumansConnection;
+  emptyScalarArray: Array<ScalarsEnums['Int']>;
+  emptyHumanArray: Array<Human>;
 }
 
 export interface Mutation {

@@ -66,6 +66,10 @@ export const MetaClient = () => {
           <a>/cache</a>
         </Link>{' '}
         <br />
+        <Link href="/emptyArrays">
+          <a>/emptyArrays</a>
+        </Link>{' '}
+        <br />
       </nav>
     </div>
   );

@@ -90,6 +90,8 @@ const schema = gql`
     human1: Human!
     human1Other: Human!
     paginatedHumans(input: ConnectionArgs!): HumansConnection!
+    emptyScalarArray: [Int!]!
+    emptyHumanArray: [Human!]!
   }
   type Mutation {
     renameDog(id: ID!, name: String!): Dog
@@ -123,6 +125,8 @@ let nTries = 0;
 
 const resolvers: IResolvers = {
   Query: {
+    emptyHumanArray: () => [],
+    emptyScalarArray: () => [],
     humans() {
       return db.getData('/humans');
     },

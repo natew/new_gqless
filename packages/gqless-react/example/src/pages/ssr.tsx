@@ -1,8 +1,12 @@
 import { GetServerSideProps } from 'next';
 import { renderToString } from 'react-dom/server';
 
-import { prepareReactRender, useHydrateCache } from '../components/client';
-import { default as IndexPage } from './refetch';
+import {
+  graphql,
+  prepareReactRender,
+  useHydrateCache,
+} from '../components/client';
+import { default as RefetchPage } from './refetch';
 
 interface PageProps {
   page: string;
@@ -10,9 +14,9 @@ interface PageProps {
 }
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  const { cacheSnapshot } = await prepareReactRender(<IndexPage />);
+  const { cacheSnapshot } = await prepareReactRender(<RefetchPage />);
 
-  const page = renderToString(<IndexPage />);
+  const page = renderToString(<RefetchPage />);
 
   return {
     props: {
@@ -22,11 +26,19 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
   };
 };
 
-export default function SSRPage({ page, cacheSnapshot }: PageProps) {
-  console.log(page);
-  useHydrateCache({
-    cacheSnapshot,
-  });
+export default graphql(
+  function SSRPage({ page, cacheSnapshot }: PageProps) {
+    console.log(page, cacheSnapshot);
+    useHydrateCache({
+      cacheSnapshot,
+    });
 
-  return <IndexPage />;
-}
+    return <RefetchPage />;
+  },
+  {
+    suspense: {
+      fallback: 'Loading SSR...',
+    },
+    staleWhileRevalidate: false,
+  }
+);

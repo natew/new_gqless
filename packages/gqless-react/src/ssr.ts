@@ -16,7 +16,7 @@ export interface UseHydrateCacheOptions extends HydrateCacheOptions {
 
 export function createSSRHelpers(client: ReturnType<typeof createClient>) {
   async function prepareReactRender(element: ReactNode) {
-    const ssrPrepass = (await import('@dish/react-ssr-prepass')).default;
+    const ssrPrepass = (await import('react-ssr-prepass')).default;
     return client.prepareRender(() => ssrPrepass(element));
   }
   function useHydrateCache({

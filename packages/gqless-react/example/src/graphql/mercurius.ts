@@ -53,6 +53,8 @@ export type Query = {
   human1: Human;
   human1Other: Human;
   paginatedHumans: HumansConnection;
+  emptyScalarArray: Array<Scalars['Int']>;
+  emptyHumanArray: Array<Human>;
 };
 
 export type QuerypaginatedHumansArgs = {
@@ -226,8 +228,8 @@ export type ResolversTypes = {
   Human: ResolverTypeWrapper<Human>;
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  Mutation: ResolverTypeWrapper<{}>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  Mutation: ResolverTypeWrapper<{}>;
   inputTypeExample: inputTypeExample;
   HumansConnection: ResolverTypeWrapper<HumansConnection>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -242,8 +244,8 @@ export type ResolversParentTypes = {
   Human: Human;
   Query: {};
   Boolean: Scalars['Boolean'];
-  Mutation: {};
   Int: Scalars['Int'];
+  Mutation: {};
   inputTypeExample: inputTypeExample;
   HumansConnection: HumansConnection;
   PageInfo: PageInfo;
@@ -296,6 +298,16 @@ export type QueryResolvers<
     ParentType,
     ContextType,
     RequireFields<QuerypaginatedHumansArgs, 'input'>
+  >;
+  emptyScalarArray?: Resolver<
+    Array<ResolversTypes['Int']>,
+    ParentType,
+    ContextType
+  >;
+  emptyHumanArray?: Resolver<
+    Array<ResolversTypes['Human']>,
+    ParentType,
+    ContextType
   >;
 };
 

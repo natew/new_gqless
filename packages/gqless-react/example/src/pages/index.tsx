@@ -1,9 +1,8 @@
-import { useReducer } from 'react';
+import { Suspense, useReducer } from 'react';
 
 import { selectFields } from '@dish/gqless';
 
 import { createReactClient } from '../../../';
-import { Suspense } from '../components/Suspense';
 import { client, GeneratedSchema, query } from '../graphql/gqless';
 import NormalizedPage from './normalized';
 
@@ -16,8 +15,10 @@ const {
   state,
   useRefetch,
 } = createReactClient<GeneratedSchema>(client, {
-  defaultSuspense,
-  defaultStaleWhileRevalidate: true,
+  defaults: {
+    suspense: true,
+    staleWhileRevalidate: false,
+  },
 });
 
 const Comp = graphql(function Asd() {

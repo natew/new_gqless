@@ -1,10 +1,10 @@
+import { Suspense } from 'react';
 import {
   refetch,
   graphql,
   usePolling,
   useTransactionQuery,
 } from '../components/client';
-import { Suspense } from '../components/Suspense';
 import { Dog, query } from '../graphql/gqless';
 
 const DogComp = ({ dog }: { dog: Dog }) => {
