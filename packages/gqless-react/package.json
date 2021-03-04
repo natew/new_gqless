@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@dish/gqless": "workspace:^3.0.13",
-    "@size-limit/preset-small-lib": "^4.9.2",
+    "@size-limit/preset-small-lib": "^4.10.0",
     "@testing-library/react": "^11.2.5",
     "@testing-library/react-hooks": "^5.1.0",
     "@types/lodash": "^4.14.168",
@@ -39,7 +39,7 @@
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.7",
     "rimraf": "^3.0.2",
-    "size-limit": "^4.9.2",
+    "size-limit": "^4.10.0",
     "test-utils": "workspace:^0.1.0",
     "tsc-watch": "^4.2.9",
     "tsdx": "^0.14.1",

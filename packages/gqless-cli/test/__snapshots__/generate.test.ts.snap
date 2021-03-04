@@ -107,17 +107,37 @@ export interface Scalars {
 
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   String: true,
+  Int: true,
   Boolean: true,
 };
 export const generatedSchema = {
-  query: { __typename: { __type: 'String!' }, hello: { __type: 'String!' } },
+  query: {
+    __typename: { __type: 'String!' },
+    hello: { __type: 'String!' },
+    deprecatedArg: { __type: 'Int', __args: { arg: 'Int' } },
+  },
   mutation: {},
   subscription: {},
 } as const;
 
+/**
+ * Query
+ */
 export interface Query {
   __typename: 'Query' | undefined;
+  /**
+   * Hello field
+   */
   hello: ScalarsEnums['String'];
+  /**
+   * @deprecated No longer supported
+   */
+  deprecatedArg: (args?: {
+    /**
+     * @defaultValue \`123\`
+     */
+    arg?: ScalarsEnums['Int'];
+  }) => ScalarsEnums['Int'];
 }
 
 export interface Mutation {
@@ -157,6 +177,12 @@ exports[`basic functionality works: generate_generatedSchema 1`] = `
     },
     \\"hello\\": {
       \\"__type\\": \\"String!\\"
+    },
+    \\"deprecatedArg\\": {
+      \\"__type\\": \\"Int\\",
+      \\"__args\\": {
+        \\"arg\\": \\"Int\\"
+      }
     }
   },
   \\"mutation\\": {},
@@ -167,6 +193,7 @@ exports[`basic functionality works: generate_generatedSchema 1`] = `
 exports[`basic functionality works: generate_scalarsEnumHash 1`] = `
 "{
   \\"String\\": true,
+  \\"Int\\": true,
   \\"Boolean\\": true
 }"
 `;
@@ -345,13 +372,24 @@ export interface Scalars {
   ExampleScalar: any;
 }
 
+/** Greetings Enum */
 export enum GreetingsEnum {
+  /** Hello */
   Hello = 'Hello',
+  /** Hi */
   Hi = 'Hi',
+  /** Hey */
   Hey = 'Hey',
+  Bye = 'Bye',
 }
 
+export enum OtherEnum {
+  Other = 'Other',
+}
+
+/** Greetings Input */
 export interface GreetingsInput {
+  /** Language */
   language: Scalars['String'];
   value?: Maybe<Scalars['String']>;
   scal?: Maybe<Scalars['ExampleScalar']>;
@@ -360,6 +398,7 @@ export interface GreetingsInput {
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   ExampleScalar: true,
   GreetingsEnum: true,
+  OtherEnum: true,
   String: true,
   Int: true,
   Boolean: true,
@@ -425,7 +464,10 @@ export interface Query {
     hello: ScalarsEnums['String'];
   }) => ScalarsEnums['String'];
   stringNullableWithArgs: (args: {
-    hello: ScalarsEnums['String'];
+    hello: ScalarsEnums['String']
+    /**
+     * @defaultValue \`\\"Hi\\"\`
+     */;
     helloTwo?: ScalarsEnums['String'];
   }) => ScalarsEnums['String'];
   stringNullableWithArgsArray: (args: {
@@ -433,9 +475,19 @@ export interface Query {
   }) => ScalarsEnums['String'];
   object?: Maybe<Human>;
   objectArray?: Maybe<Array<Maybe<Human>>>;
-  objectWithArgs: (args: { who: ScalarsEnums['String'] }) => Human;
+  objectWithArgs: (args: {
+    /**
+     * Who?
+     */
+    who: ScalarsEnums['String'];
+  }) => Human;
   arrayString: Array<ScalarsEnums['String']>;
-  arrayObjectArgs: (args?: { limit?: ScalarsEnums['Int'] }) => Array<Human>;
+  arrayObjectArgs: (args?: {
+    /**
+     * @defaultValue \`10\`
+     */
+    limit?: ScalarsEnums['Int'];
+  }) => Array<Human>;
   greetings: ScalarsEnums['GreetingsEnum'];
   giveGreetingsInput: (args: {
     input: GreetingsInput;
@@ -516,7 +568,13 @@ export type HumanType =
       withArgs2: (args?: { a?: ScalarsEnums['Int'] }) => ScalarsEnums['Int'];
     };
 
+/**
+ * Named Entity
+ */
 export interface NamedEntity {
+  /**
+   * Named Entity Name
+   */
   name: ScalarsEnums['String'];
   other?: ScalarsEnums['String'];
 }
@@ -533,13 +591,14 @@ export type MakeNullable<T> = {
 
 export interface ScalarsEnums extends MakeNullable<Scalars> {
   GreetingsEnum: GreetingsEnum | undefined;
+  OtherEnum: OtherEnum | undefined;
 }
 "
 `;
 
 exports[`feature complete app generate works: featureComplete_generatedSchema 1`] = `"{\\"query\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"simpleString\\":{\\"__type\\":\\"String!\\"},\\"stringWithArgs\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"hello\\":\\"String!\\"}},\\"stringNullableWithArgs\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"String!\\",\\"helloTwo\\":\\"String\\"}},\\"stringNullableWithArgsArray\\":{\\"__type\\":\\"String\\",\\"__args\\":{\\"hello\\":\\"[String]!\\"}},\\"object\\":{\\"__type\\":\\"Human\\"},\\"objectArray\\":{\\"__type\\":\\"[Human]\\"},\\"objectWithArgs\\":{\\"__type\\":\\"Human!\\",\\"__args\\":{\\"who\\":\\"String!\\"}},\\"arrayString\\":{\\"__type\\":\\"[String!]!\\"},\\"arrayObjectArgs\\":{\\"__type\\":\\"[Human!]!\\",\\"__args\\":{\\"limit\\":\\"Int\\"}},\\"greetings\\":{\\"__type\\":\\"GreetingsEnum!\\"},\\"giveGreetingsInput\\":{\\"__type\\":\\"String!\\",\\"__args\\":{\\"input\\":\\"GreetingsInput!\\"}},\\"number\\":{\\"__type\\":\\"Int!\\"}},\\"mutation\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"increment\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"n\\":\\"Int!\\"}}},\\"subscription\\":{},\\"GreetingsInput\\":{\\"language\\":{\\"__type\\":\\"String!\\"},\\"value\\":{\\"__type\\":\\"String\\"},\\"scal\\":{\\"__type\\":\\"ExampleScalar\\"}},\\"Human\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"},\\"other\\":{\\"__type\\":\\"String\\"},\\"father\\":{\\"__type\\":\\"Human!\\"},\\"fieldWithArgs\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"id\\":\\"Int!\\"}},\\"withArgs\\":{\\"__type\\":\\"Int\\",\\"__args\\":{\\"a\\":\\"Int!\\",\\"b\\":\\"Int\\"}},\\"withArgs2\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"a\\":\\"Int\\"}}},\\"OtherHuman\\":{\\"__typename\\":{\\"__type\\":\\"String!\\"},\\"name\\":{\\"__type\\":\\"String!\\"},\\"other\\":{\\"__type\\":\\"String\\"},\\"withArgs\\":{\\"__type\\":\\"Int\\",\\"__args\\":{\\"a\\":\\"Int!\\",\\"b\\":\\"Int\\"}},\\"withArgs2\\":{\\"__type\\":\\"Int!\\",\\"__args\\":{\\"a\\":\\"Int\\"}}}}"`;
 
-exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
+exports[`feature complete app generate works: featureComplete_scalarsEnumsHash 1`] = `"{\\"ExampleScalar\\":true,\\"GreetingsEnum\\":true,\\"OtherEnum\\":true,\\"String\\":true,\\"Int\\":true,\\"Boolean\\":true}"`;
 
 exports[`mutation generates mutation: mutation_code 1`] = `
 "/**

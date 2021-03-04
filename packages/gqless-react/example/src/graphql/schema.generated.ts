@@ -2,7 +2,7 @@
  * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
  */
 
-import { ScalarsEnumsHash } from '@dish/gqless';
+import { ScalarsEnumsHash, SchemaUnionsKey } from '@dish/gqless';
 
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -21,10 +21,13 @@ export interface Scalars {
   Float: number;
 }
 
+/** Input Type Example XD */
 export interface inputTypeExample {
   a: Scalars['String'];
+  other?: Maybe<Scalars['Int']>;
 }
 
+/** ConnectionArgs description! */
 export interface ConnectionArgs {
   first?: Maybe<Scalars['Int']>;
   after?: Maybe<Scalars['String']>;
@@ -32,11 +35,15 @@ export interface ConnectionArgs {
   before?: Maybe<Scalars['String']>;
 }
 
+/** Dog Type */
+export type DogType = 'Big' | 'Small' | 'Other';
+
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   ID: true,
   String: true,
-  Boolean: true,
   Int: true,
+  Boolean: true,
+  DogType: true,
 };
 export const generatedSchema = {
   query: {
@@ -76,8 +83,9 @@ export const generatedSchema = {
     id: { __type: 'ID!' },
     name: { __type: 'String!' },
     dogs: { __type: '[Dog!]' },
+    fieldWithArg: { __type: 'Int', __args: { a: 'String' } },
   },
-  inputTypeExample: { a: { __type: 'String!' } },
+  inputTypeExample: { a: { __type: 'String!' }, other: { __type: 'Int' } },
   HumansConnection: {
     __typename: { __type: 'String!' },
     pageInfo: { __type: 'PageInfo!' },
@@ -96,10 +104,17 @@ export const generatedSchema = {
     last: { __type: 'Int' },
     before: { __type: 'String' },
   },
+  [SchemaUnionsKey]: { Species: ['Human', 'Dog'] },
 } as const;
 
+/**
+ * Query Type
+ */
 export interface Query {
   __typename: 'Query' | undefined;
+  /**
+   * Expected Error!
+   */
   expectedError: ScalarsEnums['Boolean'];
   expectedNullableError?: ScalarsEnums['Boolean'];
   thirdTry: ScalarsEnums['Boolean'];
@@ -109,14 +124,25 @@ export interface Query {
   humans: Array<Human>;
   human1: Human;
   human1Other: Human;
-  paginatedHumans: (args: { input: ConnectionArgs }) => HumansConnection;
+  paginatedHumans: (args: {
+    /**
+     * Paginated Humans Input
+     */
+    input: ConnectionArgs;
+  }) => HumansConnection;
   emptyScalarArray: Array<ScalarsEnums['Int']>;
   emptyHumanArray: Array<Human>;
 }
 
+/**
+ * Mutation
+ */
 export interface Mutation {
   __typename: 'Mutation' | undefined;
   renameDog: (args: {
+    /**
+     * Dog Id
+     */
     id: ScalarsEnums['ID'];
     name: ScalarsEnums['String'];
   }) => Maybe<Dog>;
@@ -135,6 +161,9 @@ export interface Subscription {
   __typename: 'Subscription' | undefined;
 }
 
+/**
+ * Dog Type
+ */
 export interface Dog {
   __typename: 'Dog' | undefined;
   id: ScalarsEnums['ID'];
@@ -142,19 +171,40 @@ export interface Dog {
   owner?: Maybe<Human>;
 }
 
+/**
+ * Human Type
+ */
 export interface Human {
   __typename: 'Human' | undefined;
   id: ScalarsEnums['ID'];
+  /**
+   * Human Name
+   */
   name: ScalarsEnums['String'];
   dogs?: Maybe<Array<Dog>>;
+  /**
+   * @deprecated No longer supported
+   */
+  fieldWithArg: (args?: {
+    /**
+     * @defaultValue `"Hello World"`
+     */
+    a?: ScalarsEnums['String'];
+  }) => ScalarsEnums['Int'];
 }
 
+/**
+ * Humans Connection
+ */
 export interface HumansConnection {
   __typename: 'HumansConnection' | undefined;
   pageInfo: PageInfo;
   nodes: Array<Human>;
 }
 
+/**
+ * Page Info Object
+ */
 export interface PageInfo {
   __typename: 'PageInfo' | undefined;
   hasPreviousPage: ScalarsEnums['Boolean'];
@@ -181,6 +231,35 @@ export type SchemaObjectTypesNames =
   | 'HumansConnection'
   | 'PageInfo';
 
+export type Species =
+  | {
+      __typename: 'Human' | undefined;
+      dogs?: Maybe<Array<Dog>>;
+      /**
+       * @deprecated No longer supported
+       */
+      fieldWithArg: (args?: {
+        /**
+         * @defaultValue `"Hello World"`
+         */
+        a?: ScalarsEnums['String'];
+      }) => ScalarsEnums['Int'];
+      id: ScalarsEnums['ID'];
+      /**
+       * Human Name
+       */
+      name: ScalarsEnums['String'];
+      owner?: undefined;
+    }
+  | {
+      __typename: 'Dog' | undefined;
+      dogs?: undefined;
+      fieldWithArg?: undefined;
+      id: ScalarsEnums['ID'];
+      name: ScalarsEnums['String'];
+      owner?: Maybe<Human>;
+    };
+
 export interface GeneratedSchema {
   query: Query;
   mutation: Mutation;
@@ -191,4 +270,6 @@ export type MakeNullable<T> = {
   [K in keyof T]: T[K] | undefined;
 };
 
-export interface ScalarsEnums extends MakeNullable<Scalars> {}
+export interface ScalarsEnums extends MakeNullable<Scalars> {
+  DogType: DogType | undefined;
+}

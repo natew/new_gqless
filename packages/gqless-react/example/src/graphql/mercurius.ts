@@ -27,6 +27,7 @@ export type Scalars = {
   _FieldSet: any;
 };
 
+/** Dog Type */
 export type Dog = {
   __typename?: 'Dog';
   id: Scalars['ID'];
@@ -34,15 +35,26 @@ export type Dog = {
   owner?: Maybe<Human>;
 };
 
+/** Human Type */
 export type Human = {
   __typename?: 'Human';
   id: Scalars['ID'];
+  /** Human Name */
   name: Scalars['String'];
   dogs?: Maybe<Array<Dog>>;
+  /** @deprecated Field no longer supported */
+  fieldWithArg?: Maybe<Scalars['Int']>;
 };
 
+/** Human Type */
+export type HumanfieldWithArgArgs = {
+  a?: Maybe<Scalars['String']>;
+};
+
+/** Query Type */
 export type Query = {
   __typename?: 'Query';
+  /** Expected Error! */
   expectedError: Scalars['Boolean'];
   expectedNullableError?: Maybe<Scalars['Boolean']>;
   thirdTry: Scalars['Boolean'];
@@ -57,10 +69,12 @@ export type Query = {
   emptyHumanArray: Array<Human>;
 };
 
+/** Query Type */
 export type QuerypaginatedHumansArgs = {
   input: ConnectionArgs;
 };
 
+/** Mutation */
 export type Mutation = {
   __typename?: 'Mutation';
   renameDog?: Maybe<Dog>;
@@ -69,35 +83,43 @@ export type Mutation = {
   createHuman: Human;
 };
 
+/** Mutation */
 export type MutationrenameDogArgs = {
   id: Scalars['ID'];
   name: Scalars['String'];
 };
 
+/** Mutation */
 export type MutationrenameHumanArgs = {
   id: Scalars['ID'];
   name: Scalars['String'];
 };
 
+/** Mutation */
 export type MutationotherArgs = {
   arg: inputTypeExample;
 };
 
+/** Mutation */
 export type MutationcreateHumanArgs = {
   id: Scalars['ID'];
   name: Scalars['String'];
 };
 
+/** Input Type Example XD */
 export type inputTypeExample = {
   a: Scalars['String'];
+  other?: Maybe<Scalars['Int']>;
 };
 
+/** Humans Connection */
 export type HumansConnection = {
   __typename?: 'HumansConnection';
   pageInfo: PageInfo;
   nodes: Array<Human>;
 };
 
+/** Page Info Object */
 export type PageInfo = {
   __typename?: 'PageInfo';
   hasPreviousPage: Scalars['Boolean'];
@@ -106,12 +128,22 @@ export type PageInfo = {
   endCursor?: Maybe<Scalars['String']>;
 };
 
+/** ConnectionArgs description! */
 export type ConnectionArgs = {
   first?: Maybe<Scalars['Int']>;
   after?: Maybe<Scalars['String']>;
   last?: Maybe<Scalars['Int']>;
   before?: Maybe<Scalars['String']>;
 };
+
+export type Species = Human | Dog;
+
+/** Dog Type */
+export enum DogType {
+  Big = 'Big',
+  Small = 'Small',
+  Other = 'Other',
+}
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -226,14 +258,16 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Human: ResolverTypeWrapper<Human>;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
   inputTypeExample: inputTypeExample;
   HumansConnection: ResolverTypeWrapper<HumansConnection>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   ConnectionArgs: ConnectionArgs;
+  Species: ResolversTypes['Human'] | ResolversTypes['Dog'];
+  DogType: DogType;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -242,14 +276,15 @@ export type ResolversParentTypes = {
   ID: Scalars['ID'];
   String: Scalars['String'];
   Human: Human;
+  Int: Scalars['Int'];
   Query: {};
   Boolean: Scalars['Boolean'];
-  Int: Scalars['Int'];
   Mutation: {};
   inputTypeExample: inputTypeExample;
   HumansConnection: HumansConnection;
   PageInfo: PageInfo;
   ConnectionArgs: ConnectionArgs;
+  Species: ResolversParentTypes['Human'] | ResolversParentTypes['Dog'];
 };
 
 export type DogResolvers<
@@ -269,6 +304,12 @@ export type HumanResolvers<
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   dogs?: Resolver<Maybe<Array<ResolversTypes['Dog']>>, ParentType, ContextType>;
+  fieldWithArg?: Resolver<
+    Maybe<ResolversTypes['Int']>,
+    ParentType,
+    ContextType,
+    RequireFields<HumanfieldWithArgArgs, 'a'>
+  >;
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -373,6 +414,13 @@ export type PageInfoResolvers<
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type SpeciesResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Species'] = ResolversParentTypes['Species']
+> = {
+  resolveType: TypeResolveFn<'Human' | 'Dog', ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Dog?: DogResolvers<ContextType>;
   Human?: HumanResolvers<ContextType>;
@@ -380,6 +428,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   HumansConnection?: HumansConnectionResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
+  Species?: SpeciesResolvers<ContextType>;
 };
 
 /**
@@ -420,6 +469,12 @@ export interface Loaders<
     id?: LoaderResolver<Scalars['ID'], Human, {}, TContext>;
     name?: LoaderResolver<Scalars['String'], Human, {}, TContext>;
     dogs?: LoaderResolver<Maybe<Array<Dog>>, Human, {}, TContext>;
+    fieldWithArg?: LoaderResolver<
+      Maybe<Scalars['Int']>,
+      Human,
+      HumanfieldWithArgArgs,
+      TContext
+    >;
   };
 
   HumansConnection?: {

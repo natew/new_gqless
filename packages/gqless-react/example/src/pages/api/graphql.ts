@@ -69,17 +69,25 @@ db.push('/dogOwners', {
 });
 
 const schema = gql`
+  "Dog Type"
   type Dog {
     id: ID!
     name: String!
     owner: Human
   }
+  "Human Type"
   type Human {
     id: ID!
+    """
+    Human Name
+    """
     name: String!
     dogs: [Dog!]
+    fieldWithArg(a: String = "Hello World"): Int @deprecated
   }
+  "Query Type"
   type Query {
+    "Expected Error!"
     expectedError: Boolean!
     expectedNullableError: Boolean
     thirdTry: Boolean!
@@ -89,35 +97,59 @@ const schema = gql`
     humans: [Human!]!
     human1: Human!
     human1Other: Human!
-    paginatedHumans(input: ConnectionArgs!): HumansConnection!
+    paginatedHumans(
+      "Paginated Humans Input"
+      input: ConnectionArgs!
+    ): HumansConnection!
     emptyScalarArray: [Int!]!
     emptyHumanArray: [Human!]!
   }
+  "Mutation"
   type Mutation {
-    renameDog(id: ID!, name: String!): Dog
+    renameDog(
+      """
+      Dog Id
+      """
+      id: ID!
+      name: String!
+    ): Dog
     renameHuman(id: ID!, name: String!): Human
     other(arg: inputTypeExample!): Int
     createHuman(id: ID!, name: String!): Human!
   }
+  "Input Type Example XD"
   input inputTypeExample {
     a: String!
+    other: Int = 1
   }
+  "Humans Connection"
   type HumansConnection {
     pageInfo: PageInfo!
     nodes: [Human!]!
   }
+  """
+  Page Info Object
+  """
   type PageInfo {
     hasPreviousPage: Boolean!
     hasNextPage: Boolean!
     startCursor: String
     endCursor: String
   }
+  "ConnectionArgs description!"
   input ConnectionArgs {
     first: Int
     after: String
 
-    last: Int
+    last: Int @deprecated(reason: "asd")
     before: String
+  }
+  union Species = Human | Dog
+  "Dog Type"
+  enum DogType {
+    Big
+    Small
+    Other @deprecated
   }
 `;
 

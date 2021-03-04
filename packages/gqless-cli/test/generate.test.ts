@@ -7,8 +7,11 @@ export const clientPreComment = '';
 test('basic functionality works', async () => {
   const { server, isReady } = createTestApp({
     schema: gql`
+      "Query"
       type Query {
+        "Hello field"
         hello: String!
+        deprecatedArg(arg: Int = 123): Int @deprecated
       }
     `,
     resolvers: {
@@ -123,26 +126,36 @@ describe('feature complete app', () => {
     schema: gql`
       scalar ExampleScalar
 
+      "Greetings Enum"
       enum GreetingsEnum {
+        "Hello"
         Hello
+        "Hi"
         Hi
+        "Hey"
         Hey
+        Bye @deprecated
       }
+      enum OtherEnum {
+        Other
+      }
+      "Greetings Input"
       input GreetingsInput {
+        "Language"
         language: String!
-        value: String
+        value: String = "Hello"
         scal: ExampleScalar
       }
       type Query {
         simpleString: String!
         stringWithArgs(hello: String!): String!
-        stringNullableWithArgs(hello: String!, helloTwo: String): String
+        stringNullableWithArgs(hello: String!, helloTwo: String = "Hi"): String
         stringNullableWithArgsArray(hello: [String]!): String
         object: Human
         objectArray: [Human]
-        objectWithArgs(who: String!): Human!
+        objectWithArgs("Who?" who: String!): Human!
         arrayString: [String!]!
-        arrayObjectArgs(limit: Int): [Human!]!
+        arrayObjectArgs(limit: Int = 10): [Human!]!
         greetings: GreetingsEnum!
         giveGreetingsInput(input: GreetingsInput!): String!
         number: Int!
@@ -150,11 +163,19 @@ describe('feature complete app', () => {
       type Mutation {
         increment(n: Int!): Int!
       }
+      "Named Entity"
       interface NamedEntity {
+        "Named Entity Name"
         name: String!
         other: String
-        withArgs(a: Int!, b: Int): Int
-        withArgs2(a: Int): Int!
+        withArgs(
+          """
+          A Arg
+          """
+          a: Int!
+          b: Int = 0
+        ): Int
+        withArgs2(a: Int): Int! @deprecated
       }
       type Human implements NamedEntity {
         name: String!
