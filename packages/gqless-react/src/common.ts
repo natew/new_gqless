@@ -41,7 +41,7 @@ export function useForceUpdate() {
     if (wasCalled.current) return;
     wasCalled.current = true;
     update();
-  }, [update]);
+  }, [update, wasCalled]);
 }
 
 const InitSymbol: any = Symbol();
@@ -319,7 +319,11 @@ export function useInterceptSelections({
 
   const interceptor = createInterceptor();
 
-  const cacheRefetchSelections = staleWhileRevalidate
+  const enabledStaleWhileRevalidate =
+    typeof staleWhileRevalidate === 'boolean'
+      ? staleWhileRevalidate
+      : staleWhileRevalidate != null;
+  const cacheRefetchSelections = enabledStaleWhileRevalidate
     ? new Set<Selection>()
     : null;
 
@@ -330,17 +334,12 @@ export function useInterceptSelections({
   });
 
   useIsomorphicLayoutEffect(() => {
-    if (
-      (typeof staleWhileRevalidate === 'boolean'
-        ? staleWhileRevalidate
-        : staleWhileRevalidate != null) &&
-      cacheRefetchSelections?.size
-    ) {
+    if (enabledStaleWhileRevalidate && cacheRefetchSelections?.size) {
       for (const selection of cacheRefetchSelections) {
         globalInterceptor.addSelectionCacheRefetch(selection);
       }
     }
-  }, [staleWhileRevalidate]);
+  }, [staleWhileRevalidate, enabledStaleWhileRevalidate]);
 
   interceptor.selectionAddListeners.add((selection) => {
     hookSelections.add(selection);

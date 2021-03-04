@@ -281,7 +281,7 @@ export function createNormalizationHandler(
             } else continue;
           }
 
-          pendingObjects.add(data);
+          pendingObjects.add(value);
         }
       }
     }

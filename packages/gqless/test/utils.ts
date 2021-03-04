@@ -30,6 +30,7 @@ type ObjectTypes = {
 export type Maybe<T> = T | null;
 export type Human = {
   __typename: 'Human';
+  id?: string;
   name: string;
   father: Human;
   nullFather?: Maybe<Human>;
@@ -38,12 +39,14 @@ export type Human = {
 };
 export type Dog = {
   __typename: 'Dog';
+  id?: string;
   name: string;
   owner?: Human;
 };
 export type Species =
   | {
       __typename: 'Human';
+      id?: string;
       name: string;
       father: Human;
       nullFather?: Maybe<Human>;
@@ -53,6 +56,7 @@ export type Species =
     }
   | {
       __typename: 'Dog';
+      id?: string;
       name: string;
       owner?: Human;
       father?: undefined;
@@ -70,18 +74,25 @@ export const createTestClient = async (
   config?: TestClientConfig,
   clientConfig: Partial<ClientOptions<ObjectTypesNames, ObjectTypes>> = {}
 ) => {
-  const dogs: { name: string }[] = [
+  let dogId = 0;
+  const dogs: { name: string; id: number }[] = [
     {
+      id: ++dogId,
       name: 'a',
     },
     {
+      id: ++dogId,
       name: 'b',
     },
   ];
-  const createHuman = (name?: string) => {
+  let humanId = 0;
+  const humanIds: Record<string, number> = {};
+  const createHuman = (name: string = 'default') => {
     return {
-      name: name || 'default',
+      id: (humanIds[name] ??= ++humanId),
+      name,
       dogs,
+      father: {},
     };
   };
   let nFetchCalls = 0;
@@ -100,6 +111,7 @@ export const createTestClient = async (
         time: String!
         species: [Species!]!
         throwUntilThirdTry: Boolean!
+        dogs: [Dog!]!
       }
       type Mutation {
         sendNotification(message: String!): Boolean!
@@ -109,6 +121,7 @@ export const createTestClient = async (
         newNotification: String
       }
       type Human {
+        id: ID
         name: String!
         father: Human!
         nullFather: Human
@@ -116,6 +129,7 @@ export const createTestClient = async (
         dogs: [Dog!]!
       }
       type Dog {
+        id: ID
         name: String!
         owner: Human
       }
@@ -160,6 +174,9 @@ export const createTestClient = async (
         },
         species() {
           return [createHuman(), ...dogs];
+        },
+        dogs() {
+          return dogs;
         },
       },
       Dog: {
@@ -255,6 +272,7 @@ export const createTestClient = async (
         time: string;
         species: Array<Species>;
         throwUntilThirdTry: boolean;
+        dogs: Array<Dog>;
       };
       mutation: {
         sendNotification(args: { message: string }): boolean;

@@ -166,7 +166,7 @@ export function AccessorCreators<
        * This is necessary to be able to extract data from proxies
        * inside user-made objects and arrays
        */
-      return retrocycle<object>(JSON.parse(JSON.stringify(decycle(value))));
+      return retrocycle<object>(JSON.parse(JSON.stringify(value)));
     }
     return value;
   }

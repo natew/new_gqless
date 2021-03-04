@@ -1,4 +1,4 @@
-import { selectFields } from '../src';
+import { selectFields, getFields, getArrayFields } from '../src';
 import { createTestClient } from './utils';
 
 describe('selectFields', () => {
@@ -333,5 +333,33 @@ describe('refetch function', () => {
       process.env.NODE_ENV = prevNODE_ENV;
       spy.mockRestore();
     }
+  });
+});
+
+describe('get fields', () => {
+  test('getFields works', async () => {
+    const { query, scheduler, accessorCache } = await createTestClient();
+
+    const humanProxy = getFields(query.human(), 'name');
+
+    expect(accessorCache.isProxy(humanProxy)).toBe(true);
+
+    await scheduler.resolving!.promise;
+
+    expect(humanProxy.id).toBe('1');
+
+    expect(humanProxy.name).toBe('default');
+  });
+
+  test('getArrayFields works', async () => {
+    const { query, scheduler, accessorCache } = await createTestClient();
+
+    const dogsArrayProxy = getArrayFields(query.dogs, 'name');
+
+    expect(accessorCache.isProxy(dogsArrayProxy)).toBe(true);
+
+    await scheduler.resolving!.promise;
+
+    expect(query.dogs.map((v) => v.name).join(',')).toBe('a,b');
   });
 });

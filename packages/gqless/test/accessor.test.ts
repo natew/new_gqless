@@ -1,7 +1,8 @@
 import { waitForExpect } from 'test-utils';
-import { SelectionType } from '../src';
+
+import { getArrayFields, SelectionType } from '../src';
 import { CacheChangeEventData } from '../src/Events';
-import { createTestClient } from './utils';
+import { createTestClient, Dog } from './utils';
 
 describe('array accessors', () => {
   test('array query', async () => {
@@ -373,7 +374,7 @@ describe('unions support', () => {
     }).then((data) => {
       expect(data).toEqual([
         {
-          __typename: 'Dog',
+          __typename: 'Human',
           name: 'default',
         },
         {
@@ -386,5 +387,54 @@ describe('unions support', () => {
         },
       ]);
     });
+  });
+});
+
+describe('mutate accessors', () => {
+  test('works', async () => {
+    const { query, setCache, resolved } = await createTestClient();
+
+    setCache(
+      query.human,
+      {},
+      {
+        name: 'hello',
+      }
+    );
+
+    const humanHello = query.human();
+
+    expect(humanHello.name).toBe('hello');
+
+    humanHello.father = humanHello;
+
+    const newDogs: Dog[] = [
+      {
+        __typename: 'Dog',
+        name: 'zxc',
+        owner: humanHello,
+      },
+    ];
+    humanHello.dogs = newDogs;
+
+    expect(JSON.stringify(humanHello.dogs)).toBe(
+      '[{"__typename":"Dog","name":"zxc","owner":{"name":"hello","father":{"$ref":"$"}}}]'
+    );
+
+    const dogs = await resolved(() => {
+      return getArrayFields(query.dogs, 'name');
+    });
+
+    const owner = (dogs[0].owner = {
+      __typename: 'Human',
+      dogs: [humanHello.dogs[0]],
+      father: humanHello,
+      name: 'ModifiedOwner',
+      sons: [humanHello],
+    });
+
+    expect(JSON.stringify(owner)).toBe(
+      '{"__typename":"Human","dogs":[{"__typename":"Dog","name":"zxc","owner":{"name":"hello","father":[{"$ref":"$"}]}}],"father":{"name":"hello","father":{"$ref":"$"},"dogs":[{"__typename":"Dog","name":"zxc","owner":{"name":"hello","father":{"$ref":"$[\\"dogs\\"]"}}}]},"name":"ModifiedOwner","sons":[{"name":"hello","father":{"$ref":"$"},"dogs":[{"__typename":"Dog","name":"zxc","owner":{"name":"hello","father":{"$ref":"$[\\"dogs\\"]"}}}]}]}'
+    );
   });
 });

@@ -9,6 +9,7 @@ Object {
         null,
       ],
       "father": null,
+      "id": "1",
       "name": "default",
       "nullFather": null,
       "sons": Array [
@@ -21,6 +22,7 @@ Object {
         null,
       ],
       "father": null,
+      "id": "1",
       "name": "default",
       "nullFather": null,
       "sons": Array [
@@ -39,11 +41,13 @@ Object {
       "dogs": Array [
         Object {
           "__typename": "Dog",
+          "id": "1",
           "name": "a",
           "owner": null,
         },
         Object {
           "__typename": "Dog",
+          "id": "2",
           "name": "b",
           "owner": null,
         },
@@ -52,14 +56,18 @@ Object {
         "__typename": "Human",
         "dogs": Array [
           null,
+          null,
         ],
         "father": null,
+        "id": "1",
         "name": "default",
         "nullFather": null,
         "sons": Array [
           null,
+          null,
         ],
       },
+      "id": "1",
       "name": "default",
       "nullFather": null,
       "sons": Array [
@@ -67,11 +75,14 @@ Object {
           "__typename": "Human",
           "dogs": Array [
             null,
+            null,
           ],
           "father": null,
+          "id": "1",
           "name": "default",
           "nullFather": null,
           "sons": Array [
+            null,
             null,
           ],
         },
@@ -79,11 +90,14 @@ Object {
           "__typename": "Human",
           "dogs": Array [
             null,
+            null,
           ],
           "father": null,
+          "id": "1",
           "name": "default",
           "nullFather": null,
           "sons": Array [
+            null,
             null,
           ],
         },
@@ -94,11 +108,13 @@ Object {
       "dogs": Array [
         Object {
           "__typename": "Dog",
+          "id": "1",
           "name": "a",
           "owner": null,
         },
         Object {
           "__typename": "Dog",
+          "id": "2",
           "name": "b",
           "owner": null,
         },
@@ -107,14 +123,18 @@ Object {
         "__typename": "Human",
         "dogs": Array [
           null,
+          null,
         ],
         "father": null,
+        "id": "1",
         "name": "default",
         "nullFather": null,
         "sons": Array [
           null,
+          null,
         ],
       },
+      "id": "1",
       "name": "default",
       "nullFather": null,
       "sons": Array [
@@ -122,11 +142,14 @@ Object {
           "__typename": "Human",
           "dogs": Array [
             null,
+            null,
           ],
           "father": null,
+          "id": "1",
           "name": "default",
           "nullFather": null,
           "sons": Array [
+            null,
             null,
           ],
         },
@@ -134,11 +157,14 @@ Object {
           "__typename": "Human",
           "dogs": Array [
             null,
+            null,
           ],
           "father": null,
+          "id": "1",
           "name": "default",
           "nullFather": null,
           "sons": Array [
+            null,
             null,
           ],
         },
@@ -156,6 +182,7 @@ Object {
       null,
     ],
     "father": null,
+    "id": "1",
     "name": "default",
     "nullFather": null,
     "sons": Array [
@@ -172,11 +199,13 @@ Object {
     "dogs": Array [
       Object {
         "__typename": "Dog",
+        "id": "1",
         "name": "a",
         "owner": null,
       },
       Object {
         "__typename": "Dog",
+        "id": "2",
         "name": "b",
         "owner": null,
       },
@@ -185,14 +214,18 @@ Object {
       "__typename": "Human",
       "dogs": Array [
         null,
+        null,
       ],
       "father": null,
+      "id": "1",
       "name": "default",
       "nullFather": null,
       "sons": Array [
         null,
+        null,
       ],
     },
+    "id": "1",
     "name": "default",
     "nullFather": null,
     "sons": Array [
@@ -200,11 +233,14 @@ Object {
         "__typename": "Human",
         "dogs": Array [
           null,
+          null,
         ],
         "father": null,
+        "id": "1",
         "name": "default",
         "nullFather": null,
         "sons": Array [
+          null,
           null,
         ],
       },
@@ -212,11 +248,14 @@ Object {
         "__typename": "Human",
         "dogs": Array [
           null,
+          null,
         ],
         "father": null,
+        "id": "1",
         "name": "default",
         "nullFather": null,
         "sons": Array [
+          null,
           null,
         ],
       },
@@ -253,6 +292,7 @@ Object {
       null,
     ],
     "father": null,
+    "id": "2",
     "name": "default",
     "nullFather": null,
     "sons": Array [
@@ -269,11 +309,13 @@ Object {
     "dogs": Array [
       Object {
         "__typename": "Dog",
+        "id": "1",
         "name": "a",
         "owner": null,
       },
       Object {
         "__typename": "Dog",
+        "id": "2",
         "name": "b",
         "owner": null,
       },
@@ -282,14 +324,18 @@ Object {
       "__typename": "Human",
       "dogs": Array [
         null,
+        null,
       ],
       "father": null,
+      "id": "2",
       "name": "default",
       "nullFather": null,
       "sons": Array [
         null,
+        null,
       ],
     },
+    "id": "2",
     "name": "default",
     "nullFather": null,
     "sons": Array [
@@ -297,11 +343,14 @@ Object {
         "__typename": "Human",
         "dogs": Array [
           null,
+          null,
         ],
         "father": null,
+        "id": "2",
         "name": "default",
         "nullFather": null,
         "sons": Array [
+          null,
           null,
         ],
       },
@@ -309,11 +358,14 @@ Object {
         "__typename": "Human",
         "dogs": Array [
           null,
+          null,
         ],
         "father": null,
+        "id": "2",
         "name": "default",
         "nullFather": null,
         "sons": Array [
+          null,
           null,
         ],
       },
@@ -330,6 +382,7 @@ Array [
       null,
     ],
     "father": null,
+    "id": "1",
     "name": "default",
     "nullFather": null,
     "sons": Array [
@@ -342,6 +395,7 @@ Array [
       null,
     ],
     "father": null,
+    "id": "1",
     "name": "default",
     "nullFather": null,
     "sons": Array [
@@ -358,6 +412,7 @@ Object {
     null,
   ],
   "father": null,
+  "id": "1",
   "name": "foo",
   "nullFather": null,
   "sons": Array [
@@ -372,11 +427,13 @@ Object {
   "dogs": Array [
     Object {
       "__typename": "Dog",
+      "id": "1",
       "name": "a",
       "owner": null,
     },
     Object {
       "__typename": "Dog",
+      "id": "2",
       "name": "b",
       "owner": null,
     },
@@ -387,12 +444,14 @@ Object {
       null,
     ],
     "father": null,
+    "id": "2",
     "name": "default",
     "nullFather": null,
     "sons": Array [
       null,
     ],
   },
+  "id": "1",
   "name": "foo",
   "nullFather": null,
   "sons": Array [
@@ -402,6 +461,7 @@ Object {
         null,
       ],
       "father": null,
+      "id": "2",
       "name": "default",
       "nullFather": null,
       "sons": Array [
@@ -414,6 +474,7 @@ Object {
         null,
       ],
       "father": null,
+      "id": "2",
       "name": "default",
       "nullFather": null,
       "sons": Array [
