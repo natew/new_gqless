@@ -4,6 +4,7 @@ import { resolve } from 'path';
 import { promises } from 'fs';
 
 import type { GenerateOptions } from './generate';
+import { defaultConfig } from './config';
 
 export async function inspectWriteGenerate({
   endpoint,
@@ -44,6 +45,8 @@ export async function inspectWriteGenerate({
   let schema: GraphQLSchema;
 
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    defaultConfig.endpoint = endpoint;
+
     schema = await (await import('./introspection')).getRemoteSchema(endpoint, {
       headers,
     });

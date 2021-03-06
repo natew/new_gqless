@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
-const { inspectWriteGenerate } = require('../dist/index');
+const { inspectWriteGenerate, defaultConfig } = require('../dist/index');
 
-program.version('4.0.3').description('CLI for gqless');
+program.version('4.0.4').description('CLI for gqless');
 
 program
   .command('generate <endpoint> [destination]')
@@ -15,12 +15,18 @@ EXAMPLE 2: "gqless generate http://localhost:3000/graphql src/generated/index.ts
   )
   .action(
     async (endpoint, destination = './src/generated/graphql.ts', opts) => {
+      let react;
+      if (opts.react != null) {
+        react = defaultConfig.react =
+          typeof opts.react === 'boolean' ? opts.react : !!opts.react;
+      }
+
       await inspectWriteGenerate({
         endpoint,
         destination,
         cli: true,
         generateOptions: {
-          react: !!opts.react,
+          react,
         },
       }).catch((err) => {
         if (err instanceof Error) delete err.stack;

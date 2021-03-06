@@ -8,7 +8,6 @@ import {
   GraphQLUnionType,
   parse,
 } from 'graphql';
-import { format, Options as PrettierOptions, resolveConfig } from 'prettier';
 
 import {
   parseSchemaType,
@@ -21,6 +20,9 @@ import { codegen } from '@graphql-codegen/core';
 import * as typescriptPlugin from '@graphql-codegen/typescript';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 
+import { gqlessConfigPromise } from './config';
+import { formatPrettier } from './prettier';
+
 export interface GenerateOptions {
   /**
    * Target Query Fetcher endpoint
@@ -28,7 +30,7 @@ export interface GenerateOptions {
    */
   endpoint?: string;
   /**
-   * Add a custom string at the beginning of the file, for example, add imports.
+   * Add a custom string at the beginning of the schema file, for example, add imports.
    */
   preImport?: string;
   /**
@@ -43,24 +45,29 @@ export interface GenerateOptions {
    * Define enums as string types instead of enums objects
    * @default false
    */
-  enumsAsTypes?: boolean;
+  enumsAsStrings?: boolean;
 }
 
 export async function generate(
   schema: GraphQLSchema,
-  {
-    preImport = '',
-    scalars,
-    react,
-    endpoint = '/graphql',
-    enumsAsTypes,
-  }: GenerateOptions = {}
-) {
-  const prettierConfigPromise = resolveConfig(process.cwd()).then((config) =>
-    Object.assign({}, config, {
-      parser: 'typescript',
-    } as PrettierOptions)
-  );
+  { preImport, scalars, react, endpoint, enumsAsStrings }: GenerateOptions = {}
+): Promise<{
+  clientCode: string;
+  schemaCode: string;
+  generatedSchema: Schema;
+  scalarsEnumsHash: ScalarsEnumsHash;
+}> {
+  const gqlessConfig = await gqlessConfigPromise;
+  enumsAsStrings ??= gqlessConfig.enumsAsStrings ?? false;
+  scalars ??= gqlessConfig.scalars;
+  endpoint ??= gqlessConfig.endpoint ?? '/graphql';
+  react ??= gqlessConfig.react ?? false;
+  preImport ??= gqlessConfig.preImport ?? '';
+
+  const { format } = formatPrettier({
+    parser: 'typescript',
+  });
+
   const codegenResultPromise = codegen({
     schema: parse(printSchemaWithDirectives(schema)),
     config: {} as typescriptPlugin.TypeScriptPluginConfig,
@@ -77,7 +84,7 @@ export async function generate(
           addUnderscoreToArgsType: true,
           scalars,
           namingConvention: 'keep',
-          enumsAsTypes,
+          enumsAsTypes: enumsAsStrings,
         } as typescriptPlugin.TypeScriptPluginConfig,
       },
     ],
@@ -677,14 +684,9 @@ export async function generate(
       };
     `;
 
-  const [codegenResult, formatConfig] = await Promise.all([
-    codegenResultPromise,
-    prettierConfigPromise,
-  ]);
-
   const hasUnions = !!unionsMap.size;
 
-  const schemaCode = format(
+  const schemaCode = await format(
     `
 /**
  * GQLESS AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
@@ -695,7 +697,7 @@ export async function generate(
     hasUnions ? ', SchemaUnionsKey' : ''
   } } from "@dish/gqless";
 
-  ${codegenResult}
+  ${await codegenResultPromise}
 
   export const scalarsEnumsHash: ScalarsEnumsHash = ${JSON.stringify(
     scalarsEnumsHash
@@ -708,11 +710,10 @@ export async function generate(
   )}} as const;
 
   ${typescriptTypes}
-    `,
-    formatConfig
+    `
   );
 
-  const clientCode = format(
+  const clientCode = await format(
     `
 /**
  * GQLESS: You can safely modify this file and Query Fetcher based on your needs
@@ -755,8 +756,7 @@ export async function generate(
   }
 
   export * from "./schema.generated";
-  `,
-    formatConfig
+  `
   );
   return {
     clientCode,
