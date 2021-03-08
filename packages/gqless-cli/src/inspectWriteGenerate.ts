@@ -44,6 +44,9 @@ export async function inspectWriteGenerate({
 
   let schema: GraphQLSchema;
 
+  defaultConfig.introspection.endpoint = endpoint;
+  defaultConfig.introspection.headers = headers;
+
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
     defaultConfig.endpoint = endpoint;
 

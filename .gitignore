@@ -3,8 +3,8 @@ dist
 .nyc_output
 coverage
 .next
-packages/gqless-react/example/db.json
-packages/gqless-react/example/last-browser-open
+examples/react/db.json
+examples/react/last-browser-open
 *.tsbuildinfo
 .docusaurus
 build

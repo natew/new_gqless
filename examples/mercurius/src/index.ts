@@ -161,9 +161,10 @@ app.register(Mercurius, {
   },
 });
 
-export const codegen = () =>
-  mercuriusCodegen(app, {
+export const codegen = async () => {
+  await mercuriusCodegen(app, {
     targetPath: './src/generated/mercurius.ts',
     silent: true,
     operationsGlob: 'src/graphql/operations.gql',
   });
+};

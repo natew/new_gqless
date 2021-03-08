@@ -11,12 +11,12 @@ export default graphql(
     const nameRef = useRef<HTMLInputElement>(null);
     const [createHuman, { isLoading: isCreatingHuman }] = useMutation(
       ({ createHuman }) => {
-        const { id, name, __typename } = createHuman({
+        const { id, name, __typename, fieldWithArg } = createHuman({
           id: lastId + '',
           name: nameRef.current?.value ?? 'No Name',
         });
 
-        return { id, name, __typename };
+        return { id, name, __typename, fieldWithArg };
       },
       {
         onCompleted(data) {

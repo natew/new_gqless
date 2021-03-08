@@ -3,48 +3,88 @@ import { promises } from 'fs';
 import { resolve } from 'path';
 import { Boolean, Partial, Static, String, Unknown } from 'runtypes';
 
-import { GenerateOptions } from './generate';
+import type { GenerateOptions } from './generate';
+import type { IntrospectionOptions } from './introspection';
 
-export type gqlessConfig = Static<
-  typeof gqlessCLIConfigRecord
-> extends GenerateOptions
-  ? GenerateOptions extends Static<typeof gqlessCLIConfigRecord>
-    ? GenerateOptions
-    : never
+type GqlessCombinedOptions = GenerateOptions & {
+  /**
+   * Introspection options
+   */
+  introspection?: IntrospectionOptions;
+  /**
+   * Client generation destination
+   */
+  destination?: string;
+};
+
+export type GqlessConfig = Required<
+  Static<typeof gqlessCLIConfigRecord>
+> extends Required<GqlessCombinedOptions>
+  ? GqlessCombinedOptions
   : never;
 
-const gqlessCLIConfigRecord = Partial({
-  endpoint: String,
-  enumsAsStrings: Boolean,
-  scalars: Unknown.withConstraint<Record<string, string>>((scalars) => {
+const StringRecord = Unknown.withConstraint<Record<string, string>>(
+  (scalars) => {
     return (
       typeof scalars === 'object' &&
       scalars != null &&
       !Array.isArray(scalars) &&
       Object.values(scalars).every((v) => typeof v === 'string')
     );
-  }),
+  }
+);
+
+const gqlessCLIConfigRecord = Partial({
+  endpoint: String,
+  enumsAsStrings: Boolean,
+  scalars: StringRecord,
   react: Boolean,
   preImport: String,
+  introspection: Partial({
+    endpoint: String,
+    headers: StringRecord,
+  }),
+  destination: String,
 });
 
-export const defaultConfig: gqlessConfig = gqlessCLIConfigRecord.check({
-  endpoint: '/graphql',
+export const defaultConfig = {
+  endpoint: '/api/graphql',
   enumsAsStrings: false,
   react: false,
   scalars: {
     DateTime: 'string',
   },
   preImport: '',
-} as gqlessConfig);
+  introspection: {
+    endpoint: 'SPECIFY_ENDPOINT_OR_SCHEMA_FILE_PATH_HERE',
+  } as IntrospectionOptions,
+  destination: './src/generated/graphql.ts',
+};
 
-export const gqlessConfigPromise: Promise<gqlessConfig> = cosmiconfig(
-  'gqless',
-  {}
-)
+const defaultFilePath = resolve(process.cwd(), 'gqless.config.cjs');
+
+type DeepReadonly<T> = T extends (infer R)[]
+  ? DeepReadonlyArray<R>
+  : T extends Function
+  ? T
+  : T extends object
+  ? DeepReadonlyObject<T>
+  : T;
+
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+
+type DeepReadonlyObject<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
+
+export const gqlessConfigPromise: Promise<{
+  filepath: string;
+  config: DeepReadonly<GqlessConfig>;
+}> = cosmiconfig('gqless', {})
   .search()
   .then(async (config) => {
     if (!config || config.isEmpty) {
+      const filepath = config?.filepath || defaultFilePath;
       if (
         process.env.NODE_ENV !== 'test' &&
         process.env.NODE_ENV !== 'production'
@@ -53,18 +93,24 @@ export const gqlessConfigPromise: Promise<gqlessConfig> = cosmiconfig(
           parser: 'typescript',
         });
         await promises.writeFile(
-          resolve(process.cwd(), 'gqless.config.js'),
+          defaultFilePath,
           await format(`
           /**
-           * @type {import("@dish/gqless-cli").gqlessConfig}
+           * @type {import("@dish/gqless-cli").GqlessConfig}
            */
           const config = ${JSON.stringify(defaultConfig)};
           
           module.exports = config;`)
         );
       }
-      return defaultConfig;
+      return {
+        filepath,
+        config: defaultConfig,
+      };
     }
-    return gqlessCLIConfigRecord.check(config.config);
+    return {
+      config: gqlessCLIConfigRecord.check(config.config),
+      filepath: config.filepath,
+    };
   })
-  .catch(() => defaultConfig);
+  .catch(() => ({ config: defaultConfig, filepath: defaultFilePath }));

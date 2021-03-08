@@ -1,5 +1,4 @@
 import { createClient, QueryFetcher } from '@dish/gqless';
-import { IS_BROWSER } from '../../../dist/common';
 import {
   GeneratedSchema,
   generatedSchema,
@@ -10,7 +9,9 @@ import {
 
 const queryFetcher: QueryFetcher = async function (query, variables) {
   const response = await fetch(
-    IS_BROWSER ? '/api/graphql' : 'http://localhost:4141/api/graphql',
+    typeof window !== 'undefined'
+      ? '/api/graphql'
+      : 'http://localhost:4141/api/graphql',
     {
       method: 'POST',
       headers: {

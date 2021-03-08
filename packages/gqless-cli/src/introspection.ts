@@ -1,20 +1,33 @@
 import { fetch } from 'cross-fetch';
 import { print } from 'graphql';
 
-import { AsyncExecutor } from '@graphql-tools/delegate';
+import type { AsyncExecutor } from '@graphql-tools/delegate';
 import { introspectSchema, wrapSchema } from '@graphql-tools/wrap';
+import { gqlessConfigPromise } from './config';
+
+export interface IntrospectionOptions {
+  /**
+   * Endpoint of the remote GraphQL API or schema file
+   */
+  endpoint?: string;
+  /**
+   * Specify headers for the introspection
+   */
+  headers?: Record<string, string>;
+}
 
 export const getRemoteSchema = async (
   /**
-   * Endpoint of the remote GraphQL API, if not specified, it points to http://localhost:3000/graphql
+   * Endpoint of the remote GraphQL API
    */
   endpoint: string,
   /**
-   * Specify configuration like headers for the introspection
+   * Specify options for the introspection
    */
-  { headers = {} }: { headers?: Record<string, string> } = {}
+  { headers = {} }: Pick<IntrospectionOptions, 'headers'> = {}
 ) => {
   const executor: AsyncExecutor = async ({ document, variables }) => {
+    headers ??= (await gqlessConfigPromise).config.introspection?.headers ?? {};
     const query = print(document);
     const fetchResult = await fetch(endpoint, {
       method: 'POST',

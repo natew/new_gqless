@@ -57,7 +57,7 @@ export async function generate(
   generatedSchema: Schema;
   scalarsEnumsHash: ScalarsEnumsHash;
 }> {
-  const gqlessConfig = await gqlessConfigPromise;
+  const gqlessConfig = (await gqlessConfigPromise).config;
   enumsAsStrings ??= gqlessConfig.enumsAsStrings ?? false;
   scalars ??= gqlessConfig.scalars;
   endpoint ??= gqlessConfig.endpoint ?? '/graphql';

@@ -36,7 +36,11 @@ export interface ConnectionArgs {
 }
 
 /** Dog Type */
-export type DogType = 'Big' | 'Small' | 'Other';
+export enum DogType {
+  Big = 'Big',
+  Small = 'Small',
+  Other = 'Other',
+}
 
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   ID: true,
