@@ -6,6 +6,7 @@ import {
   isAnySelectionIncluded,
   isAnySelectionIncludedInMatrix,
   isSelectionIncluded,
+  OnErrorHandler,
   useBuildSelections,
   useIsomorphicLayoutEffect,
 } from '../common';
@@ -14,7 +15,7 @@ import { areArraysEqual } from '../utils';
 export interface UseGqlessStateOptions {
   onIsFetching?: () => void;
   onDoneFetching?: () => void;
-  onNewError?: (error: gqlessError) => void;
+  onNewError?: OnErrorHandler;
   filterSelections?: BuildSelections;
 }
 
@@ -62,7 +63,7 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
             isFetching = true;
           }
 
-          if (isFetching) {
+          if (isFetching && scheduler.pendingSelectionsGroupsPromises.size) {
             Promise.all(
               scheduler.pendingSelectionsGroupsPromises.values()
             ).finally(() => setStateIfChanged(isMounted));

@@ -2,14 +2,23 @@ import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
 import { createClient, doRetry, gqlessError, RetryOptions } from '@dish/gqless';
 
-import { FetchPolicy, fetchPolicyDefaultResolveOptions } from '../common';
+import {
+  FetchPolicy,
+  fetchPolicyDefaultResolveOptions,
+  OnErrorHandler,
+  useDeferDispatch,
+  useSuspensePromise,
+} from '../common';
 import { ReactClientOptionsWithDefaults } from '../utils';
+
+export type LazyFetchPolicy = Exclude<FetchPolicy, 'cache-first'>;
 
 export interface UseLazyQueryOptions<TData> {
   onCompleted?: (data: TData) => void;
-  onError?: (error: gqlessError) => void;
-  fetchPolicy?: FetchPolicy;
+  onError?: OnErrorHandler;
+  fetchPolicy?: LazyFetchPolicy;
   retry?: RetryOptions;
+  suspense?: boolean;
 }
 
 export interface UseLazyQueryState<TData> {
@@ -86,12 +95,14 @@ export interface UseLazyQuery<
             {
               fn?: (query: GeneratedSchema['query'], args: TArgs) => TData;
               args?: TArgs;
+              fetchPolicy?: LazyFetchPolicy;
             }?
           ]
         : [
             {
               fn?: (query: GeneratedSchema['query'], args: TArgs) => TData;
               args: TArgs;
+              fetchPolicy?: LazyFetchPolicy;
             }
           ]
     ) => Promise<TData>,
@@ -105,7 +116,13 @@ export function createUseLazyQuery<
   }
 >(
   client: ReturnType<typeof createClient>,
-  { defaults: { retry: defaultRetry } }: ReactClientOptionsWithDefaults
+  {
+    defaults: {
+      retry: defaultRetry,
+      lazyQuerySuspense: defaultSuspense,
+      lazyFetchPolicy: defaultFetchPolicy,
+    },
+  }: ReactClientOptionsWithDefaults
 ) {
   const { resolved } = client;
   const clientQuery: GeneratedSchema['query'] = client.query;
@@ -123,11 +140,12 @@ export function createUseLazyQuery<
     }) => Promise<TData>,
     UseLazyQueryState<TData>
   ] {
-    const [state, dispatch] = useReducer(
+    const [state, dispatchReducer] = useReducer(
       UseLazyQueryReducer,
       undefined,
       InitUseLazyQueryReducer
     ) as [UseLazyQueryState<TData>, Dispatch<UseLazyQueryReducerAction<TData>>];
+    const dispatch = useDeferDispatch(dispatchReducer);
 
     const stateRef = useRef(state);
     stateRef.current = state;
@@ -136,15 +154,28 @@ export function createUseLazyQuery<
     fnRef.current = fn;
 
     const optsRef = useRef(opts);
-    optsRef.current = opts;
+    optsRef.current = Object.assign({}, opts);
+    optsRef.current.suspense ??= defaultSuspense;
+
+    const setSuspensePromise = useSuspensePromise(optsRef);
 
     const queryFn = useCallback(
-      function callback(callbackArgs: { fn?: typeof fn; args?: any } = {}) {
+      function callback(
+        callbackArgs: {
+          fn?: typeof fn;
+          args?: any;
+          fetchPolicy?: LazyFetchPolicy;
+        } = {}
+      ) {
         dispatch({
           type: 'loading',
         });
 
-        const { fn: fnArg, args } = callbackArgs;
+        const {
+          fn: fnArg,
+          args,
+          fetchPolicy = optsRef.current.fetchPolicy ?? defaultFetchPolicy,
+        } = callbackArgs;
 
         const refFn = fnRef.current;
 
@@ -161,8 +192,6 @@ export function createUseLazyQuery<
               );
             })();
 
-        const { fetchPolicy } = optsRef.current;
-
         const resolveOptions = fetchPolicyDefaultResolveOptions(fetchPolicy);
 
         return resolved<TData>(functionResolve, {
@@ -177,11 +206,8 @@ export function createUseLazyQuery<
                 stateRef.current.data = data;
                 return true;
               }
-              case 'cache-first': {
-                return false;
-              }
               default:
-                return true;
+                return false;
             }
           },
         }).then(
@@ -212,19 +238,35 @@ export function createUseLazyQuery<
 
     return useMemo(() => {
       const fn: typeof queryFn = retry
-        ? (...args: any[]) => {
-            return queryFn(...args).catch((err) => {
+        ? (...args) => {
+            const promise = queryFn(...args).catch((err) => {
               doRetry(retry, {
-                onRetry: () => queryFn(...args).then(),
+                onRetry: () => {
+                  const promise = queryFn(...args).then(() => {});
+
+                  setSuspensePromise(promise);
+
+                  return promise;
+                },
               });
 
               throw err;
             });
+
+            setSuspensePromise(promise);
+
+            return promise;
           }
-        : queryFn;
+        : (...args: any[]) => {
+            const promise = queryFn(...args);
+
+            setSuspensePromise(promise);
+
+            return promise;
+          };
 
       return [fn, state];
-    }, [queryFn, state, retry]);
+    }, [state, queryFn, retry, optsRef, setSuspensePromise]);
   };
 
   return useLazyQuery;

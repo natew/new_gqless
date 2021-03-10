@@ -1,42 +1,56 @@
 import { useQuery, useTransactionQuery } from '../components/client';
-import { useErrorBoundary } from 'use-error-boundary';
 import { NoSSR } from '../components/NoSSR';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
+import { serializeError } from 'serialize-error';
+import { gqlessError } from '@dish/gqless';
 
-const ErrorComponent = () => {
+const ExpectedErrorComponent = () => {
+  const { data, error } = useTransactionQuery(
+    (query) => {
+      return {
+        a: query.thirdTry,
+        b: query.__typename,
+      };
+    },
+    {
+      suspense: true,
+      retry: true,
+      fetchPolicy: 'no-cache',
+    }
+  );
+
+  const [inlineError, setError] = useState<gqlessError>();
+
   const query = useQuery({
     suspense: true,
+    onError: setError,
   });
 
   return (
-    <div>
-      {JSON.stringify({
-        a: query.thirdTry,
-        b: query.__typename,
-      })}
-    </div>
+    <>
+      <div>
+        {<p>HOOK DATA:{JSON.stringify(data)}</p>}
+        {error && <p>HOOK ERROR: {JSON.stringify(serializeError(error))}</p>}
+      </div>
+      <div>
+        INLINE DATA:{' '}
+        {JSON.stringify({
+          a: query.expectedError,
+          b: query.__typename,
+        })}
+        {inlineError && (
+          <p>INLINE ERROR: {JSON.stringify(serializeError(inlineError))}</p>
+        )}
+      </div>
+    </>
   );
 };
 
 export default function ErrorPage() {
-  const { ErrorBoundary, didCatch, error } = useErrorBoundary();
   return (
     <NoSSR>
-      <div>{JSON.stringify(error)}</div>
-      <div>{didCatch ? 'CATCH' : 'NO-CATCH'}</div>
-
-      <Suspense fallback={<div>Loading...</div>}>
-        <ErrorBoundary
-          renderError={(err) => {
-            return (
-              <>
-                <div>error!!!! </div>
-              </>
-            );
-          }}
-        >
-          <ErrorComponent />
-        </ErrorBoundary>
+      <Suspense fallback={<div>Loading Here...</div>}>
+        <ExpectedErrorComponent />
       </Suspense>
     </NoSSR>
   );

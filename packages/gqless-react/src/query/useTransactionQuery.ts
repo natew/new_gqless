@@ -18,9 +18,11 @@ import {
 import {
   FetchPolicy,
   fetchPolicyDefaultResolveOptions,
+  OnErrorHandler,
   useDeferDispatch,
   useSelectionsState,
   useSubscribeCacheChanges,
+  useSuspensePromise,
 } from '../common';
 import { ReactClientOptionsWithDefaults } from '../utils';
 
@@ -114,8 +116,9 @@ export interface UseTransactionQueryOptions<
   notifyOnNetworkStatusChange?: boolean;
   variables?: Variables;
   onCompleted?: (data: TData) => void;
-  onError?: (error: gqlessError) => void;
+  onError?: OnErrorHandler;
   retry?: RetryOptions;
+  suspense?: boolean;
 }
 
 export interface UseTransactionQuery<
@@ -136,7 +139,11 @@ export function createUseTransactionQuery<
 >(
   client: ReturnType<typeof createClient>,
   {
-    defaults: { fetchPolicy: defaultFetchPolicy, retry: defaultRetry },
+    defaults: {
+      transactionFetchPolicy: defaultFetchPolicy,
+      retry: defaultRetry,
+      transactionQuerySuspense: defaultSuspense,
+    },
   }: ReactClientOptionsWithDefaults
 ) {
   const { resolved, eventHandler } = client;
@@ -149,15 +156,22 @@ export function createUseTransactionQuery<
     fn: (query: typeof clientQuery, variables: TVariables) => TData,
     queryOptions?: UseTransactionQueryOptions<TData, TVariables>
   ) {
+    const rejectedPromise = useRef<unknown>();
+
+    if (rejectedPromise.current) throw rejectedPromise.current;
+
     const opts = Object.assign({}, queryOptions);
 
     opts.fetchPolicy ??= defaultFetchPolicy;
     opts.retry ??= defaultRetry;
+    opts.suspense ??= defaultSuspense;
 
     opts.notifyOnNetworkStatusChange ??= true;
 
     const optsRef = useRef(opts);
     optsRef.current = opts;
+
+    const setSuspensePromise = useSuspensePromise(optsRef);
 
     const { skip, pollInterval = 0, fetchPolicy, variables } = opts;
 
@@ -185,9 +199,14 @@ export function createUseTransactionQuery<
 
     const isFetching = useRef(false);
 
+    const pendingPromise = useRef<ReturnType<typeof queryCallback>>();
+
     const queryCallback = useCallback(
       (
-        resolveOpts: ResolveOptions<TData> = resolveOptions,
+        resolveOptsArg: Omit<
+          ResolveOptions<TData>,
+          'onSelection' | 'onCacheData'
+        > = {},
         fetchPolicyArg: FetchPolicy | undefined = fetchPolicy
       ) => {
         if (skip) {
@@ -207,8 +226,9 @@ export function createUseTransactionQuery<
 
         const fn = () => fnRef.current(clientQuery, optsRef.current.variables!);
 
-        return resolved<TData>(fn, {
-          ...resolveOpts,
+        const promise = resolved<TData>(fn, {
+          ...resolveOptions,
+          ...resolveOptsArg,
           onSelection(selection) {
             hookSelections.add(selection);
           },
@@ -254,8 +274,11 @@ export function createUseTransactionQuery<
             return error;
           }
         );
+
+        pendingPromise.current = promise;
+        return promise;
       },
-      [fetchPolicy, skip, stateRef, resolveOptions, fnRef, dispatch]
+      [fetchPolicy, skip, stateRef, resolveOptions, fnRef, dispatch, optsRef]
     );
 
     const serializedVariables = useMemo(() => {
@@ -264,20 +287,31 @@ export function createUseTransactionQuery<
 
     useEffect(() => {
       if (!skip) {
-        queryCallback().then((result) => {
-          if (result instanceof gqlessError && optsRef.current.retry) {
-            doRetry(optsRef.current.retry, {
-              async onRetry() {
-                const result = await queryCallback();
-                if (result instanceof gqlessError) {
-                  throw result;
-                }
-              },
-            });
+        const promise = queryCallback().then((result) => {
+          if (result instanceof gqlessError) {
+            if (optsRef.current.retry) {
+              doRetry(optsRef.current.retry, {
+                async onRetry() {
+                  const retryPromise = queryCallback({
+                    refetch: true,
+                  }).then((result) => {
+                    if (result instanceof gqlessError) throw result;
+                  });
+
+                  if (!!false) setSuspensePromise(retryPromise);
+
+                  await retryPromise;
+                },
+              });
+            } else if (optsRef.current.suspense) {
+              throw result;
+            }
           }
         });
+
+        setSuspensePromise(promise);
       }
-    }, [skip, queryCallback, serializedVariables, optsRef]);
+    }, [skip, queryCallback, serializedVariables, optsRef, setSuspensePromise]);
 
     useEffect(() => {
       if (skip || pollInterval <= 0) return;
@@ -302,6 +336,7 @@ export function createUseTransactionQuery<
           }
         ).then(
           (data) => {
+            pendingPromise.current = undefined;
             isFetching.current = false;
             if (isMounted)
               dispatch({
@@ -310,8 +345,8 @@ export function createUseTransactionQuery<
               });
           },
           (err) => {
+            pendingPromise.current = undefined;
             isFetching.current = false;
-
             if (isMounted)
               dispatch({
                 type: 'failure',
@@ -335,22 +370,19 @@ export function createUseTransactionQuery<
       isFetching,
     ]);
 
-    const isChanging = useRef(false);
-
     useSubscribeCacheChanges({
       hookSelections,
       eventHandler,
       shouldSubscribe: fetchPolicy !== 'no-cache',
-      onChange: () => {
-        if (isChanging.current) return;
-        isChanging.current = true;
+      onChange() {
+        if (pendingPromise.current) return;
 
         queryCallback(
           {
             refetch: false,
           },
           'cache-first'
-        ).finally(() => (isChanging.current = false));
+        );
       },
     });
 

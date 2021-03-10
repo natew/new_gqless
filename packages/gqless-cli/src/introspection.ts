@@ -27,7 +27,7 @@ export const getRemoteSchema = async (
   { headers = {} }: Pick<IntrospectionOptions, 'headers'> = {}
 ) => {
   const executor: AsyncExecutor = async ({ document, variables }) => {
-    headers ??= (await gqlessConfigPromise).config.introspection?.headers ?? {};
+    headers ||= (await gqlessConfigPromise).config.introspection?.headers || {};
     const query = print(document);
     const fetchResult = await fetch(endpoint, {
       method: 'POST',

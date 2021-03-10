@@ -5,6 +5,7 @@ import { doRetry } from '../Error/retry';
 import { FetchEventData } from '../Events';
 import { NormalizationHandler } from '../Normalization';
 import { buildQuery } from '../QueryBuilder';
+import { SchedulerPromiseValue } from '../Scheduler';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
 import { createLazyPromise, get, LazyPromise } from '../Utils';
@@ -273,7 +274,7 @@ export function createResolvers(
 
       return data as TData;
     } catch (err) {
-      const error = gqlessError.create(err, buildAndFetchSelections);
+      const error = gqlessError.create(err, () => {});
       loggingPromise?.resolve({
         error,
         query,
@@ -329,10 +330,7 @@ export function createResolvers(
       if (options.retry) {
         doRetry(options.retry, {
           onRetry: async () => {
-            const retryPromise: Promise<{
-              error?: gqlessError;
-              data?: unknown;
-            }> = buildAndFetchSelections(
+            const retryPromise: Promise<SchedulerPromiseValue> = buildAndFetchSelections(
               selections,
               type,
               cache,
@@ -340,14 +338,16 @@ export function createResolvers(
                 retry: false,
                 ignoreResolveCache: true,
               } as FetchResolveOptions)
-            )
-              .then((data) => ({ data }))
-              .catch((err) => {
+            ).then(
+              (data) => ({ data, selections: new Set(selections) }),
+              (err) => {
                 console.error(err);
                 return {
-                  error: gqlessError.create(err, buildAndFetchSelections),
+                  error: gqlessError.create(err),
+                  selections: new Set(selections),
                 };
-              });
+              }
+            );
 
             if (options.scheduler) {
               const setSelections = new Set(selections);

@@ -20,7 +20,8 @@
     "test:watch": "tsdx test --watch"
   },
   "dependencies": {
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "serialize-error": "^8.0.1"
   },
   "devDependencies": {
     "@dish/gqless": "workspace:^3.0.13",

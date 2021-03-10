@@ -7,7 +7,8 @@ import { debounce } from '../Utils/debounce';
 export type Scheduler = ReturnType<typeof createScheduler>;
 
 export type SchedulerPromiseValue = {
-  error?: unknown;
+  error?: gqlessError;
+  data?: unknown;
   selections: Set<Selection>;
 };
 
@@ -21,10 +22,7 @@ export type ErrorSubscriptionFn = (
         selectionsCleaned: Selection[];
       }
     | {
-        retryPromise: Promise<{
-          error?: gqlessError;
-          data?: unknown;
-        }>;
+        retryPromise: Promise<SchedulerPromiseValue>;
         selections: Set<Selection>;
       }
 ) => void;
@@ -64,6 +62,8 @@ export const createScheduler = (
 
   const selectionsOnTheFly = new Set<Selection>();
 
+  const selectionsWithFinalErrors = new Set<Selection>();
+
   const scheduler = {
     resolving: null as null | ResolvingLazyPromise,
     subscribeResolve,
@@ -90,9 +90,17 @@ export const createScheduler = (
   }
 
   function retryPromise(
-    retryPromise: Promise<{ error?: gqlessError; data?: unknown }>,
+    retryPromise: Promise<SchedulerPromiseValue>,
     selections: Set<Selection>
   ) {
+    pendingSelectionsGroups.add(selections);
+    pendingSelectionsGroupsPromises.set(selections, retryPromise);
+
+    retryPromise.finally(() => {
+      pendingSelectionsGroups.delete(selections);
+      pendingSelectionsGroupsPromises.delete(selections);
+    });
+
     const data = {
       retryPromise,
       selections,
@@ -119,7 +127,10 @@ export const createScheduler = (
   function removeErrors(selectionsCleaned: Selection[]) {
     if (errorsMap.size === 0) return;
 
-    for (const selection of selectionsCleaned) errorsMap.delete(selection);
+    for (const selection of selectionsCleaned) {
+      errorsMap.delete(selection);
+      selectionsWithFinalErrors.delete(selection);
+    }
 
     const data = {
       selectionsCleaned,

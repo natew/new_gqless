@@ -15,7 +15,7 @@ import type { ReactClientOptionsWithDefaults } from './utils';
 
 export interface ReactClientDefaults {
   /**
-   * Enable/Disable by default 'React Suspense' features
+   * Enable/Disable by default 'React Suspense' behavior
    *
    * > _Valid for __graphql HOC__ & __useQuery___
    *
@@ -25,15 +25,56 @@ export interface ReactClientDefaults {
    */
   suspense?: boolean;
   /**
+   * Enable/Disable by default 'React Suspense' behavior for useLazyQuery hook
+   *
+   * > _Valid only for __useLazyQuery___
+   *
+   * > _You can override it on a per-hook basis_
+   *
+   * @default false
+   */
+  lazyQuerySuspense?: boolean;
+  /**
+   * Enable/Disable by default 'React Suspense' behavior for useTransactionQuery hook
+   *
+   * > _Valid only for __useLazyQuery___
+   *
+   * > _You can override it on a per-hook basis_
+   *
+   * __The _default value_ is obtained from the "`defaults.suspense`" value__
+   */
+  transactionQuerySuspense?: boolean;
+  /**
+   * Enable/Disable by default 'React Suspense' behavior for useMutation hook
+   *
+   * > _Valid only for __useMutation___
+   *
+   * > _You can override it on a per-hook basis_
+   *
+   * @default false
+   */
+  mutationSuspense?: boolean;
+
+  /**
    * Define default 'fetchPolicy' hooks behaviour
    *
-   * > _Valid for __useTransactionQuery___ & __useLazyQuery__
+   * > _Valid for __useTransactionQuery___
    *
    * > _You can override it on a per-hook basis_
    *
    * @default "cache-first"
    */
-  fetchPolicy?: FetchPolicy;
+  transactionFetchPolicy?: FetchPolicy;
+  /**
+   * Define default 'fetchPolicy' hooks behaviour
+   *
+   * > _Valid for __useLazyQuery__
+   *
+   * > _You can override it on a per-hook basis_
+   *
+   * @default "network-only"
+   */
+  lazyFetchPolicy?: Exclude<FetchPolicy, 'cache-first'>;
   /**
    * __Enable__/__Disable__ default 'stale-while-revalidate' behaviour
    *
@@ -74,10 +115,18 @@ export function createReactClient<
   optsCreate: CreateReactClientOptions = {}
 ) {
   const defaults: ReactClientOptionsWithDefaults['defaults'] = {
-    fetchPolicy: optsCreate.defaults?.fetchPolicy ?? 'cache-first',
+    transactionFetchPolicy:
+      optsCreate.defaults?.transactionFetchPolicy ?? 'cache-first',
+    lazyFetchPolicy: optsCreate.defaults?.lazyFetchPolicy ?? 'network-only',
     staleWhileRevalidate: optsCreate.defaults?.staleWhileRevalidate ?? false,
     suspense: optsCreate.defaults?.suspense ?? true,
     retry: optsCreate.defaults?.retry ?? true,
+    lazyQuerySuspense: optsCreate.defaults?.lazyQuerySuspense ?? false,
+    transactionQuerySuspense:
+      optsCreate.defaults?.transactionQuerySuspense ??
+      optsCreate.defaults?.suspense ??
+      true,
+    mutationSuspense: optsCreate.defaults?.mutationSuspense ?? false,
   };
 
   const opts: ReactClientOptionsWithDefaults = Object.assign({}, optsCreate, {

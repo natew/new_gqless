@@ -8,6 +8,7 @@ import {
   useRefetch,
   useTransactionQuery,
 } from '../components/client';
+import { selectFields } from '@dish/gqless';
 
 const Comp = graphql(function Asd() {
   const queryFromHook = useQuery({});
@@ -36,11 +37,20 @@ const Comp = graphql(function Asd() {
 
   const refetch = useRefetch();
 
+  try {
+    query.paginatedHumans({
+      input: {
+        first: 10,
+      },
+    }).__typename;
+  } catch (err) {}
+
   return (
     <div style={{ whiteSpace: 'pre-wrap' }}>
       <p>Time: {queryFromHook.time}</p>
       {typename}
       <br />
+      <p>{JSON.stringify(selectFields(query.dogs, '*', n), null, 2)}</p>
       <br />
       <label>Depth: {n}</label>
       <button onClick={() => dispatch('add')}>add</button>

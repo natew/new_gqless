@@ -7,7 +7,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import { BuildSelectionInput, ResolveOptions, Selection } from '@dish/gqless';
+import {
+  BuildSelectionInput,
+  gqlessError,
+  ResolveOptions,
+  Selection,
+} from '@dish/gqless';
 import { EventHandler } from '@dish/gqless/dist/Events';
 import { InterceptorManager } from '@dish/gqless/dist/Interceptor';
 import { Scheduler } from '@dish/gqless/dist/Scheduler';
@@ -75,34 +80,50 @@ export function useIsRendering() {
   return isRendering;
 }
 
-export function useDeferDispatch<F extends (...args: any[]) => void>(
-  dispatchFn: F
-) {
+export function useIsMounted() {
   const isMounted = useRef(true);
-  useEffect(() => {
+
+  useIsomorphicLayoutEffect(() => {
     isMounted.current = true;
 
     return () => {
       isMounted.current = false;
     };
   }, []);
+
+  return isMounted;
+}
+
+export function useDeferDispatch<F extends (...args: any[]) => void>(
+  dispatchFn: F
+) {
+  const isMounted = useIsMounted();
   const isRendering = useIsRendering();
 
-  const pendingDispatch = useRef<(() => void) | null>(null);
+  const pendingDispatch = useRef<Array<() => void> | false>(false);
 
   useEffect(() => {
     if (pendingDispatch.current) {
-      pendingDispatch.current();
-      pendingDispatch.current = null;
+      for (const fn of pendingDispatch.current) {
+        fn();
+      }
+      pendingDispatch.current = false;
     }
   });
 
   return useCallback(
     (...args: any[]) => {
       if (isRendering.current) {
-        pendingDispatch.current = () => {
-          if (isMounted.current) dispatchFn(...args);
-        };
+        if (pendingDispatch.current) {
+          pendingDispatch.current.push(() => {
+            if (isMounted.current) dispatchFn(...args);
+          });
+        }
+        pendingDispatch.current = [
+          () => {
+            if (isMounted.current) dispatchFn(...args);
+          },
+        ];
       } else if (isMounted.current) {
         dispatchFn(...args);
       }
@@ -262,6 +283,11 @@ export function useSubscribeCacheChanges({
   onChange: () => void;
   shouldSubscribe?: boolean;
 }) {
+  const onChangeCalled = useRef(false);
+  useIsomorphicLayoutEffect(() => {
+    onChangeCalled.current = false;
+  });
+
   useIsomorphicLayoutEffect(() => {
     if (!shouldSubscribe) return;
 
@@ -269,13 +295,16 @@ export function useSubscribeCacheChanges({
     const unsubscribeFetch = eventHandler.onFetchSubscribe(
       (fetchPromise, promiseSelections) => {
         if (
+          onChangeCalled.current ||
           !promiseSelections.some((selection) => hookSelections.has(selection))
-        )
+        ) {
           return;
+        }
 
+        onChangeCalled.current = true;
         fetchPromise.then(
           () => {
-            if (isMounted) Promise.resolve().then(onChange);
+            if (isMounted) Promise.resolve(fetchPromise).then(onChange);
           },
           () => {}
         );
@@ -284,7 +313,12 @@ export function useSubscribeCacheChanges({
 
     const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
       ({ selection }) => {
-        if (isMounted && hookSelections.has(selection)) {
+        if (
+          isMounted &&
+          !onChangeCalled.current &&
+          hookSelections.has(selection)
+        ) {
+          onChangeCalled.current = true;
           Promise.resolve().then(onChange);
         }
       }
@@ -307,11 +341,13 @@ export function useInterceptSelections({
   staleWhileRevalidate = false,
   scheduler,
   eventHandler,
+  onError,
 }: {
   staleWhileRevalidate: boolean | object | number | string | undefined | null;
   interceptorManager: InterceptorManager;
   scheduler: Scheduler;
   eventHandler: EventHandler;
+  onError: OnErrorHandler | undefined;
 }) {
   const hookSelections = useSelectionsState();
   const forceUpdate = useDeferDispatch(useForceUpdate());
@@ -367,18 +403,14 @@ export function useInterceptSelections({
         deferredCall.current === null &&
         hookSelections.has(selection)
       ) {
-        const newPromise = new Promise<void>((resolve, reject) => {
-          promise.then(
-            () => {
-              fetchingPromise.current = null;
-              forceUpdate();
-              resolve();
-            },
-            (err: unknown) => {
-              fetchingPromise.current = null;
-              reject(err);
-            }
-          );
+        const newPromise = new Promise<void>((resolve) => {
+          promise.then(({ error }) => {
+            fetchingPromise.current = null;
+            forceUpdate();
+            if (error && onError) onError(error);
+
+            resolve();
+          });
         });
         if (staleWhileRevalidate && isRendering.current) {
           deferredCall.current = () => {
@@ -409,3 +441,30 @@ export function useInterceptSelections({
 
   return { fetchingPromise, unsubscribe };
 }
+
+export function useSuspensePromise(optsRef: {
+  current: { suspense?: boolean };
+}) {
+  const [promise, setPromiseState] = useState<Promise<unknown> | void>();
+
+  const isMounted = useIsMounted();
+
+  const setPromise = useCallback<(promise: Promise<unknown>) => void>(
+    (newPromise) => {
+      if (promise || !optsRef.current.suspense || !isMounted.current) return;
+
+      function clearPromise() {
+        if (isMounted.current) setPromiseState();
+      }
+
+      setPromiseState(newPromise.then(clearPromise, clearPromise));
+    },
+    [setPromiseState, optsRef]
+  );
+
+  if (promise) throw promise;
+
+  return setPromise;
+}
+
+export type OnErrorHandler = (error: gqlessError) => void;

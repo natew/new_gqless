@@ -67,9 +67,6 @@ export const {
     // Set this flag as \\"false\\" if your usage doesn't involve React Suspense
     suspense: true,
 
-    // Set this Policy based on your needs
-    fetchPolicy: 'cache-first',
-
     // Set this flag based on your needs
     staleWhileRevalidate: false,
   },

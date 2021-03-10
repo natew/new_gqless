@@ -2,16 +2,21 @@ import { Dispatch, useCallback, useMemo, useReducer, useRef } from 'react';
 
 import { createClient, doRetry, gqlessError, RetryOptions } from '@dish/gqless';
 
-import { useDeferDispatch } from '../common';
+import {
+  OnErrorHandler,
+  useDeferDispatch,
+  useSuspensePromise,
+} from '../common';
 import { ReactClientOptionsWithDefaults } from '../utils';
 
 export interface UseMutationOptions<TData> {
   noCache?: boolean;
   onCompleted?: (data: TData) => void;
-  onError?: (error: gqlessError) => void;
+  onError?: OnErrorHandler;
   retry?: RetryOptions;
   refetchQueries?: unknown[];
   awaitRefetchQueries?: boolean;
+  suspense?: boolean;
 }
 
 export interface UseMutationState<TData> {
@@ -100,7 +105,9 @@ export function createUseMutation<
   }
 >(
   client: ReturnType<typeof createClient>,
-  { defaults: { retry: defaultRetry } }: ReactClientOptionsWithDefaults
+  {
+    defaults: { retry: defaultRetry, mutationSuspense: defaultSuspense },
+  }: ReactClientOptionsWithDefaults
 ) {
   const { resolved, refetch } = client;
   const clientMutation: GeneratedSchema['mutation'] = client.mutation;
@@ -122,7 +129,10 @@ export function createUseMutation<
     UseMutationState<TData>
   ] {
     const optsRef = useRef(opts);
-    optsRef.current = opts;
+    optsRef.current = Object.assign({}, opts);
+    optsRef.current.suspense ??= defaultSuspense;
+
+    const setSuspensePromise = useSuspensePromise(optsRef);
 
     const [state, dispatchReducer] = useReducer(
       UseMutationReducer,
@@ -210,18 +220,28 @@ export function createUseMutation<
     return useMemo(() => {
       const fn: typeof mutate = retry
         ? (...args: any[]) => {
-            return mutate(...args).catch((err) => {
+            const promise = mutate(...args).catch((err) => {
               doRetry(retry, {
-                onRetry: () => mutate(...args).then(),
+                onRetry: () => {
+                  const promise = mutate(...args).then(() => {});
+
+                  setSuspensePromise(promise);
+
+                  return promise;
+                },
               });
 
               throw err;
             });
+
+            setSuspensePromise(promise);
+
+            return promise;
           }
         : mutate;
 
       return [fn, state];
-    }, [mutate, state, retry]);
+    }, [state, mutate, retry, optsRef, setSuspensePromise]);
   };
 
   return useMutation;

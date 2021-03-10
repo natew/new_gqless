@@ -4,16 +4,13 @@ import prettier from 'prettier/standalone';
 
 import { createClient } from '@dish/gqless';
 import { FetchEventData } from '@dish/gqless/dist/Events';
+import { serializeError } from 'serialize-error';
 
 function parseGraphQL(query: string) {
   return prettier.format(query, {
     parser: 'graphql',
     plugins: [parserGraphQL],
   });
-}
-
-function cleanObject(obj: object): object {
-  return JSON.parse(JSON.stringify(obj));
 }
 
 function isTruthy<V>(v: V): v is NonNullable<V> {
@@ -127,7 +124,7 @@ export function createLogger(
     console.groupEnd();
 
     if (error) {
-      console.error(...format(['Error', headerStyles]), cleanObject(error));
+      console.error(...format(['Error', headerStyles]), serializeError(error));
     } else {
       console.log(
         ...format(['Result', headerStyles]),
@@ -139,7 +136,7 @@ export function createLogger(
       console.groupCollapsed(...format(['Selections', headerStyles]));
       selections.forEach(
         ({ noIndexSelections, selectionsList, type, ...selection }) => {
-          console.log(stringifyJSONIfEnabled(cleanObject(selection)));
+          console.log(stringifyJSONIfEnabled(selection));
         }
       );
       console.groupEnd();

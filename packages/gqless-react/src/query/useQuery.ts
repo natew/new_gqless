@@ -1,11 +1,16 @@
 import { createClient } from '@dish/gqless';
 
-import { useInterceptSelections, useIsomorphicLayoutEffect } from '../common';
+import {
+  OnErrorHandler,
+  useInterceptSelections,
+  useIsomorphicLayoutEffect,
+} from '../common';
 import { ReactClientOptionsWithDefaults } from '../utils';
 
 export interface UseQueryOptions {
   suspense?: boolean;
   staleWhileRevalidate?: boolean | object | number | string | null;
+  onError?: OnErrorHandler;
 }
 
 export interface UseQuery<GeneratedSchema extends { query: object }> {
@@ -31,12 +36,14 @@ export function createUseQuery<
   const useQuery: UseQuery<GeneratedSchema> = function useQuery({
     suspense = defaultSuspense,
     staleWhileRevalidate = defaultStaleWhileRevalidate,
+    onError,
   }: UseQueryOptions = {}): GeneratedSchema['query'] {
     const { unsubscribe, fetchingPromise } = useInterceptSelections({
       staleWhileRevalidate,
       eventHandler,
       interceptorManager,
       scheduler,
+      onError,
     });
 
     useIsomorphicLayoutEffect(unsubscribe);

@@ -2,7 +2,7 @@ import React, { ReactElement, Suspense, SuspenseProps } from 'react';
 
 import { createClient } from '@dish/gqless';
 
-import { useInterceptSelections } from './common';
+import { OnErrorHandler, useInterceptSelections } from './common';
 import { ReactClientOptionsWithDefaults } from './utils';
 
 export interface GraphQLHOCOptions {
@@ -12,6 +12,7 @@ export interface GraphQLHOCOptions {
         fallback: SuspenseProps['fallback'];
       };
   staleWhileRevalidate?: boolean;
+  onError?: OnErrorHandler;
 }
 
 export interface GraphQLHOC {
@@ -41,6 +42,7 @@ export function createGraphqlHOC(
     {
       suspense = defaultSuspense,
       staleWhileRevalidate = defaultStaleWhileRevalidate,
+      onError,
     }: GraphQLHOCOptions = {}
   ) {
     const withGraphQL: {
@@ -52,6 +54,7 @@ export function createGraphqlHOC(
         eventHandler,
         scheduler,
         staleWhileRevalidate,
+        onError,
       });
 
       let returnValue: ReactElement | null = null;

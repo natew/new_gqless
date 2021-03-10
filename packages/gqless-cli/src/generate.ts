@@ -59,8 +59,8 @@ export async function generate(
 }> {
   const gqlessConfig = (await gqlessConfigPromise).config;
   enumsAsStrings ??= gqlessConfig.enumsAsStrings ?? false;
-  scalars ??= gqlessConfig.scalars;
-  endpoint ??= gqlessConfig.endpoint ?? '/graphql';
+  scalars ||= gqlessConfig.scalars;
+  endpoint ||= gqlessConfig.endpoint ?? '/graphql';
   react ??= gqlessConfig.react ?? false;
   preImport ??= gqlessConfig.preImport ?? '';
 
@@ -565,7 +565,7 @@ export async function generate(
                     return `${addDescription([
                       typeName,
                       fieldName,
-                    ])}${fieldName}${foundType || '?: undefined'};`;
+                    ])}${fieldName}${foundType || '?: undefined'}\n`;
                   })
                   .join('')} }`
               );
@@ -744,9 +744,6 @@ export async function generate(
     defaults: {
       // Set this flag as "false" if your usage doesn't involve React Suspense
       suspense: true,
-
-      // Set this Policy based on your needs
-      fetchPolicy: "cache-first",
 
       // Set this flag based on your needs
       staleWhileRevalidate: false

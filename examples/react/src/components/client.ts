@@ -19,6 +19,7 @@ export const {
   defaults: {
     suspense: true,
     staleWhileRevalidate: false,
+    transactionQuerySuspense: false,
   },
 });
 

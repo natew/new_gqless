@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app';
 import { Suspense } from 'react';
+
 import { MetaClient } from '../components/meta';
 import { NoSSR } from '../components/NoSSR';
 import SSRPage from './ssr';
