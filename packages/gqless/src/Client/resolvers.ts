@@ -212,7 +212,7 @@ export function createResolvers(
   function buildQueryAndCheckTempCache<TData>(
     selections: Selection[],
     type: 'query' | 'mutation' | 'subscription',
-    normalizationHandler: NormalizationHandler,
+    normalizationHandler: NormalizationHandler | undefined,
     ignoreResolveCache: boolean | undefined
   ) {
     const { query, variables } = buildQuery(
@@ -220,7 +220,7 @@ export function createResolvers(
       {
         type,
       },
-      normalizationHandler
+      normalizationHandler != null
     );
 
     const cacheKey = ignoreResolveCache
@@ -240,12 +240,12 @@ export function createResolvers(
   }
 
   async function buildAndFetchSelections<TData = unknown>(
-    selections: Selection[],
-    type: 'query' | 'mutation' | 'subscription',
+    selections: Selection[] | undefined,
+    type: 'query' | 'mutation',
     cache: CacheInstance = innerState.clientCache,
     options: FetchResolveOptions = {}
   ): Promise<TData | null | undefined> {
-    if (selections.length === 0) return;
+    if (!selections) return;
 
     const {
       query,
@@ -272,48 +272,7 @@ export function createResolvers(
         eventHandler.sendFetchPromise(loggingPromise.promise, selections);
       }
 
-      let executionResult: ExecutionResult;
-
-      if (type === 'subscription') {
-        if (subscriptions) {
-          await subscriptions.subscribe({
-            query,
-            variables,
-            selections,
-            onData(data) {
-              cache.mergeCache(data, 'subscription');
-              if (options.scheduler) {
-                innerState.scheduler.errors.removeErrors(selections);
-              }
-              for (const selection of selections) {
-                eventHandler.sendCacheChange({
-                  data,
-                  selection,
-                });
-              }
-            },
-            onError({ data, error }) {
-              const selectionsWithErrors = filterSelectionsWithErrors(
-                error.graphQLErrors,
-                data,
-                selections
-              );
-              if (options.scheduler) {
-                innerState.scheduler.errors.triggerError(
-                  error,
-                  selectionsWithErrors
-                );
-              }
-            },
-            cacheKey,
-          });
-        } else {
-          console.error('No subscriptions client specified!');
-        }
-        executionResult = { data: null };
-      } else {
-        executionResult = await queryFetcher(query, variables);
-      }
+      const executionResult = await queryFetcher(query, variables);
 
       const { data, errors } = executionResult;
 
@@ -412,6 +371,55 @@ export function createResolvers(
     }
   }
 
+  async function buildAndSubscribeSelections<TData = unknown>(
+    selections: Selection[] | undefined,
+    cache: CacheInstance = innerState.clientCache,
+    options: FetchResolveOptions
+  ) {
+    if (!selections) return;
+
+    if (!subscriptions) {
+      console.error('ERROR: No subscriptions client specified!');
+      return;
+    }
+
+    const { query, variables, cacheKey } = buildQueryAndCheckTempCache<TData>(
+      selections,
+      'subscription',
+      innerState.normalizationHandler,
+      options.ignoreResolveCache
+    );
+
+    await subscriptions.subscribe({
+      query,
+      variables,
+      selections,
+      cacheKey,
+      onData(data) {
+        cache.mergeCache(data, 'subscription');
+        if (options.scheduler) {
+          innerState.scheduler.errors.removeErrors(selections);
+        }
+        for (const selection of selections) {
+          eventHandler.sendCacheChange({
+            data,
+            selection,
+          });
+        }
+      },
+      onError({ data, error }) {
+        const selectionsWithErrors = filterSelectionsWithErrors(
+          error.graphQLErrors,
+          data,
+          selections
+        );
+        if (options.scheduler) {
+          innerState.scheduler.errors.triggerError(error, selectionsWithErrors);
+        }
+      },
+    });
+  }
+
   async function resolveSelections<
     TQuery = unknown,
     TMutation = unknown,
@@ -428,11 +436,7 @@ export function createResolvers(
     } = separateSelectionTypes(selections);
 
     try {
-      const [
-        queryResult,
-        mutationResult,
-        subscriptionResult,
-      ] = await Promise.all([
+      await Promise.all([
         buildAndFetchSelections<TQuery>(
           querySelections,
           'query',
@@ -445,19 +449,12 @@ export function createResolvers(
           cache,
           options
         ),
-        buildAndFetchSelections<TSubscription>(
+        buildAndSubscribeSelections<TSubscription>(
           subscriptionSelections,
-          'subscription',
           cache,
           options
         ),
       ]);
-
-      return {
-        queryResult,
-        mutationResult,
-        subscriptionResult,
-      };
     } catch (err) {
       throw gqlessError.create(err);
     }

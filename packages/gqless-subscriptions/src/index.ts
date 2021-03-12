@@ -1,4 +1,4 @@
-import { gqlessError, SubscriptionsClient } from '@dish/gqless';
+import { gqlessError, Selection, SubscriptionsClient } from '@dish/gqless';
 
 import { Client, ClientOptions } from './subscription/client';
 
@@ -28,29 +28,42 @@ export function createSubscriptionClient({
       .catch(reject);
   });
 
+  const SubscriptionsSelections: Map<string, Set<Selection>> = new Map();
+
   return {
-    async subscribe(opts) {
-      const { query, variables, onData, onError, cacheKey } = opts;
+    async subscribe({
+      query,
+      variables,
+      onData,
+      onError,
+      cacheKey,
+      selections,
+    }) {
       const wsClient = wsClientValue || (await wsClientPromise);
 
       const operationId = await wsClient.createSubscription(
         query,
         variables,
         ({ payload }) => {
-          if (!payload) return;
-
-          if (payload.data) {
-            onData(payload.data);
+          if (!payload) {
+            SubscriptionsSelections.delete(operationId);
+            return;
           }
-          if (payload.errors?.length) {
+
+          const { data, errors } = payload;
+          if (data) onData(data);
+
+          if (errors?.length) {
             onError({
-              data: payload.data,
-              error: gqlessError.fromGraphQLErrors(payload.errors),
+              data,
+              error: gqlessError.fromGraphQLErrors(errors),
             });
           }
         },
         cacheKey
       );
+
+      SubscriptionsSelections.set(operationId, new Set(selections));
 
       const unsubscribe = async () => {
         await wsClient.unsubscribe(operationId, true);
@@ -59,6 +72,25 @@ export function createSubscriptionClient({
       return {
         unsubscribe,
       };
+    },
+    async unsubscribe(selections) {
+      const wsClient = wsClientValue || (await wsClientPromise);
+
+      let promises: Promise<void>[] = [];
+
+      checkOperations: for (const [
+        operationId,
+        operationSelections,
+      ] of SubscriptionsSelections.entries()) {
+        for (const selection of selections) {
+          if (operationSelections.has(selection)) {
+            promises.push(wsClient.unsubscribe(operationId, true));
+            continue checkOperations;
+          }
+        }
+      }
+
+      if (promises.length) await Promise.all(promises);
     },
   };
 }

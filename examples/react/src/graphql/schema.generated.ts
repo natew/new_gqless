@@ -74,8 +74,12 @@ export const generatedSchema = {
     renameHuman: { __type: 'Human', __args: { id: 'ID!', name: 'String!' } },
     other: { __type: 'Int', __args: { arg: 'inputTypeExample!' } },
     createHuman: { __type: 'Human!', __args: { id: 'ID!', name: 'String!' } },
+    sendNotification: { __type: 'Boolean!', __args: { message: 'String!' } },
   },
-  subscription: {},
+  subscription: {
+    __typename: { __type: 'String!' },
+    newNotification: { __type: 'String!' },
+  },
   Dog: {
     __typename: { __type: 'String!' },
     id: { __type: 'ID!' },
@@ -159,10 +163,14 @@ export interface Mutation {
     id: ScalarsEnums['ID'];
     name: ScalarsEnums['String'];
   }) => Human;
+  sendNotification: (args: {
+    message: ScalarsEnums['String'];
+  }) => ScalarsEnums['Boolean'];
 }
 
 export interface Subscription {
   __typename: 'Subscription' | undefined;
+  newNotification: ScalarsEnums['String'];
 }
 
 /**

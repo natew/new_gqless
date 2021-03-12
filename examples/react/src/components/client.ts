@@ -15,6 +15,7 @@ export const {
   useHydrateCache,
   useMutation,
   useMetaState,
+  useSubscription,
 } = createReactClient<GeneratedSchema>(client, {
   defaults: {
     suspense: true,

@@ -1,4 +1,3 @@
-import { NormalizationHandler } from '../Normalization';
 import { Selection } from '../Selection';
 import { set } from '../Utils';
 
@@ -29,7 +28,7 @@ export const buildQuery = (
   }: {
     type: 'query' | 'mutation' | 'subscription';
   },
-  normalization?: NormalizationHandler
+  normalization?: boolean
 ) => {
   let variableId = 1;
 

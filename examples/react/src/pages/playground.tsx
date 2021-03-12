@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useQuery } from '../components/client';
 import { useIsomorphicLayoutEffect } from '../components/common';
 
 const C = () => {
+  Promise.resolve().then(() => console.log('Promise resolve C'));
   setTimeout(() => {
     console.log('timeout 0 C');
   }, 0);
@@ -20,6 +21,7 @@ const C = () => {
 };
 
 const B = () => {
+  Promise.resolve().then(() => console.log('Promise resolve B'));
   setTimeout(() => {
     console.log('timeout 0 B');
   }, 0);
@@ -41,7 +43,8 @@ const B = () => {
   return b;
 };
 
-const A = () => {
+const A = memo(() => {
+  Promise.resolve().then(() => console.log('Promise resolve A'));
   setTimeout(() => {
     console.log('timeout 0 A');
   }, 0);
@@ -60,7 +63,7 @@ const A = () => {
   console.log('render A');
 
   return a;
-};
+});
 
 export default function Asd() {
   const query = useQuery({
@@ -69,6 +72,7 @@ export default function Asd() {
 
   return (
     <div>
+      <A />
       <p style={{ whiteSpace: 'pre-wrap' }}>
         {JSON.stringify(
           {

@@ -81,6 +81,7 @@ export type Mutation = {
   renameHuman?: Maybe<Human>;
   other?: Maybe<Scalars['Int']>;
   createHuman: Human;
+  sendNotification: Scalars['Boolean'];
 };
 
 /** Mutation */
@@ -104,6 +105,16 @@ export type MutationotherArgs = {
 export type MutationcreateHumanArgs = {
   id: Scalars['ID'];
   name: Scalars['String'];
+};
+
+/** Mutation */
+export type MutationsendNotificationArgs = {
+  message: Scalars['String'];
+};
+
+export type Subscription = {
+  __typename?: 'Subscription';
+  newNotification: Scalars['String'];
 };
 
 /** Input Type Example XD */
@@ -262,6 +273,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Mutation: ResolverTypeWrapper<{}>;
+  Subscription: ResolverTypeWrapper<{}>;
   inputTypeExample: inputTypeExample;
   HumansConnection: ResolverTypeWrapper<HumansConnection>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -280,6 +292,7 @@ export type ResolversParentTypes = {
   Query: {};
   Boolean: Scalars['Boolean'];
   Mutation: {};
+  Subscription: {};
   inputTypeExample: inputTypeExample;
   HumansConnection: HumansConnection;
   PageInfo: PageInfo;
@@ -380,6 +393,24 @@ export type MutationResolvers<
     ContextType,
     RequireFields<MutationcreateHumanArgs, 'id' | 'name'>
   >;
+  sendNotification?: Resolver<
+    ResolversTypes['Boolean'],
+    ParentType,
+    ContextType,
+    RequireFields<MutationsendNotificationArgs, 'message'>
+  >;
+};
+
+export type SubscriptionResolvers<
+  ContextType = any,
+  ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']
+> = {
+  newNotification?: SubscriptionResolver<
+    ResolversTypes['String'],
+    'newNotification',
+    ParentType,
+    ContextType
+  >;
 };
 
 export type HumansConnectionResolvers<
@@ -426,6 +457,7 @@ export type Resolvers<ContextType = any> = {
   Human?: HumanResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
   HumansConnection?: HumansConnectionResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Species?: SpeciesResolvers<ContextType>;

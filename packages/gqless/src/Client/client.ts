@@ -59,6 +59,7 @@ export interface SubscriptionsClient {
   }): Promise<{
     unsubscribe: () => void | Promise<void>;
   }>;
+  unsubscribe(selections: Selection[] | Set<Selection>): Promise<void>;
 }
 
 export interface ClientOptions<
@@ -221,5 +222,6 @@ export function createClient<
     assignSelections,
     mutate,
     buildSelection,
+    subscriptionsClient: subscriptions,
   };
 }

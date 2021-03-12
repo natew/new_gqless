@@ -1,6 +1,6 @@
 // Based on https://github.com/mercurius-js/mercurius/blob/master/lib/subscription-client.js
 
-import { GraphQLError } from 'graphql';
+import type { GraphQLError } from 'graphql';
 import WebSocket from 'isomorphic-ws';
 
 import { createDeferredPromise, DeferredPromise, GQLResponse } from '../utils';
@@ -41,7 +41,6 @@ export interface ClientOptions {
 // This class is already being tested in https://github.com/mercurius-js/mercurius/blob/master/test/subscription-client.js
 export class Client {
   subscriptionQueryMap: Record<string, string>;
-  reverseSubscriptionQueryMap: Record<string, string>;
 
   socket: WebSocket | null;
   headers;
@@ -61,7 +60,7 @@ export class Client {
   reconnecting?: boolean;
   reconnectTimeoutId?: ReturnType<typeof setTimeout>;
 
-  connectedPromise: DeferredPromise<void>;
+  connectedPromise: DeferredPromise<Error | void>;
 
   constructor(
     uri: string,
@@ -83,7 +82,6 @@ export class Client {
     this.operationsCount = {};
 
     this.subscriptionQueryMap = {};
-    this.reverseSubscriptionQueryMap = {};
 
     this.headers = headers;
     this.tryReconnect = reconnect;
@@ -135,8 +133,7 @@ export class Client {
   close(tryReconnect = false, closedByUser = true) {
     this.closedByUser = closedByUser;
     this.ready = false;
-    this.connectedPromise.reject(Error('Socket closed!'));
-    this.connectedPromise = createDeferredPromise();
+    this.connectedPromise.resolve(Error('Socket closed!'));
 
     if (this.socket !== null) {
       if (closedByUser) {
@@ -148,6 +145,8 @@ export class Client {
       this.reconnecting = false;
 
       if (tryReconnect) {
+        this.connectedPromise = createDeferredPromise();
+
         for (const operationId of this.operations.keys()) {
           const operation = this.operations.get(operationId);
 
@@ -200,9 +199,6 @@ export class Client {
     if (count === 0 || forceUnsubscribe) {
       await this.sendMessage(operationId, GQL_STOP, null);
       this.operationsCount[operationId] = 0;
-      delete this.subscriptionQueryMap[
-        this.reverseSubscriptionQueryMap[operationId]
-      ];
     } else {
       this.operationsCount[operationId] = count;
     }
@@ -238,6 +234,7 @@ export class Client {
             resolve();
           }
         );
+        setTimeout(resolve, 10);
       } catch (err) {
         reject(err);
       }
@@ -292,7 +289,7 @@ export class Client {
         if (operation) {
           operation.handler({
             data: null,
-            errors: [new GraphQLError(data.payload)],
+            errors: [Error(data.payload) as GraphQLError],
           });
           this.operations.delete(operationId);
           this.sendMessage(operationId, GQL_ERROR, data.payload).catch(
@@ -324,14 +321,14 @@ export class Client {
   }
 
   async startOperation(operationId: string) {
+    await this.connectedPromise.promise;
+
     const operation = this.operations.get(operationId);
     if (!operation) throw Error('Operation not found, ' + operationId);
 
     const { started, options, handler, extensions } = operation;
 
     if (!started) {
-      await this.connectedPromise.promise;
-
       if (!this.ready) {
         throw new Error('Connection is not ready');
       }
@@ -341,9 +338,8 @@ export class Client {
         handler,
         extensions,
       });
-      return this.sendMessage(operationId, GQL_START, options, extensions);
+      await this.sendMessage(operationId, GQL_START, options, extensions);
     }
-    return Promise.resolve();
   }
 
   async createSubscription(
@@ -385,7 +381,6 @@ export class Client {
     this.operationsCount[operationId] = 1;
 
     this.subscriptionQueryMap[subscriptionString] = operationId;
-    this.reverseSubscriptionQueryMap[operationId] = subscriptionString;
 
     await startPromise;
 

@@ -10,6 +10,7 @@ import { createUseQuery } from './query/useQuery';
 import { createUseRefetch } from './query/useRefetch';
 import { createUseTransactionQuery } from './query/useTransactionQuery';
 import { createSSRHelpers } from './ssr';
+import { createUseSubscription } from './subscription/useSubscription';
 
 import type { ReactClientOptionsWithDefaults } from './utils';
 
@@ -163,5 +164,6 @@ export function createReactClient<
     prepareReactRender,
     useHydrateCache,
     useMetaState: createUseMetaState(client),
+    useSubscription: createUseSubscription<GeneratedSchema>(client, opts),
   };
 }

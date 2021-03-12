@@ -601,6 +601,8 @@ export function AccessorCreators<
                      * add the selection to the queue
                      */
                     if (
+                      // SelectionType.Subscription <=> 2
+                      selection.type === 2 ||
                       schedulerClientCache !== innerState.clientCache ||
                       !schedulerErrorsMap.has(selection)
                     ) {

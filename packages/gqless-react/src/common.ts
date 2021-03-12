@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -43,10 +44,17 @@ export function useForceUpdate() {
     wasCalled.current = false;
   });
 
-  return useCallback(() => {
-    if (wasCalled.current) return;
-    wasCalled.current = true;
-    update();
+  return useMemo(() => {
+    return Object.assign(
+      () => {
+        if (wasCalled.current) return;
+        wasCalled.current = true;
+        update();
+      },
+      {
+        wasCalled,
+      }
+    );
   }, [update, wasCalled]);
 }
 

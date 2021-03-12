@@ -70,6 +70,10 @@ export const MetaClient = () => {
           <a>/emptyArrays</a>
         </Link>{' '}
         <br />
+        <Link href="/subscriptions">
+          <a>/subscriptions</a>
+        </Link>{' '}
+        <br />
       </nav>
     </div>
   );

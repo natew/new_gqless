@@ -1,17 +1,14 @@
-import Fastify from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import { name, seed } from 'faker';
 import { defaults, keyBy } from 'lodash';
 import mercurius, { IResolvers, MercuriusLoaders } from 'mercurius';
 import { codegenMercurius, gql } from 'mercurius-codegen';
-import { NextApiHandler } from 'next';
 import { JsonDB } from 'node-json-db';
 import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
-import { name, seed } from 'faker';
 
 import { writeGenerate } from '@dish/gqless-cli';
 
-import type { Dog, Human } from '../../graphql/mercurius';
-
-const app = Fastify();
+import type { Dog, Human } from '../graphql/mercurius';
 
 const db = new JsonDB(new Config('db.json', true, true, '/'));
 
@@ -116,7 +113,12 @@ const schema = gql`
     renameHuman(id: ID!, name: String!): Human
     other(arg: inputTypeExample!): Int
     createHuman(id: ID!, name: String!): Human!
+    sendNotification(message: String!): Boolean!
   }
+  type Subscription {
+    newNotification: String!
+  }
+
   "Input Type Example XD"
   input inputTypeExample {
     a: String!
@@ -296,6 +298,23 @@ const resolvers: IResolvers = {
 
       return null;
     },
+    sendNotification(_root, { message }: { message: string }, ctx) {
+      ctx.pubsub.publish({
+        topic: 'NOTIFICATION',
+        payload: {
+          newNotification: message,
+        },
+      });
+
+      return true;
+    },
+  },
+  Subscription: {
+    newNotification: {
+      subscribe(_root, _args, ctx) {
+        return ctx.pubsub.subscribe('NOTIFICATION');
+      },
+    },
   },
 };
 const loaders: MercuriusLoaders = {
@@ -335,39 +354,24 @@ const loaders: MercuriusLoaders = {
   },
 };
 
-app.register(mercurius, {
-  schema,
-  resolvers,
-  loaders,
-});
+export async function register(app: FastifyInstance) {
+  app.register(mercurius, {
+    path: '/api/graphql',
+    schema,
+    resolvers,
+    loaders,
+    subscription: true,
+    logLevel: 'error',
+  });
 
-codegenMercurius(app, {
-  targetPath: './src/graphql/mercurius.ts',
-  silent: true,
-}).catch(console.error);
+  codegenMercurius(app, {
+    targetPath: './src/graphql/mercurius.ts',
+    silent: true,
+  }).catch(console.error);
 
-const ready = new Promise<void>(async (resolve) => {
   await app.ready();
 
   writeGenerate(app.graphql.schema, './src/graphql/gqless.ts', {}).catch(
     console.error
   );
-
-  resolve();
-});
-
-const GraphQLRoute: NextApiHandler = async (req, res) => {
-  await ready;
-
-  const response = await app.inject({
-    method: req.method as any,
-    headers: req.headers,
-    payload: req.body,
-    query: req.query,
-    url: '/graphql',
-  });
-
-  res.send(response.body);
-};
-
-export default GraphQLRoute;
+}

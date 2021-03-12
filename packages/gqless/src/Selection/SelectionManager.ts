@@ -7,21 +7,24 @@ import {
 export function separateSelectionTypes(
   selections: Selection[] | Set<Selection>
 ) {
-  const querySelections: Selection[] = [];
-  const mutationSelections: Selection[] = [];
-  const subscriptionSelections: Selection[] = [];
+  let querySelections: Selection[] | undefined;
+  let mutationSelections: Selection[] | undefined;
+  let subscriptionSelections: Selection[] | undefined;
 
   for (const selection of selections) {
     switch (selection.type) {
       case SelectionType.Query: {
+        querySelections ||= [];
         querySelections.push(selection);
         break;
       }
       case SelectionType.Mutation: {
+        mutationSelections ||= [];
         mutationSelections.push(selection);
         break;
       }
       case SelectionType.Subscription: {
+        subscriptionSelections ||= [];
         subscriptionSelections.push(selection);
         break;
       }
