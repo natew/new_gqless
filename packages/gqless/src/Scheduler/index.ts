@@ -1,7 +1,7 @@
 import { gqlessError } from '../Error';
 import { InterceptorManager } from '../Interceptor';
 import { Selection } from '../Selection';
-import { createLazyPromise, LazyPromise } from '../Utils';
+import { createDeferredPromise, DeferredPromise } from '../Utils';
 import { debounce } from '../Utils/debounce';
 
 export type Scheduler = ReturnType<typeof createScheduler>;
@@ -34,7 +34,7 @@ export const createScheduler = (
   resolveSchedulerSelections: (selections: Set<Selection>) => Promise<void>,
   catchSelectionsTimeMS: number
 ) => {
-  type ResolvingLazyPromise = LazyPromise<SchedulerPromiseValue>;
+  type ResolvingLazyPromise = DeferredPromise<SchedulerPromiseValue>;
   type ResolvedLazyPromise = Promise<SchedulerPromiseValue>;
 
   type ResolveSubscriptionFn = (
@@ -196,7 +196,7 @@ export const createScheduler = (
 
     let lazyPromise: ResolvingLazyPromise;
     if (resolvingPromise === null) {
-      lazyPromise = createLazyPromise();
+      lazyPromise = createDeferredPromise();
 
       lazyPromise.promise.then(({ error }) => {
         if (error) console.error(error);

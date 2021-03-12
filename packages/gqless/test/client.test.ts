@@ -321,17 +321,6 @@ describe('mutation', () => {
   });
 });
 
-// TODO: It's a false positive, until subscriptions are implemented
-test('subscription usage', async () => {
-  const { subscription, resolved } = await createTestClient();
-
-  await resolved(() => {
-    return subscription.newNotification;
-  }).then((data) => {
-    expect(data).toBe(null);
-  });
-});
-
 describe('custom query fetcher', () => {
   test('empty data', async () => {
     const { query, resolved } = await createTestClient(

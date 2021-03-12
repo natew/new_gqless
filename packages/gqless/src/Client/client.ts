@@ -9,6 +9,7 @@ import {
   createAccessorCache,
   createCache,
 } from '../Cache';
+import { gqlessError } from '../Error';
 import { EventHandler } from '../Events';
 import { createRefetch } from '../Helpers/refetch';
 import { createSSRHelpers } from '../Helpers/ssr';
@@ -44,6 +45,22 @@ export interface InnerClientState {
   readonly normalizationHandler: NormalizationHandler;
 }
 
+export interface SubscriptionsClient {
+  subscribe(opts: {
+    query: string;
+    variables: Record<string, unknown> | undefined;
+    selections: Selection[];
+    onData: (data: Record<string, unknown>) => void;
+    onError: (payload: {
+      error: gqlessError;
+      data: Record<string, unknown> | null;
+    }) => void;
+    cacheKey?: string;
+  }): Promise<{
+    unsubscribe: () => void | Promise<void>;
+  }>;
+}
+
 export interface ClientOptions<
   ObjectTypesNames extends string = never,
   SchemaObjectTypes extends {
@@ -60,6 +77,7 @@ export interface ClientOptions<
   normalization?:
     | NormalizationOptions<ObjectTypesNames, SchemaObjectTypes>
     | boolean;
+  subscriptions?: SubscriptionsClient;
 }
 
 export function createClient<
@@ -81,6 +99,7 @@ export function createClient<
   catchSelectionsTimeMS = 10,
   retry,
   normalization = true,
+  subscriptions,
 }: ClientOptions<ObjectTypesNames, ObjectTypes>) {
   const interceptorManager = createInterceptorManager();
 
@@ -127,7 +146,7 @@ export function createClient<
     resolved,
     buildAndFetchSelections,
     resolveSelections,
-  } = createResolvers(innerState, catchSelectionsTimeMS);
+  } = createResolvers(innerState, catchSelectionsTimeMS, subscriptions);
 
   async function resolveSchedulerSelections(selections: Set<Selection>) {
     const resolvingPromise = scheduler.resolving;

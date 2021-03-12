@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql';
 import { gqlessError, Poller } from '../src';
-import { createLazyPromise } from '../src/Utils';
+import { createDeferredPromise } from '../src/Utils';
 import { createTestClient, TestClientConfig } from './utils';
 
 describe('poller', () => {
@@ -25,20 +25,20 @@ describe('poller', () => {
       client
     );
 
-    let fetchPromise = createLazyPromise();
-    let dataPromise = createLazyPromise();
+    let fetchPromise = createDeferredPromise();
+    let dataPromise = createDeferredPromise();
 
     const unsubscribe = poller.subscribe((event) => {
       switch (event.type) {
         case 'fetching': {
           fetchPromise.resolve();
-          fetchPromise = createLazyPromise();
+          fetchPromise = createDeferredPromise();
           break;
         }
         case 'data': {
           n = event.data;
           dataPromise.resolve();
-          dataPromise = createLazyPromise();
+          dataPromise = createDeferredPromise();
           break;
         }
         case 'error': {
@@ -139,20 +139,20 @@ describe('poller', () => {
       client
     );
 
-    let fetchPromise = createLazyPromise();
-    let dataPromise = createLazyPromise();
+    let fetchPromise = createDeferredPromise();
+    let dataPromise = createDeferredPromise();
 
     const unsubscribe = poller.subscribe((event) => {
       switch (event.type) {
         case 'fetching': {
           fetchPromise.resolve();
-          fetchPromise = createLazyPromise();
+          fetchPromise = createDeferredPromise();
           break;
         }
         case 'data': {
           n = event.data;
           dataPromise.resolve();
-          dataPromise = createLazyPromise();
+          dataPromise = createDeferredPromise();
           break;
         }
         case 'error': {

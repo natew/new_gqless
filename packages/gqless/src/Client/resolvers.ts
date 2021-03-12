@@ -1,4 +1,4 @@
-import type { ExecutionResult } from 'graphql';
+import type { ExecutionResult, GraphQLError } from 'graphql';
 import { CacheInstance, CacheNotFound, createCache } from '../Cache';
 import { gqlessError } from '../Error';
 import { doRetry } from '../Error/retry';
@@ -8,8 +8,8 @@ import { buildQuery } from '../QueryBuilder';
 import { SchedulerPromiseValue } from '../Scheduler';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
-import { createLazyPromise, get, LazyPromise } from '../Utils';
-import { InnerClientState } from './client';
+import { createDeferredPromise, get, DeferredPromise } from '../Utils';
+import { InnerClientState, SubscriptionsClient } from './client';
 
 export interface ResolveOptions<TData> {
   /**
@@ -68,9 +68,57 @@ export interface FetchResolveOptions {
 
 export type Resolvers = ReturnType<typeof createResolvers>;
 
+function filterSelectionsWithErrors(
+  graphQLErrors: readonly GraphQLError[] | undefined,
+  executionData: Record<string, unknown> | null | undefined,
+  selections: Selection[]
+) {
+  const gqlErrorsPaths = graphQLErrors
+    ?.map((err) =>
+      err.path
+        ?.filter(
+          (pathValue): pathValue is string => typeof pathValue === 'string'
+        )
+        .join('.')
+    )
+    .filter((possiblePath): possiblePath is NonNullable<
+      typeof possiblePath
+    > => {
+      return !!possiblePath;
+    });
+  const selectionsWithErrors =
+    !gqlErrorsPaths?.length || !executionData
+      ? selections
+      : selections.filter((selection) => {
+          const selectionPathNoIndex = selection.noIndexSelections
+            .slice(1)
+            .map((selection) => selection.alias || selection.key)
+            .join('.');
+          const selectionData = get(
+            executionData,
+            selectionPathNoIndex,
+            CacheNotFound
+          );
+
+          switch (selectionData) {
+            case CacheNotFound: {
+              return true;
+            }
+            case null: {
+              return gqlErrorsPaths.includes(selectionPathNoIndex);
+            }
+            default:
+              return false;
+          }
+        });
+
+  return selectionsWithErrors;
+}
+
 export function createResolvers(
   innerState: InnerClientState,
-  catchSelectionsTimeMS: number
+  catchSelectionsTimeMS: number,
+  subscriptions?: SubscriptionsClient
 ) {
   const {
     interceptorManager,
@@ -213,18 +261,59 @@ export function createResolvers(
 
     let executionData: ExecutionResult['data'];
 
-    let loggingPromise: LazyPromise<FetchEventData> | undefined;
+    let loggingPromise: DeferredPromise<FetchEventData> | undefined;
 
     try {
       if (cachedData != null) return cachedData;
 
       if (eventHandler.hasFetchSubscribers) {
-        loggingPromise = createLazyPromise<FetchEventData>();
+        loggingPromise = createDeferredPromise<FetchEventData>();
 
         eventHandler.sendFetchPromise(loggingPromise.promise, selections);
       }
 
-      const executionResult = await queryFetcher(query, variables);
+      let executionResult: ExecutionResult;
+
+      if (type === 'subscription') {
+        if (subscriptions) {
+          await subscriptions.subscribe({
+            query,
+            variables,
+            selections,
+            onData(data) {
+              cache.mergeCache(data, 'subscription');
+              if (options.scheduler) {
+                innerState.scheduler.errors.removeErrors(selections);
+              }
+              for (const selection of selections) {
+                eventHandler.sendCacheChange({
+                  data,
+                  selection,
+                });
+              }
+            },
+            onError({ data, error }) {
+              const selectionsWithErrors = filterSelectionsWithErrors(
+                error.graphQLErrors,
+                data,
+                selections
+              );
+              if (options.scheduler) {
+                innerState.scheduler.errors.triggerError(
+                  error,
+                  selectionsWithErrors
+                );
+              }
+            },
+            cacheKey,
+          });
+        } else {
+          console.error('No subscriptions client specified!');
+        }
+        executionResult = { data: null };
+      } else {
+        executionResult = await queryFetcher(query, variables);
+      }
 
       const { data, errors } = executionResult;
 
@@ -242,23 +331,7 @@ export function createResolvers(
       }
 
       if (errors?.length) {
-        const error =
-          errors.length > 1
-            ? new gqlessError(
-                `GraphQL Errors${
-                  process.env.NODE_ENV === 'production'
-                    ? ''
-                    : ', please check .graphQLErrors property'
-                }`,
-                {
-                  graphQLErrors: errors,
-                }
-              )
-            : new gqlessError(errors[0].message, {
-                graphQLErrors: errors,
-              });
-
-        throw error;
+        throw gqlessError.fromGraphQLErrors(errors);
       } else if (options.scheduler) {
         innerState.scheduler.errors.removeErrors(selections);
       }
@@ -285,45 +358,11 @@ export function createResolvers(
       });
 
       if (options.scheduler) {
-        const gqlErrorsPaths = error.graphQLErrors
-          ?.map((err) =>
-            err.path
-              ?.filter(
-                (pathValue): pathValue is string =>
-                  typeof pathValue === 'string'
-              )
-              .join('.')
-          )
-          .filter((possiblePath): possiblePath is NonNullable<
-            typeof possiblePath
-          > => {
-            return !!possiblePath;
-          });
-        const selectionsWithErrors =
-          !gqlErrorsPaths?.length || !executionData
-            ? selections
-            : selections.filter((selection) => {
-                const selectionPathNoIndex = selection.noIndexSelections
-                  .slice(1)
-                  .join('.');
-
-                const selectionData = get(
-                  executionData,
-                  selectionPathNoIndex,
-                  CacheNotFound
-                );
-
-                switch (selectionData) {
-                  case CacheNotFound: {
-                    return true;
-                  }
-                  case null: {
-                    return gqlErrorsPaths.includes(selectionPathNoIndex);
-                  }
-                  default:
-                    return false;
-                }
-              });
+        const selectionsWithErrors = filterSelectionsWithErrors(
+          error.graphQLErrors,
+          executionData,
+          selections
+        );
         innerState.scheduler.errors.triggerError(error, selectionsWithErrors);
       }
 

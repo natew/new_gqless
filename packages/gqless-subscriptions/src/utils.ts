@@ -1,3 +1,5 @@
+import { GraphQLError } from 'graphql';
+
 export interface DeferredPromise<T> {
   promise: Promise<T>;
   resolve: (value: T) => void;
@@ -19,9 +21,6 @@ export function createDeferredPromise<T = void>(): DeferredPromise<T> {
   };
 }
 
-export const isInteger = (v: any): v is number => Number.isInteger(v);
-
-export * from './debounce';
-export * from './object';
-export * from './lodashMerge';
-export * from './cycle';
+export type GQLResponse<
+  T extends Record<string, unknown> = Record<string, unknown>
+> = { data: T | null; errors?: GraphQLError[] };

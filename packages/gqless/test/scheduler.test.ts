@@ -4,7 +4,7 @@ import { gqlessError } from '../src';
 import { createInterceptorManager } from '../src/Interceptor';
 import { createScheduler } from '../src/Scheduler';
 import { Selection } from '../src/Selection';
-import { createLazyPromise } from '../src/Utils';
+import { createDeferredPromise } from '../src/Utils';
 import { createTestClient } from './utils';
 
 test('scheduler works with globalInterceptor', async () => {
@@ -159,7 +159,7 @@ describe('retry', () => {
       scheduler: { errors: schedulerErrors },
     } = await createTestClient();
 
-    const readyPromise = createLazyPromise();
+    const readyPromise = createDeferredPromise();
     let callNumber = 0;
 
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
@@ -250,7 +250,7 @@ describe('retry', () => {
       },
     });
 
-    const readyPromise = createLazyPromise();
+    const readyPromise = createDeferredPromise();
 
     let callNumber = 0;
 

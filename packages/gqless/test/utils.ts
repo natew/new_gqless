@@ -1,6 +1,8 @@
+import getPort from 'get-port';
 import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '@dish/gqless-cli';
+import { createSubscriptionClient } from '@dish/gqless-subscriptions';
 
 import {
   ClientOptions,
@@ -9,6 +11,7 @@ import {
   QueryFetcher,
   Schema,
   SchemaUnionsKey,
+  SubscriptionsClient,
 } from '../src';
 import { deepAssign } from '../src/Utils';
 
@@ -67,6 +70,7 @@ export type Species =
 
 export interface TestClientConfig {
   artificialDelay?: number;
+  subscriptions?: boolean;
 }
 export const createTestClient = async (
   addedToGeneratedSchema?: DeepPartial<Schema>,
@@ -118,7 +122,7 @@ export const createTestClient = async (
         humanMutation(nameArg: String!): Human
       }
       type Subscription {
-        newNotification: String
+        newNotification: String!
       }
       type Human {
         id: ID
@@ -188,7 +192,9 @@ export const createTestClient = async (
         sendNotification(_root, { message }: { message: string }, ctx) {
           ctx.pubsub.publish({
             topic: 'NOTIFICATION',
-            payload: message,
+            payload: {
+              newNotification: message,
+            },
           });
 
           return true;
@@ -258,36 +264,65 @@ export const createTestClient = async (
     };
   }
 
-  return createClient<
+  let subscriptions: SubscriptionsClient | undefined;
+
+  if (config?.subscriptions) {
+    let port: number;
+    const address = server.server.address();
+    if (typeof address === 'object' && address) {
+      port = address.port;
+    } else {
+      server.log.warn('Remember to close the app instance manually');
+
+      await server.listen((port = await getPort()));
+    }
+    subscriptions = config?.subscriptions
+      ? createSubscriptionClient({
+          wsEndpoint: `ws://127.0.0.1:${port}/graphql`,
+        })
+      : undefined;
+  }
+
+  return Object.assign(
+    createClient<
+      {
+        query: {
+          hello: string;
+          stringArg: (args: { arg: string }) => string;
+          human: (args?: { name?: string }) => Human;
+          nullArray?: Maybe<Array<Maybe<Human>>>;
+          nullStringArray?: Maybe<Array<Maybe<string>>>;
+          nFetchCalls: number;
+          throw?: boolean;
+          throw2?: boolean;
+          time: string;
+          species: Array<Species>;
+          throwUntilThirdTry: boolean;
+          dogs: Array<Dog>;
+        };
+        mutation: {
+          sendNotification(args: { message: string }): boolean;
+          humanMutation: (args?: { nameArg?: string }) => Human;
+        };
+        subscription: {
+          newNotification: string | null | undefined;
+        };
+      },
+      ObjectTypesNames,
+      ObjectTypes
+    >({
+      schema: deepAssign(generatedSchema, [addedToGeneratedSchema]) as Schema,
+      scalarsEnumsHash,
+      queryFetcher,
+      subscriptions,
+      ...clientConfig,
+    }),
     {
-      query: {
-        hello: string;
-        stringArg: (args: { arg: string }) => string;
-        human: (args?: { name?: string }) => Human;
-        nullArray?: Maybe<Array<Maybe<Human>>>;
-        nullStringArray?: Maybe<Array<Maybe<string>>>;
-        nFetchCalls: number;
-        throw?: boolean;
-        throw2?: boolean;
-        time: string;
-        species: Array<Species>;
-        throwUntilThirdTry: boolean;
-        dogs: Array<Dog>;
-      };
-      mutation: {
-        sendNotification(args: { message: string }): boolean;
-        humanMutation: (args?: { nameArg?: string }) => Human;
-      };
-      subscription: {
-        newNotification: void;
-      };
-    },
-    ObjectTypesNames,
-    ObjectTypes
-  >({
-    schema: deepAssign(generatedSchema, [addedToGeneratedSchema]) as Schema,
-    scalarsEnumsHash,
-    queryFetcher,
-    ...clientConfig,
-  });
+      server,
+      mercuriusTestClient,
+    }
+  );
 };
+
+export const sleep = (amount: number) =>
+  new Promise((resolve) => setTimeout(resolve, amount));

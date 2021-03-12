@@ -51,6 +51,23 @@ export class gqlessError extends Error {
 
     return newError;
   }
+
+  static fromGraphQLErrors(errors: readonly GraphQLError[]) {
+    return errors.length > 1
+      ? new gqlessError(
+          `GraphQL Errors${
+            process.env.NODE_ENV === 'production'
+              ? ''
+              : ', please check .graphQLErrors property'
+          }`,
+          {
+            graphQLErrors: errors,
+          }
+        )
+      : new gqlessError(errors[0].message, {
+          graphQLErrors: errors,
+        });
+  }
 }
 
 export * from './retry';
