@@ -1,9 +1,9 @@
 import React, { ReactElement, Suspense, SuspenseProps } from 'react';
 
-import { createClient } from '@dish/gqless';
-
 import { OnErrorHandler, useInterceptSelections } from './common';
 import { ReactClientOptionsWithDefaults } from './utils';
+
+import type { createClient } from '@dish/gqless';
 
 export interface GraphQLHOCOptions {
   suspense?:

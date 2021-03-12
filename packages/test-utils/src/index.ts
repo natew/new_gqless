@@ -2,6 +2,7 @@ import fastify, { FastifyInstance } from 'fastify';
 import mercurius, { MercuriusOptions } from 'mercurius';
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 import * as randomstring from 'randomstring';
+
 export function createTestApp(
   options: MercuriusOptions,
   {

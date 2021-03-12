@@ -1,6 +1,6 @@
-import tmp from 'tmp-promise';
 import fs from 'fs';
 import { resolve } from 'path';
+import tmp from 'tmp-promise';
 
 export async function getTempDir({
   initClientFile,

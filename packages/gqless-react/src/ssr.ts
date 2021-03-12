@@ -1,8 +1,8 @@
 import { ReactNode, useEffect } from 'react';
 
-import { createClient, HydrateCacheOptions } from '@dish/gqless';
-
 import { useOnFirstMount } from './common';
+
+import type { createClient, HydrateCacheOptions } from '@dish/gqless';
 
 export interface UseHydrateCacheOptions extends HydrateCacheOptions {
   /**

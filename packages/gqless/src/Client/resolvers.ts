@@ -8,7 +8,7 @@ import { buildQuery } from '../QueryBuilder';
 import { SchedulerPromiseValue } from '../Scheduler';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
-import { createDeferredPromise, get, DeferredPromise } from '../Utils';
+import { createDeferredPromise, DeferredPromise, get } from '../Utils';
 import { InnerClientState, SubscriptionsClient } from './client';
 
 export interface ResolveOptions<TData> {

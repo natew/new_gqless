@@ -1,11 +1,11 @@
 import parserJSON from 'prettier/parser-babel';
 import parserGraphQL from 'prettier/parser-graphql';
 import prettier from 'prettier/standalone';
-
-import { createClient } from '@dish/gqless';
-import { FetchEventData } from '@dish/gqless/dist/Events';
 import { serializeError } from 'serialize-error';
 
+import { FetchEventData } from '@dish/gqless/dist/Events';
+
+import type { createClient } from '@dish/gqless';
 function parseGraphQL(query: string) {
   return prettier.format(query, {
     parser: 'graphql',

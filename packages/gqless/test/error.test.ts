@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+
 import { gqlessError } from '../src/Error';
 
 test('error creation', () => {

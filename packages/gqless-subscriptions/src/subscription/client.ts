@@ -2,8 +2,8 @@
 
 import { GraphQLError } from 'graphql';
 import WebSocket from 'isomorphic-ws';
-import { createDeferredPromise, DeferredPromise, GQLResponse } from '../utils';
 
+import { createDeferredPromise, DeferredPromise, GQLResponse } from '../utils';
 import {
   GQL_COMPLETE,
   GQL_CONNECTION_ACK,
@@ -59,7 +59,7 @@ export class Client {
   connectionInitPayload?: unknown;
   closedByUser?: boolean;
   reconnecting?: boolean;
-  reconnectTimeoutId?: NodeJS.Timeout;
+  reconnectTimeoutId?: ReturnType<typeof setTimeout>;
 
   connectedPromise: DeferredPromise<void>;
 

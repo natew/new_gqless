@@ -1,4 +1,4 @@
-import { createClient } from '@dish/gqless';
+import type { createClient } from '@dish/gqless';
 
 import {
   OnErrorHandler,

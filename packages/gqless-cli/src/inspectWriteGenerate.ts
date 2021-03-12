@@ -1,11 +1,11 @@
 import { existsSync } from 'fs';
-import { GraphQLSchema, buildSchema } from 'graphql';
-import { resolve } from 'path';
 import { promises } from 'fs';
+import { buildSchema, GraphQLSchema } from 'graphql';
+import { resolve } from 'path';
 
-import type { GenerateOptions } from './generate';
 import { defaultConfig } from './config';
 
+import type { GenerateOptions } from './generate';
 export async function inspectWriteGenerate({
   endpoint,
   destination,

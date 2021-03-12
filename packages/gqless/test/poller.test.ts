@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+
 import { gqlessError, Poller } from '../src';
 import { createDeferredPromise } from '../src/Utils';
 import { createTestClient, TestClientConfig } from './utils';

@@ -1,7 +1,9 @@
-import styled from '@emotion/styled';
-import useBaseUrl from '@docusaurus/useBaseUrl';
-import * as React from 'react';
 import { motion } from 'framer-motion';
+import * as React from 'react';
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+import styled from '@emotion/styled';
+
 import { Overflow } from './Overflow';
 
 const easeInOutCubic = [0.645, 0.045, 0.355, 1];

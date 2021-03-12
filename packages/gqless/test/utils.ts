@@ -1,9 +1,8 @@
 import getPort from 'get-port';
 import { createTestApp, gql } from 'test-utils';
 
-import { generate } from '@dish/gqless-cli';
-import { createSubscriptionClient } from '@dish/gqless-subscriptions';
-
+import { generate } from '../../gqless-cli';
+import { createSubscriptionClient } from '../../gqless-subscriptions';
 import {
   ClientOptions,
   createClient,

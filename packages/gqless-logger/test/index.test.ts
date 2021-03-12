@@ -1,5 +1,7 @@
 import { createTestApp, gql } from 'test-utils';
+
 import { createClient } from '@dish/gqless';
+
 import { createLogger } from '../src';
 
 describe('logger', () => {

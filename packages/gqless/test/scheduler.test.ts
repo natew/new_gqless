@@ -1,6 +1,6 @@
 import { waitForExpect } from 'test-utils';
-import { gqlessError } from '../src';
 
+import { gqlessError } from '../src';
 import { createInterceptorManager } from '../src/Interceptor';
 import { createScheduler } from '../src/Scheduler';
 import { Selection } from '../src/Selection';

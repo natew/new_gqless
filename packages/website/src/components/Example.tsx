@@ -1,6 +1,7 @@
-import * as React from 'react';
-import styled from '@emotion/styled';
 import { AnimationProps, motion } from 'framer-motion';
+import * as React from 'react';
+
+import styled from '@emotion/styled';
 
 const easeInOutCubic = [0.645, 0.045, 0.355, 1];
 

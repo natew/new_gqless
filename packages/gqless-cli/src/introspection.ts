@@ -1,10 +1,11 @@
 import { fetch } from 'cross-fetch';
 import { print } from 'graphql';
 
-import type { AsyncExecutor } from '@graphql-tools/delegate';
 import { introspectSchema, wrapSchema } from '@graphql-tools/wrap';
+
 import { gqlessConfigPromise } from './config';
 
+import type { AsyncExecutor } from '@graphql-tools/delegate';
 export interface IntrospectionOptions {
   /**
    * Endpoint of the remote GraphQL API or schema file

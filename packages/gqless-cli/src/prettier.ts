@@ -1,7 +1,7 @@
 import {
+  format as prettierFormat,
   Options as PrettierOptions,
   resolveConfig,
-  format as prettierFormat,
 } from 'prettier';
 
 const commonConfig = resolveConfig(process.cwd());

@@ -1,13 +1,16 @@
 import 'regenerator-runtime/runtime';
-import Layout from '@theme/Layout';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Link from '@docusaurus/Link';
-import * as React from 'react';
-import { Feature, Arrow, Example, Overflow } from '../components';
-import styled from '@emotion/styled';
+
 import { motion, useAnimation } from 'framer-motion';
+import * as React from 'react';
+
 import isInternalUrl from '@docusaurus/isInternalUrl';
+import Link from '@docusaurus/Link';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import styled from '@emotion/styled';
 import CodeBlock from '@theme/CodeBlock';
+import Layout from '@theme/Layout';
+
+import { Arrow, Example, Feature, Overflow } from '../components';
 
 const Glare = styled.div`
   background: radial-gradient(rgba(69, 72, 75, 0.15), rgba(69, 72, 75, 0.25));

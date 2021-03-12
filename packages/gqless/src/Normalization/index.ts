@@ -3,13 +3,13 @@ import { EventHandler } from '../Events';
 import { parseSchemaType, ScalarsEnumsHash, Schema, Type } from '../Schema';
 import { Selection } from '../Selection';
 import {
-  isObject,
-  isObjectWithType,
-  ObjectWithType,
-  PlainObject,
-  mergeWith,
   deepAssign,
   DeepPartial,
+  isObject,
+  isObjectWithType,
+  mergeWith,
+  ObjectWithType,
+  PlainObject,
 } from '../Utils';
 
 type MakeTypenamesNonNullable<Obj extends { __typename?: string | null }> = {

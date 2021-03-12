@@ -1,5 +1,4 @@
 import { NormalizationHandler } from '../Normalization';
-
 import { Selection } from '../Selection';
 import { set } from '../Utils';
 

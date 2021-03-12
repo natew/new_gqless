@@ -1,4 +1,4 @@
-import { selectFields, getFields, getArrayFields } from '../src';
+import { getArrayFields, getFields, selectFields } from '../src';
 import { createTestClient } from './utils';
 
 describe('selectFields', () => {

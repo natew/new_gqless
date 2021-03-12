@@ -1,9 +1,9 @@
 import fs from 'fs';
 import { createTestApp } from 'test-utils';
+import tmp from 'tmp-promise';
 
 import { inspectWriteGenerate } from '../src/inspectWriteGenerate';
 import { getTempDir } from './utils';
-import tmp from 'tmp-promise';
 
 const { readFile } = fs.promises;
 const { server, isReady } = createTestApp({
