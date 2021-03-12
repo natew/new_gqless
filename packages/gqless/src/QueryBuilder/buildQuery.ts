@@ -1,4 +1,3 @@
-import { stripIgnoredCharacters } from 'graphql/utilities/stripIgnoredCharacters';
 import { NormalizationHandler } from '../Normalization';
 
 import { Selection } from '../Selection';
@@ -8,18 +7,17 @@ interface SelectionTree {
   [P: string]: SelectionTree | true;
 }
 
-const stringSelectionTree = (v: SelectionTree, depth = 0) => {
-  const spaceDepth = '  '.repeat(depth);
+const stringSelectionTree = (v: SelectionTree) => {
   const treeEntries = Object.entries(v);
-  return treeEntries.reduce((acum, [key, value]) => {
+  return treeEntries.reduce((acum, [key, value], index) => {
     if (typeof value === 'object') {
-      acum += `${spaceDepth}${key} {`;
+      acum += `${key}{`;
 
-      acum += stringSelectionTree(value, depth + 1);
+      acum += stringSelectionTree(value);
 
-      acum += `${spaceDepth}\n${spaceDepth}}${spaceDepth}`;
+      acum += `}`;
     } else {
-      acum += `\n${spaceDepth}${key}`;
+      acum += `${key}` + (index !== treeEntries.length - 1 ? ' ' : '');
     }
     return acum;
   }, '');
@@ -54,7 +52,7 @@ export const buildQuery = (
           : 0;
 
         const selectionKey = selectionValue.alias
-          ? `${selectionValue.alias}: ${selectionValue.key}`
+          ? `${selectionValue.alias}:${selectionValue.key}`
           : selectionValue.key;
 
         let leafValue: string;
@@ -84,7 +82,7 @@ export const buildQuery = (
             }
 
             if (index < argsLength - 1) {
-              acum += ',';
+              acum += ' ';
             }
 
             return acum;
@@ -97,14 +95,14 @@ export const buildQuery = (
 
         if (selectionUnions) {
           for (const union of selectionUnions.slice(1)) {
-            const newAcum = [...acum, `... on ${union}`, leafValue];
+            const newAcum = [...acum, `...on ${union}`, leafValue];
 
             selectionBranches.push(
               createSelectionBranch(selections.slice(index + 1), newAcum)
             );
           }
 
-          acum.push(`... on ${selectionUnions[0]}`, leafValue);
+          acum.push(`...on ${selectionUnions[0]}`, leafValue);
         } else {
           acum.push(leafValue);
         }
@@ -149,20 +147,12 @@ export const buildQuery = (
   if (variableTypesEntries.length) {
     query = query.replace(
       type,
-      `${type}(${variableTypesEntries.reduce(
-        (acum, [variableName, type], index) => {
-          acum += `$${variableName}:${type}`;
-          if (index !== variableTypesEntries.length - 1) {
-            acum += ',';
-          }
-          return acum;
-        },
-        ''
-      )})`
+      `${type}(${variableTypesEntries.reduce((acum, [variableName, type]) => {
+        acum += `$${variableName}:${type}`;
+        return acum;
+      }, '')})`
     );
   }
-
-  query = stripIgnoredCharacters(query);
 
   return {
     query,
