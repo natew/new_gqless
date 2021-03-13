@@ -85,10 +85,10 @@ export const gqlessConfigPromise: Promise<{
   .then(async (config) => {
     if (!config || config.isEmpty) {
       const filepath = config?.filepath || defaultFilePath;
-      if (
-        process.env.NODE_ENV !== 'test' &&
-        process.env.NODE_ENV !== 'production'
-      ) {
+
+      const PROCESS_ENV = process.env['NODE_ENV'];
+
+      if (PROCESS_ENV !== 'test' && PROCESS_ENV !== 'production') {
         const { format } = (await import('./prettier')).formatPrettier({
           parser: 'typescript',
         });

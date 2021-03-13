@@ -2,8 +2,12 @@ importers:
   .:
     dependencies:
       nodemon: 2.0.7
+      shelljs: 0.8.4
+      ts-node: 9.1.1
     devDependencies:
       '@types/node': 14.14.34
+      '@types/shelljs': 0.8.8
+      '@types/tsc-watch': 4.2.0
       concurrently: 6.0.0
       fkill: 7.1.0
       husky: 4.3.8
@@ -11,8 +15,11 @@ importers:
       prettier: 2.2.1
       pretty-quick: 3.1.0_prettier@2.2.1
       rimraf: 3.0.2
+      tsc-watch: 4.2.9
     specifiers:
       '@types/node': ^14.14.34
+      '@types/shelljs': ^0.8.8
+      '@types/tsc-watch': ^4.2.0
       concurrently: ^6.0.0
       fkill: ^7.1.0
       husky: ^4.3.8
@@ -21,6 +28,9 @@ importers:
       prettier: ^2.2.1
       pretty-quick: ^3.1.0
       rimraf: ^3.0.2
+      shelljs: ^0.8.4
+      ts-node: ^9.1.1
+      tsc-watch: ^4.2.9
   examples/mercurius:
     dependencies:
       '@dish/gqless': link:../../packages/gqless
@@ -3609,6 +3619,13 @@ packages:
   /@types/scheduler/0.16.1:
     resolution:
       integrity: sha512-EaCxbanVeyxDRTQBkdLb3Bvl/HK7PBK6UJjsSixB0iHKoWxE5uu2Q/DgtpOhPIojN0Zl1whvOd7PoHs2P0s5eA==
+  /@types/shelljs/0.8.8:
+    dependencies:
+      '@types/glob': 7.1.3
+      '@types/node': 14.14.34
+    dev: true
+    resolution:
+      integrity: sha512-lD3LWdg6j8r0VRBFahJVaxoW0SIcswxKaFUrmKl33RJVeeoNYQAz4uqCJ5Z6v4oIBOsC5GozX+I5SorIKiTcQA==
   /@types/source-list-map/0.1.2:
     dev: false
     resolution:
@@ -4155,7 +4172,6 @@ packages:
     resolution:
       integrity: sha512-XxNTUzKnz1ctK3ZIcI2XUPlD96wbHP2nGqkPKpvk/HNRlPveYrXIVSTk9m3LcqOgDPg3B1nMvdV/K8wZd7PG4w==
   /arg/4.1.3:
-    dev: true
     resolution:
       integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==
   /arg/5.0.0:
@@ -6032,7 +6048,6 @@ packages:
     resolution:
       integrity: sha512-MJG9liiZ+ogc4TzUwuvbER1JRdgvUFSB5+VR/g5h82fGaIRWMWddtKBHi7/sVhfjQZ6SehlyhvQYrcYkaUIpLg==
   /create-require/1.1.1:
-    dev: true
     resolution:
       integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
   /cross-env/7.0.3:
@@ -6681,7 +6696,6 @@ packages:
     resolution:
       integrity: sha512-Mv/TDa3nZ9sbc5soK+OoA74BsS3mL37yixCvUAQkiuA4Wz6YtwP/K47n2rv2ovzHZvoiQeA5FTQOschKkEwB0Q==
   /diff/4.0.2:
-    dev: true
     engines:
       node: '>=0.3.1'
     resolution:
@@ -11156,7 +11170,6 @@ packages:
     resolution:
       integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==
   /make-error/1.3.6:
-    dev: true
     resolution:
       integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==
   /makeerror/1.0.11:
@@ -16788,6 +16801,22 @@ packages:
       typescript: '>=2.7'
     resolution:
       integrity: sha512-ISJJGgkIpDdBhWVu3jufsWpK3Rzo7bdiIXJjQc0ynKxVOVcg2oIrf2H2cejminGrptVc6q6/uynAHNCuWGbpVA==
+  /ts-node/9.1.1:
+    dependencies:
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      source-map-support: 0.5.19
+      yn: 3.1.1
+    dev: false
+    engines:
+      node: '>=10.0.0'
+    hasBin: true
+    peerDependencies:
+      typescript: '>=2.7'
+    resolution:
+      integrity: sha512-hPlt7ZACERQGf03M253ytLY3dHbGNGrAq9qIHWUY9XHYl1z7wYngSr3OQ5xmui8o2AaxsONxIzjafLUiWBo1Fg==
   /ts-node/9.1.1_typescript@4.2.3:
     dependencies:
       arg: 4.1.3
@@ -16817,6 +16846,21 @@ packages:
         optional: true
     resolution:
       integrity: sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==
+  /tsc-watch/4.2.9:
+    dependencies:
+      cross-spawn: 7.0.3
+      node-cleanup: 2.1.2
+      ps-tree: 1.2.0
+      string-argv: 0.1.2
+      strip-ansi: 6.0.0
+    dev: true
+    engines:
+      node: '>=8.17.0'
+    hasBin: true
+    peerDependencies:
+      typescript: '*'
+    resolution:
+      integrity: sha512-DlTaoDs74+KUpyWr7dCGhuscAUKCz6CiFduBN7R9RbLJSSN1moWdwoCLASE7+zLgGvV5AwXfYDiEMAsPGaO+Vw==
   /tsc-watch/4.2.9_typescript@4.2.3:
     dependencies:
       cross-spawn: 7.0.3
@@ -18263,7 +18307,6 @@ packages:
     resolution:
       integrity: sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==
   /yn/3.1.1:
-    dev: true
     engines:
       node: '>=6'
     resolution:

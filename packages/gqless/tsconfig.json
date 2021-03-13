@@ -35,6 +35,7 @@
     // "noEmit": true,
     "preserveWatchOutput": true,
     "outDir": "./dist",
-    "incremental": true
+    "incremental": true,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   }
 }
