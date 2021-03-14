@@ -46,6 +46,8 @@ export function createSelectionManager() {
   const incIds: Record<string, number> = {};
   const aliasMap = new Map<string, string>();
 
+  let id = 0;
+
   function getVariableAlias(
     key: string | number,
     variables: Record<string, unknown>,
@@ -102,6 +104,7 @@ export function createSelectionManager() {
         alias,
         type,
         unions,
+        id: ++id,
       });
       selectionCache.set(cacheKey, selection);
     }

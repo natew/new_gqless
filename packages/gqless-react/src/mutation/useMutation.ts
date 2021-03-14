@@ -71,7 +71,7 @@ export interface UseMutation<
   }
 > {
   <TData = unknown, TArgs = undefined>(
-    mutationFn?: (mutation: GeneratedSchema['mutation']) => TData,
+    mutationFn?: (mutation: GeneratedSchema['mutation'], args: TArgs) => TData,
     options?: UseMutationOptions<TData>
   ): readonly [
     (

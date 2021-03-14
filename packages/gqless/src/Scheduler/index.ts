@@ -179,6 +179,8 @@ export const createScheduler = (
   }, catchSelectionsTimeMS);
 
   function addSelectionToScheduler(selection: Selection, notifyResolve = true) {
+    if (selection.type === 2) notifyResolve = false;
+
     for (const group of pendingSelectionsGroups) {
       if (group.has(selection)) {
         if (!notifyResolve) return;

@@ -99,7 +99,7 @@ export function createInterceptorManager() {
     removeInterceptor,
     addSelection,
     addSelectionCache,
-    addSelectionCacheFound: addSelectionCacheRefetch,
+    addSelectionCacheRefetch,
     addSelections,
     removeSelections,
   };

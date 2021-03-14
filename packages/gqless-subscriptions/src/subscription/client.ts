@@ -17,25 +17,49 @@ import {
   GRAPHQL_WS,
 } from './protocol';
 
+type OperationHandlerPayload = GQLResponse | 'start' | 'complete';
+
 type Operation = {
   started: boolean;
   options: {
     query: string;
     variables?: Record<string, unknown>;
   };
-  handler: (data: GQLResponse | null) => Promise<void>;
+  handler: (data: OperationHandlerPayload) => Promise<void>;
   extensions?: { type: string; payload: unknown }[];
 };
 
 export interface ClientOptions {
+  /**
+   * Should the websocket connection try to reconnect
+   *
+   * @default true
+   */
   reconnect?: boolean;
+  /**
+   * Amount of reconnection attempts
+   *
+   * @default Infinity
+   */
   maxReconnectAttempts?: number;
-  serviceName?: string;
   connectionCallback?: () => void;
   failedConnectionCallback?: (payload: unknown) => Promise<void>;
   failedReconnectCallback?: () => void;
-  connectionInitPayload?: Record<string, unknown>;
+  connectionInitPayload?:
+    | (() => Promise<Record<string, unknown>> | Record<string, unknown>)
+    | Record<string, unknown>;
+
   headers?: Record<string, string>;
+  /**
+   * Controls when should the connection be established.
+   *
+   * `false`: Establish a connection immediately.
+   *
+   * `true`: Establish a connection on first subscribe and close on last unsubscribe.
+   *
+   * @default true
+   */
+  lazy?: boolean;
 }
 
 // This class is already being tested in https://github.com/mercurius-js/mercurius/blob/master/test/subscription-client.js
@@ -55,10 +79,11 @@ export class Client {
   connectionCallback;
   failedConnectionCallback;
   failedReconnectCallback;
-  connectionInitPayload?: unknown;
+  connectionInitPayload;
   closedByUser?: boolean;
   reconnecting?: boolean;
   reconnectTimeoutId?: ReturnType<typeof setTimeout>;
+  lazy;
 
   connectedPromise: DeferredPromise<Error | void>;
 
@@ -72,6 +97,7 @@ export class Client {
       failedConnectionCallback,
       failedReconnectCallback,
       connectionInitPayload = {},
+      lazy = true,
     }: ClientOptions
   ) {
     this.uri = uri;
@@ -80,6 +106,7 @@ export class Client {
     this.ready = false;
     this.operations = new Map();
     this.operationsCount = {};
+    this.lazy = lazy;
 
     this.subscriptionQueryMap = {};
 
@@ -92,7 +119,7 @@ export class Client {
     this.failedReconnectCallback = failedReconnectCallback;
     this.connectionInitPayload = connectionInitPayload;
 
-    this.connect();
+    if (!lazy) this.connect();
 
     this.connectedPromise = createDeferredPromise();
   }
@@ -103,7 +130,6 @@ export class Client {
     });
 
     this.socket.onopen = async () => {
-      /* istanbul ignore else */
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         try {
           const payload =
@@ -163,7 +189,6 @@ export class Client {
         }
 
         this.reconnect();
-      } else {
       }
     }
   }
@@ -192,13 +217,25 @@ export class Client {
     }, delay);
   }
 
-  async unsubscribe(operationId: string | number, forceUnsubscribe = false) {
+  async unsubscribe(operationId: string, forceUnsubscribe = false) {
     let count = this.operationsCount[operationId];
     count--;
 
     if (count === 0 || forceUnsubscribe) {
       await this.sendMessage(operationId, GQL_STOP, null);
       this.operationsCount[operationId] = 0;
+
+      this.operations.delete(operationId);
+
+      if (this.lazy) {
+        const self = this;
+
+        setTimeout(() => {
+          if (self.operations.size === 0) {
+            self.close();
+          }
+        }, 2000);
+      }
     } else {
       this.operationsCount[operationId] = count;
     }
@@ -234,7 +271,7 @@ export class Client {
             resolve();
           }
         );
-        setTimeout(resolve, 10);
+        setTimeout(resolve, 200);
       } catch (err) {
         reject(err);
       }
@@ -250,7 +287,6 @@ export class Client {
       data = JSON.parse(message);
       operationId = data.id;
     } catch (e) {
-      /* istanbul ignore next */
       throw new Error(
         `Invalid message received: "${message}" Message must be JSON parsable.`
       );
@@ -277,33 +313,22 @@ export class Client {
 
         break;
       case GQL_DATA:
-        /* istanbul ignore else */
-        if (operation) {
-          // previously it was "operation.handler(data.payload.data);"
-          // but that doesn't allow for resolver error handling
-          operation.handler(data.payload);
-        }
+        if (operation) operation.handler(data.payload);
         break;
       case GQL_ERROR:
-        /* istanbul ignore else */
         if (operation) {
           operation.handler({
             data: null,
-            errors: [Error(data.payload) as GraphQLError],
+            errors: [{ message: data.payload } as GraphQLError],
           });
           this.operations.delete(operationId);
-          this.sendMessage(operationId, GQL_ERROR, data.payload).catch(
-            console.error
-          );
         }
         break;
       case GQL_COMPLETE:
-        /* istanbul ignore else */
         if (operation) {
-          operation.handler(null);
+          operation.handler('complete');
           this.operations.delete(operationId);
         }
-
         break;
       case GQL_CONNECTION_ERROR:
         this.close(this.tryReconnect, false);
@@ -313,9 +338,7 @@ export class Client {
         break;
       case GQL_CONNECTION_KEEP_ALIVE:
         break;
-      /* istanbul ignore next */
       default:
-        /* istanbul ignore next */
         throw new Error(`Invalid message type: "${data.type}"`);
     }
   }
@@ -329,9 +352,8 @@ export class Client {
     const { started, options, handler, extensions } = operation;
 
     if (!started) {
-      if (!this.ready) {
-        throw new Error('Connection is not ready');
-      }
+      if (!this.ready) return;
+
       this.operations.set(operationId, {
         started: true,
         options,
@@ -347,10 +369,12 @@ export class Client {
     variables: Record<string, unknown> | undefined,
     publish: (args: {
       topic: string;
-      payload: GQLResponse | null;
+      payload: OperationHandlerPayload;
     }) => void | Promise<void>,
     subscriptionString?: string
   ) {
+    if (!this.socket) this.connect();
+
     subscriptionString ||= JSON.stringify({
       query,
       variables,
@@ -358,32 +382,41 @@ export class Client {
 
     let operationId = this.subscriptionQueryMap[subscriptionString];
 
-    if (operationId && this.operations.get(operationId)) {
-      this.operationsCount[operationId] = this.operationsCount[operationId] + 1;
+    try {
+      if (operationId && this.operations.get(operationId)) {
+        this.operationsCount[operationId] =
+          this.operationsCount[operationId] + 1;
+        return operationId;
+      }
+
+      operationId = String(++this.operationId);
+
+      const operation: Operation = {
+        started: false,
+        options: { query, variables },
+        handler: async (data) => {
+          await publish({
+            topic: operationId,
+            payload: data,
+          });
+        },
+      };
+
+      this.operations.set(operationId, operation);
+
+      const startPromise = this.startOperation(operationId);
+      this.operationsCount[operationId] = 1;
+
+      this.subscriptionQueryMap[subscriptionString] = operationId;
+
+      await startPromise;
+
       return operationId;
+    } finally {
+      publish({
+        topic: operationId,
+        payload: 'start',
+      });
     }
-
-    operationId = String(++this.operationId);
-
-    const operation: Operation = {
-      started: false,
-      options: { query, variables },
-      handler: async (data) => {
-        await publish({
-          topic: operationId,
-          payload: data,
-        });
-      },
-    };
-
-    this.operations.set(operationId, operation);
-    const startPromise = this.startOperation(operationId);
-    this.operationsCount[operationId] = 1;
-
-    this.subscriptionQueryMap[subscriptionString] = operationId;
-
-    await startPromise;
-
-    return operationId;
   }
 }

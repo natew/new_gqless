@@ -93,6 +93,7 @@ describe('cache changes events', () => {
 
     const selectionA = new Selection({
       key: 'asd',
+      id: 0,
     });
     const onCacheChangeFn = jest
       .fn()

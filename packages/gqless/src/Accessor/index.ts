@@ -14,7 +14,6 @@ import {
   isInteger,
   isObject,
   isObjectWithType,
-  PlainObject,
   retrocycle,
 } from '../Utils';
 
@@ -526,7 +525,7 @@ export function AccessorCreators<
           get(target, key: string, receiver) {
             if (key === 'toJSON')
               return () =>
-                decycle<PlainObject>(
+                decycle<{}>(
                   innerState.clientCache.getCacheFromSelection(
                     prevSelection,
                     {}
@@ -612,14 +611,14 @@ export function AccessorCreators<
                     }
 
                     return isArray ? emptyScalarArray : undefined;
-                  } else if (!innerState.allowCache) {
+                  } else if (!innerState.allowCache || selection.type === 2) {
                     autoFetchKeys?.();
 
                     // Or if you are making the network fetch always
                     interceptorManager.addSelection(selection);
                   } else {
                     // Support cache-and-network / stale-while-revalidate pattern
-                    interceptorManager.addSelectionCacheFound(selection);
+                    interceptorManager.addSelectionCacheRefetch(selection);
                   }
 
                   return cacheValue;

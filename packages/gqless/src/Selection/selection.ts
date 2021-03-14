@@ -5,6 +5,7 @@ export enum SelectionType {
 }
 
 export type SelectionConstructorArgs = {
+  id: number;
   key: string | number;
   prevSelection?: Selection;
   type?: SelectionType;
@@ -15,6 +16,8 @@ export type SelectionConstructorArgs = {
 };
 
 export class Selection {
+  id: string;
+
   key: string | number;
 
   type: SelectionType;
@@ -40,6 +43,7 @@ export class Selection {
     type,
     alias,
     unions,
+    id,
   }: SelectionConstructorArgs) {
     this.key = key;
     this.args = args;
@@ -47,6 +51,7 @@ export class Selection {
     this.type = type || prevSelection?.type || SelectionType.Query;
     this.alias = alias;
     this.unions = unions;
+    this.id = id + '';
 
     const pathKey = alias || key;
 

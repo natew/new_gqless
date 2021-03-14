@@ -18,6 +18,7 @@ test('scheduler works with globalInterceptor', async () => {
 
   const selection = new Selection({
     key: 'a',
+    id: 0,
   });
 
   interceptorManager.addSelection(selection);
@@ -37,6 +38,7 @@ test('scheduler works with globalInterceptor', async () => {
   interceptorManager.addSelection(
     new Selection({
       key: 'b',
+      id: 1,
     })
   );
 
@@ -91,6 +93,7 @@ test('scheduler resolve subscriptions', async () => {
 
   const selectionA = new Selection({
     key: 'a',
+    id: 0,
   });
   interceptorManager.globalInterceptor.addSelection(selectionA);
   expect(scheduler.resolving).toBeTruthy();
@@ -112,6 +115,7 @@ test('scheduler resolve subscriptions', async () => {
 
   const selectionB = new Selection({
     key: 'b',
+    id: 1,
   });
   interceptorManager.globalInterceptor.addSelection(selectionB);
 
@@ -127,9 +131,11 @@ test('scheduler resolve subscriptions', async () => {
 
   const selectionC = new Selection({
     key: 'c',
+    id: 2,
   });
   const selectionD = new Selection({
     key: 'd',
+    id: 3,
   });
 
   const spy = jest.spyOn(console, 'error').mockImplementationOnce((err) => {

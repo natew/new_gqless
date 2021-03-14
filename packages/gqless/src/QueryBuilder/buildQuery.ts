@@ -21,139 +21,157 @@ const stringSelectionTree = (v: SelectionTree) => {
   }, '');
 };
 
-export const buildQuery = (
-  selections: Set<Selection> | Selection[],
-  {
-    type,
-  }: {
-    type: 'query' | 'mutation' | 'subscription';
-  },
-  normalization?: boolean
-) => {
-  let variableId = 1;
+interface BuiltQuery {
+  query: string;
+  variables: Record<string, unknown> | undefined;
+  cacheKey: string;
+}
 
-  const selectionTree: SelectionTree = {};
-  const variablesMap = new Map<string, string>();
-  const variableTypes: Record<string, string> = {};
-  const variablesMapKeyValue: Record<string, unknown> = {};
+export function createQueryBuilder() {
+  const queryCache: Record<string, BuiltQuery | undefined> = {};
 
-  for (const selection of selections) {
-    const selectionBranches: string[][] = [];
+  return function buildQuery(
+    selections: Set<Selection> | Selection[],
+    {
+      type,
+    }: {
+      type: 'query' | 'mutation' | 'subscription';
+    },
+    normalization?: boolean
+  ): BuiltQuery {
+    let variableId = 1;
 
-    function createSelectionBranch(
-      selections: readonly Selection[],
-      initialValue: string[] = []
-    ) {
-      return selections.reduce((acum, selectionValue, index) => {
-        const argsLength = selectionValue.args
-          ? Object.keys(selectionValue.args).length
-          : 0;
+    const selectionTree: SelectionTree = {};
+    const variablesMap = new Map<string, string>();
+    const variableTypes: Record<string, string> = {};
+    const variablesMapKeyValue: Record<string, unknown> = {};
 
-        const selectionKey = selectionValue.alias
-          ? `${selectionValue.alias}:${selectionValue.key}`
-          : selectionValue.key;
+    let idAcum = '';
+    for (const { id } of selections) idAcum += id;
 
-        let leafValue: string;
+    let cachedQuery: BuiltQuery | undefined;
 
-        if (selectionValue.args && selectionValue.argTypes && argsLength) {
-          leafValue = `${selectionKey}(${Object.entries(
-            selectionValue.args
-          ).reduce((acum, [key, value], index) => {
-            const variableMapKey = `${
-              selectionValue.argTypes![key]
-            }-${key}-${JSON.stringify(value)}`;
+    if ((cachedQuery = queryCache[idAcum])) {
+      return cachedQuery;
+    }
 
-            variablesMapKeyValue[variableMapKey] = value;
+    for (const { noIndexSelections } of selections) {
+      const selectionBranches: string[][] = [];
 
-            const variableMapValue = variablesMap.get(variableMapKey);
+      function createSelectionBranch(
+        selections: readonly Selection[],
+        initialValue: string[] = []
+      ) {
+        return selections.reduce(
+          (acum, { args, alias, key, argTypes, unions }, index) => {
+            const argsLength = args ? Object.keys(args).length : 0;
 
-            if (variableMapValue) {
-              acum += `${key}:$${variableMapValue}`;
+            const selectionKey = alias ? `${alias}:${key}` : key;
+
+            let leafValue: string;
+
+            if (args && argTypes && argsLength) {
+              leafValue = `${selectionKey}(${Object.entries(args).reduce(
+                (acum, [key, value], index) => {
+                  const variableMapKey = `${
+                    argTypes![key]
+                  }-${key}-${JSON.stringify(value)}`;
+
+                  variablesMapKeyValue[variableMapKey] = value;
+
+                  const variableMapValue = variablesMap.get(variableMapKey);
+
+                  if (variableMapValue) {
+                    acum += `${key}:$${variableMapValue}`;
+                  } else {
+                    const newVariableValue = `${key}${variableId++}`;
+                    const newVariableType = argTypes![key];
+
+                    variableTypes[newVariableValue] = newVariableType;
+                    variablesMap.set(variableMapKey, newVariableValue);
+
+                    acum += `${key}:$${newVariableValue}`;
+                  }
+
+                  if (index < argsLength - 1) {
+                    acum += ' ';
+                  }
+
+                  return acum;
+                },
+                ''
+              )})`;
             } else {
-              const newVariableValue = `${key}${variableId++}`;
-              const newVariableType = selectionValue.argTypes![key];
-
-              variableTypes[newVariableValue] = newVariableType;
-              variablesMap.set(variableMapKey, newVariableValue);
-
-              acum += `${key}:$${newVariableValue}`;
+              leafValue = selectionKey + '';
             }
 
-            if (index < argsLength - 1) {
-              acum += ' ';
+            if (unions) {
+              for (const union of unions.slice(1)) {
+                const newAcum = [...acum, `...on ${union}`, leafValue];
+
+                selectionBranches.push(
+                  createSelectionBranch(selections.slice(index + 1), newAcum)
+                );
+              }
+
+              acum.push(`...on ${unions[0]}`, leafValue);
+            } else {
+              acum.push(leafValue);
             }
 
             return acum;
-          }, '')})`;
-        } else {
-          leafValue = selectionKey + '';
-        }
-
-        const selectionUnions = selectionValue.unions;
-
-        if (selectionUnions) {
-          for (const union of selectionUnions.slice(1)) {
-            const newAcum = [...acum, `...on ${union}`, leafValue];
-
-            selectionBranches.push(
-              createSelectionBranch(selections.slice(index + 1), newAcum)
-            );
-          }
-
-          acum.push(`...on ${selectionUnions[0]}`, leafValue);
-        } else {
-          acum.push(leafValue);
-        }
-
-        return acum;
-      }, initialValue);
-    }
-
-    selectionBranches.push(createSelectionBranch(selection.noIndexSelections));
-
-    for (const branch of selectionBranches) {
-      if (normalization) {
-        for (let i = 2; i < branch.length; ++i) {
-          const typenameBranch = branch.slice(0, i);
-          if (typenameBranch[typenameBranch.length - 1]?.startsWith('...')) {
-            continue;
-          } else typenameBranch.push('__typename');
-
-          set(selectionTree, typenameBranch, true);
-        }
+          },
+          initialValue
+        );
       }
 
-      set(selectionTree, branch, true);
+      selectionBranches.push(createSelectionBranch(noIndexSelections));
+
+      for (const branch of selectionBranches) {
+        if (normalization) {
+          for (let i = 2; i < branch.length; ++i) {
+            const typenameBranch = branch.slice(0, i);
+            if (typenameBranch[typenameBranch.length - 1]?.startsWith('...')) {
+              continue;
+            } else typenameBranch.push('__typename');
+
+            set(selectionTree, typenameBranch, true);
+          }
+        }
+
+        set(selectionTree, branch, true);
+      }
     }
-  }
 
-  let variables: Record<string, unknown> | undefined;
+    let variables: Record<string, unknown> | undefined;
 
-  if (variablesMap.size) {
-    const variablesObj: Record<string, unknown> = {};
-    variables = variablesObj;
+    if (variablesMap.size) {
+      const variablesObj: Record<string, unknown> = {};
+      variables = variablesObj;
 
-    variablesMap.forEach((value, key) => {
-      variablesObj[value] = variablesMapKeyValue[key];
+      variablesMap.forEach((value, key) => {
+        variablesObj[value] = variablesMapKeyValue[key];
+      });
+    }
+
+    let query = stringSelectionTree(selectionTree);
+
+    const variableTypesEntries = Object.entries(variableTypes);
+
+    if (variableTypesEntries.length) {
+      query = query.replace(
+        type,
+        `${type}(${variableTypesEntries.reduce((acum, [variableName, type]) => {
+          acum += `$${variableName}:${type}`;
+          return acum;
+        }, '')})`
+      );
+    }
+
+    return (queryCache[idAcum] = {
+      query,
+      variables,
+      cacheKey: query + (variables ? JSON.stringify(variables) : ''),
     });
-  }
-
-  let query = stringSelectionTree(selectionTree);
-
-  const variableTypesEntries = Object.entries(variableTypes);
-
-  if (variableTypesEntries.length) {
-    query = query.replace(
-      type,
-      `${type}(${variableTypesEntries.reduce((acum, [variableName, type]) => {
-        acum += `$${variableName}:${type}`;
-        return acum;
-      }, '')})`
-    );
-  }
-
-  return {
-    query,
-    variables,
   };
-};
+}

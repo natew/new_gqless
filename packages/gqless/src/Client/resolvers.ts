@@ -4,7 +4,7 @@ import { gqlessError } from '../Error';
 import { doRetry } from '../Error/retry';
 import { FetchEventData } from '../Events';
 import { NormalizationHandler } from '../Normalization';
-import { buildQuery } from '../QueryBuilder';
+import { createQueryBuilder } from '../QueryBuilder';
 import { SchedulerPromiseValue } from '../Scheduler';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
@@ -32,6 +32,22 @@ export interface ResolveOptions<TData> {
    * Get every selection intercepted in the specified function
    */
   onSelection?: (selection: Selection) => void;
+  /**
+   * On subscription event listener
+   */
+  onSubscription?: (
+    event:
+      | {
+          unsubscribe: () => Promise<void>;
+          data: TData;
+          error?: undefined;
+        }
+      | {
+          unsubscribe: () => Promise<void>;
+          data?: TData;
+          error: gqlessError;
+        }
+  ) => void;
 }
 
 export type RetryOptions =
@@ -64,6 +80,8 @@ export interface FetchResolveOptions {
   scheduler?: boolean;
 
   ignoreResolveCache?: boolean;
+
+  onSubscription?: ResolveOptions<any>['onSubscription'];
 }
 
 export type Resolvers = ReturnType<typeof createResolvers>;
@@ -125,12 +143,20 @@ export function createResolvers(
     eventHandler,
     queryFetcher,
     scheduler,
+    clientCache: globalCache,
   } = innerState;
   const { globalInterceptor } = interceptorManager;
+  const buildQuery = createQueryBuilder();
 
   async function resolved<T = unknown>(
     dataFn: () => T,
-    { refetch, noCache, onCacheData, onSelection }: ResolveOptions<T> = {}
+    {
+      refetch,
+      noCache,
+      onCacheData,
+      onSelection,
+      onSubscription,
+    }: ResolveOptions<T> = {}
   ): Promise<T> {
     const prevFoundValidCache = innerState.foundValidCache;
     innerState.foundValidCache = true;
@@ -140,7 +166,6 @@ export function createResolvers(
       innerState.allowCache = false;
     }
 
-    const globalCache = innerState.clientCache;
     let tempCache: typeof innerState.clientCache | undefined;
     if (noCache) {
       innerState.clientCache = tempCache = createCache();
@@ -181,7 +206,33 @@ export function createResolvers(
       await resolveSelections(
         interceptor.fetchSelections,
         tempCache || innerState.clientCache,
-        { ignoreResolveCache: refetch || noCache }
+        {
+          ignoreResolveCache: refetch || noCache,
+          onSubscription: onSubscription
+            ? (event) => {
+                if (event.data) {
+                  const prevAllowCache = innerState.allowCache;
+                  try {
+                    innerState.allowCache = true;
+                    globalInterceptor.listening = false;
+                    if (tempCache) {
+                      innerState.clientCache = tempCache;
+                    }
+                    onSubscription({
+                      ...event,
+                      data: dataFn(),
+                    });
+                  } finally {
+                    innerState.allowCache = prevAllowCache;
+                    globalInterceptor.listening = true;
+                    innerState.clientCache = globalCache;
+                  }
+                } else {
+                  onSubscription(event);
+                }
+              }
+            : undefined,
+        }
       );
 
       prevAllowCache = innerState.allowCache;
@@ -215,17 +266,13 @@ export function createResolvers(
     normalizationHandler: NormalizationHandler | undefined,
     ignoreResolveCache: boolean | undefined
   ) {
-    const { query, variables } = buildQuery(
+    const { query, variables, cacheKey } = buildQuery(
       selections,
       {
         type,
       },
       normalizationHandler != null
     );
-
-    const cacheKey = ignoreResolveCache
-      ? ''
-      : query + (variables ? JSON.stringify(variables) : '') + type;
 
     const cachedData = ignoreResolveCache
       ? undefined
@@ -387,10 +434,10 @@ export function createResolvers(
       selections,
       'subscription',
       innerState.normalizationHandler,
-      options.ignoreResolveCache
+      true
     );
 
-    await subscriptions.subscribe({
+    const { unsubscribe } = await subscriptions.subscribe({
       query,
       variables,
       selections,
@@ -406,6 +453,11 @@ export function createResolvers(
             selection,
           });
         }
+
+        options.onSubscription?.({
+          unsubscribe,
+          data,
+        });
       },
       onError({ data, error }) {
         const selectionsWithErrors = filterSelectionsWithErrors(
@@ -416,7 +468,14 @@ export function createResolvers(
         if (options.scheduler) {
           innerState.scheduler.errors.triggerError(error, selectionsWithErrors);
         }
+        options.onSubscription?.({
+          unsubscribe,
+          data,
+          error,
+        });
       },
+      onStart() {},
+      onComplete() {},
     });
   }
 

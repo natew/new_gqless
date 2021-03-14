@@ -13,6 +13,7 @@ describe('accessorCache', () => {
 
     const selection = new Selection({
       key: 'a',
+      id: 0,
     });
 
     const obj = cache.getAccessor(selection, null, () => {
@@ -53,6 +54,7 @@ describe('accessorCache', () => {
 
     const selection = new Selection({
       key: 'a',
+      id: 0,
     });
 
     const arrayValue = [123];
@@ -101,6 +103,7 @@ describe('accessorCache', () => {
     const rootAccessor = getAccessor(
       new Selection({
         key: 'root',
+        id: 0,
       }),
       null,
       () => {
@@ -112,6 +115,7 @@ describe('accessorCache', () => {
 
     const selectionA = new Selection({
       key: 'a',
+      id: 1,
     });
 
     const accessorA = getAccessor(selectionA, null, () => {
@@ -124,6 +128,7 @@ describe('accessorCache', () => {
 
     const selectionB = new Selection({
       key: 'b',
+      id: 2,
     });
 
     const accessorB = getAccessor(selectionB, null, () => {
@@ -170,11 +175,13 @@ describe('dataCache', () => {
 
     const selectionBase = new Selection({
       key: 'query',
+      id: 0,
     });
 
     const selection = new Selection({
       key: 'a',
       prevSelection: selectionBase,
+      id: 1,
     });
 
     const dataEmpty = cache.getCacheFromSelection(selection);
@@ -491,10 +498,12 @@ describe('data normalization', () => {
 
     const querySelection = new Selection({
       key: 'query',
+      id: 0,
     });
     const aSelection = new Selection({
       key: 'a',
       prevSelection: querySelection,
+      id: 1,
     });
 
     const aData = getCacheFromSelection(aSelection);

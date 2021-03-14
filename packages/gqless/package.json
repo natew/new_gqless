@@ -25,6 +25,10 @@
     "test:watch": "tsdx test --watch",
     "test:watch-coverage": "rimraf coverage && mkdirp coverage/lcov-report && concurrently --raw \"tsdx test --watchAll\" \"serve -l 8787 coverage/lcov-report\" \"wait-on tcp:8787 coverage/lcov-report/index.html && open-cli http://localhost:8787\""
   },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21"
+  },
   "devDependencies": {
     "@dish/gqless-cli": "workspace:^4.0.4",
     "@size-limit/preset-small-lib": "^4.10.1",

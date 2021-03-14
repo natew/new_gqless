@@ -55,11 +55,14 @@ export interface SubscriptionsClient {
       error: gqlessError;
       data: Record<string, unknown> | null;
     }) => void;
+    onStart: () => void;
+    onComplete: () => void;
     cacheKey?: string;
   }): Promise<{
-    unsubscribe: () => void | Promise<void>;
+    unsubscribe: () => Promise<void>;
   }>;
   unsubscribe(selections: Selection[] | Set<Selection>): Promise<void>;
+  close(): Promise<void>;
 }
 
 export interface ClientOptions<

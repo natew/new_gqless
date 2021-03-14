@@ -299,7 +299,9 @@ const resolvers: IResolvers = {
       return null;
     },
     sendNotification(_root, { message }: { message: string }, ctx) {
-      ctx.pubsub.publish({
+      ctx.pubsub.publish<{
+        newNotification: string;
+      }>({
         topic: 'NOTIFICATION',
         payload: {
           newNotification: message,
@@ -311,8 +313,17 @@ const resolvers: IResolvers = {
   },
   Subscription: {
     newNotification: {
-      subscribe(_root, _args, ctx) {
-        return ctx.pubsub.subscribe('NOTIFICATION');
+      async *subscribe(_root, _args, ctx) {
+        const sub = await ctx.pubsub.subscribe<{
+          newNotification: string;
+        }>('NOTIFICATION');
+        for await (const data of sub) {
+          if (data.newNotification === 'ERROR') {
+            throw Error('EXPECTED ERROR');
+          } else {
+            yield data;
+          }
+        }
       },
     },
   },

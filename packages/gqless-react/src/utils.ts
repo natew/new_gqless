@@ -6,9 +6,10 @@ export function areArraysEqual(
 ) {
   if (a === b) return true;
   if (a == null || b == null) return false;
-  if (a.length !== b.length) return false;
+  const size = a.length;
+  if (size !== b.length) return false;
 
-  for (let i = 0; i < a.length; ++i) if (a[i] !== b[i]) return false;
+  for (let i = 0; i < size; ++i) if (a[i] !== b[i]) return false;
 
   return true;
 }

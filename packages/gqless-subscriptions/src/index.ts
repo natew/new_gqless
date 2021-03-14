@@ -36,6 +36,8 @@ export function createSubscriptionClient({
       variables,
       onData,
       onError,
+      onStart,
+      onComplete,
       cacheKey,
       selections,
     }) {
@@ -45,19 +47,24 @@ export function createSubscriptionClient({
         query,
         variables,
         ({ payload }) => {
-          if (!payload) {
-            SubscriptionsSelections.delete(operationId);
-            return;
-          }
+          switch (payload) {
+            case 'start':
+              onStart();
+              return;
+            case 'complete':
+              SubscriptionsSelections.delete(operationId);
+              onComplete();
+              return;
+            default:
+              const { data, errors } = payload;
+              if (data) onData(data);
 
-          const { data, errors } = payload;
-          if (data) onData(data);
-
-          if (errors?.length) {
-            onError({
-              data,
-              error: gqlessError.fromGraphQLErrors(errors),
-            });
+              if (errors?.length) {
+                onError({
+                  data,
+                  error: gqlessError.fromGraphQLErrors(errors),
+                });
+              }
           }
         },
         cacheKey
@@ -91,6 +98,11 @@ export function createSubscriptionClient({
       }
 
       if (promises.length) await Promise.all(promises);
+    },
+    async close() {
+      const wsClient = wsClientValue || (await wsClientPromise);
+
+      wsClient.close();
     },
   };
 }

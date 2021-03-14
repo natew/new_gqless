@@ -343,11 +343,13 @@ describe('buildAndFetchSelections', () => {
 
     const QuerySelection = new Selection({
       key: 'query',
+      id: 0,
     });
 
     const HelloSelection = new Selection({
       key: 'hello',
       prevSelection: QuerySelection,
+      id: 1,
     });
 
     await buildAndFetchSelections([HelloSelection], 'query');

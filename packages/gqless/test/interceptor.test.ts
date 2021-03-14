@@ -7,6 +7,7 @@ describe('base interceptor', () => {
 
     const selectionA = new Selection({
       key: 'a',
+      id: 0,
     });
 
     const interceptPromiseA = new Promise<void>((resolve, reject) => {
@@ -31,6 +32,7 @@ describe('base interceptor', () => {
 
     const selectionB = new Selection({
       key: 'b',
+      id: 1,
     });
 
     interceptor.listening = false;
@@ -60,6 +62,7 @@ describe('base interceptor', () => {
 
     const selectionA = new Selection({
       key: 'a',
+      id: 0,
     });
 
     const interceptPromiseA = new Promise<void>((resolve, reject) => {
@@ -84,6 +87,7 @@ describe('base interceptor', () => {
 
     const selectionB = new Selection({
       key: 'b',
+      id: 1,
     });
 
     interceptor.listening = false;
@@ -117,6 +121,7 @@ describe('interceptorManager', () => {
 
     const selectionA = new Selection({
       key: 'a',
+      id: 0,
     });
 
     manager.addSelection(selectionA);
@@ -128,6 +133,7 @@ describe('interceptorManager', () => {
 
     const selectionB = new Selection({
       key: 'b',
+      id: 1,
     });
 
     manager.removeInterceptor(tempInterceptor);
@@ -140,6 +146,7 @@ describe('interceptorManager', () => {
 
     const selectionC = new Selection({
       key: 'c',
+      id: 0,
     });
 
     manager.addSelections([selectionC]);

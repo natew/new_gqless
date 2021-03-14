@@ -3,21 +3,34 @@ import { useMutation, useSubscription } from '../components/client';
 let n = 0;
 
 function SendNotification() {
-  const [sendNotification] = useMutation((mutation) => {
+  const [sendNotification] = useMutation((mutation, message: string) => {
     return mutation.sendNotification({
-      message: `NOTIFICATION=${n}`,
+      message,
     });
   });
 
   return (
-    <button
-      onClick={() => {
-        n++;
-        sendNotification();
-      }}
-    >
-      Send New Notification
-    </button>
+    <>
+      <button
+        onClick={() => {
+          n++;
+          sendNotification({
+            args: `NOTIFICATION=${n}`,
+          });
+        }}
+      >
+        Send New Notification
+      </button>
+      <button
+        onClick={() => {
+          sendNotification({
+            args: 'ERROR',
+          });
+        }}
+      >
+        Send Error Notification
+      </button>
+    </>
   );
 }
 
