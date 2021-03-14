@@ -190,20 +190,50 @@ export function createClient<
     refetch,
   });
 
-  const mutate = <T>(
+  function mutate<T = any>(
     fn: (
       mutation: GeneratedSchema['mutation'],
       helpers: {
         query: GeneratedSchema['query'];
         setCache: typeof setCache;
         assignSelections: typeof assignSelections;
+        onComplete: (callback: (data: T) => void) => void;
+        onError: (callback: (error: gqlessError) => void) => void;
       }
     ) => T
-  ): Promise<T> => {
-    return resolved(() => fn(mutation, { setCache, assignSelections, query }), {
-      refetch: true,
-    });
-  };
+  ): Promise<T> {
+    const onCompleteFns: ((data: T) => void)[] = [];
+    const onErrorFns: ((error: gqlessError) => void)[] = [];
+
+    return resolved<T>(
+      () =>
+        fn(mutation, {
+          setCache,
+          assignSelections,
+          query,
+          onComplete(cb: any) {
+            onCompleteFns.push(cb);
+          },
+          onError(cb: any) {
+            onErrorFns.push(cb);
+          },
+        }),
+      {
+        refetch: true,
+      }
+    )
+      .then((data) => {
+        for (const fn of onCompleteFns) fn(data);
+
+        return data;
+      })
+      .catch((err) => {
+        const error = gqlessError.create(err);
+        for (const fn of onErrorFns) fn(error);
+
+        throw error;
+      });
+  }
 
   const { buildSelection } = createSelectionBuilder(innerState);
 

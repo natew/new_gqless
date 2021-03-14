@@ -38,14 +38,22 @@ export interface ResolveOptions<TData> {
   onSubscription?: (
     event:
       | {
+          type: 'data';
           unsubscribe: () => Promise<void>;
           data: TData;
           error?: undefined;
         }
       | {
+          type: 'with-errors';
           unsubscribe: () => Promise<void>;
           data?: TData;
           error: gqlessError;
+        }
+      | {
+          type: 'start' | 'complete';
+          unsubscribe: () => Promise<void>;
+          data?: undefined;
+          error?: undefined;
         }
   ) => void;
 }
@@ -203,6 +211,8 @@ export function createResolvers(
 
       globalInterceptor.listening = prevGlobalInterceptorListening;
 
+      console.log('resolve selections!', interceptor.fetchSelections);
+
       await resolveSelections(
         interceptor.fetchSelections,
         tempCache || innerState.clientCache,
@@ -210,25 +220,34 @@ export function createResolvers(
           ignoreResolveCache: refetch || noCache,
           onSubscription: onSubscription
             ? (event) => {
-                if (event.data) {
-                  const prevAllowCache = innerState.allowCache;
-                  try {
-                    innerState.allowCache = true;
-                    globalInterceptor.listening = false;
-                    if (tempCache) {
-                      innerState.clientCache = tempCache;
+                console.log(221, event);
+
+                switch (event.type) {
+                  case 'data':
+                  case 'with-errors':
+                    if (event.data) {
+                      const prevAllowCache = innerState.allowCache;
+                      try {
+                        innerState.allowCache = true;
+                        globalInterceptor.listening = false;
+                        if (tempCache) {
+                          innerState.clientCache = tempCache;
+                        }
+                        onSubscription({
+                          ...event,
+                          data: dataFn(),
+                        });
+                      } finally {
+                        innerState.allowCache = prevAllowCache;
+                        globalInterceptor.listening = true;
+                        innerState.clientCache = globalCache;
+                      }
+                    } else {
+                      onSubscription(event);
                     }
-                    onSubscription({
-                      ...event,
-                      data: dataFn(),
-                    });
-                  } finally {
-                    innerState.allowCache = prevAllowCache;
-                    globalInterceptor.listening = true;
-                    innerState.clientCache = globalCache;
-                  }
-                } else {
-                  onSubscription(event);
+                    return;
+                  default:
+                    onSubscription(event);
                 }
               }
             : undefined,
@@ -436,6 +455,7 @@ export function createResolvers(
       innerState.normalizationHandler,
       true
     );
+    console.log('build and sub selections', query, variables, cacheKey);
 
     const { unsubscribe } = await subscriptions.subscribe({
       query,
@@ -455,28 +475,42 @@ export function createResolvers(
         }
 
         options.onSubscription?.({
+          type: 'data',
           unsubscribe,
           data,
         });
       },
       onError({ data, error }) {
-        const selectionsWithErrors = filterSelectionsWithErrors(
-          error.graphQLErrors,
-          data,
-          selections
-        );
         if (options.scheduler) {
+          const selectionsWithErrors = filterSelectionsWithErrors(
+            error.graphQLErrors,
+            data,
+            selections
+          );
           innerState.scheduler.errors.triggerError(error, selectionsWithErrors);
         }
         options.onSubscription?.({
+          type: 'with-errors',
           unsubscribe,
           data,
           error,
         });
       },
-      onStart() {},
-      onComplete() {},
+      onStart() {
+        options.onSubscription?.({
+          type: 'start',
+          unsubscribe,
+        });
+      },
+      onComplete() {
+        options.onSubscription?.({
+          type: 'complete',
+          unsubscribe,
+        });
+      },
     });
+
+    console.log('unsubscribe', unsubscribe);
   }
 
   async function resolveSelections<

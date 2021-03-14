@@ -298,6 +298,7 @@ export class Client {
 
     switch (data.type) {
       case GQL_CONNECTION_ACK:
+        console.log('connection made!');
         this.reconnecting = false;
         this.ready = true;
         this.reconnectAttempts = 0;
@@ -408,6 +409,8 @@ export class Client {
       this.operationsCount[operationId] = 1;
 
       this.subscriptionQueryMap[subscriptionString] = operationId;
+
+      console.log('waiting for startPromise');
 
       await startPromise;
 

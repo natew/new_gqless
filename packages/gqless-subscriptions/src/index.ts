@@ -57,18 +57,20 @@ export function createSubscriptionClient({
               return;
             default:
               const { data, errors } = payload;
-              if (data) onData(data);
-
               if (errors?.length) {
                 onError({
                   data,
                   error: gqlessError.fromGraphQLErrors(errors),
                 });
+              } else if (data) {
+                onData(data);
               }
           }
         },
         cacheKey
       );
+
+      console.log('subscription created', operationId);
 
       SubscriptionsSelections.set(operationId, new Set(selections));
 
