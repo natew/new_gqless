@@ -254,7 +254,6 @@ importers:
       lodash: 4.17.21
       lodash-es: 4.17.21
     devDependencies:
-      '@dish/gqless-cli': link:../gqless-cli
       '@size-limit/preset-small-lib': 4.10.1_9e1fedab717cf71fbaebcc1febc76206
       '@types/concurrently': 6.0.1
       '@types/lodash': 4.14.168
@@ -290,7 +289,6 @@ importers:
       wait-on: 5.2.1
       ws: 7.4.4
     specifiers:
-      '@dish/gqless-cli': workspace:^5.0.1
       '@size-limit/preset-small-lib': ^4.10.1
       '@types/concurrently': ^6.0.1
       '@types/lodash': ^4.14.168
@@ -343,7 +341,6 @@ importers:
       runtypes: 5.0.2
     devDependencies:
       '@dish/gqless': link:../gqless
-      '@dish/gqless-cli': 'link:'
       '@size-limit/preset-small-lib': 4.10.1_9e1fedab717cf71fbaebcc1febc76206
       '@types/mkdirp': 1.0.1
       open-cli: 6.0.1
@@ -358,7 +355,6 @@ importers:
       wait-on: 5.2.1
     specifiers:
       '@dish/gqless': workspace:^4.0.0
-      '@dish/gqless-cli': workspace:^5.0.1
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.21.1
       '@graphql-tools/delegate': ^7.0.10
