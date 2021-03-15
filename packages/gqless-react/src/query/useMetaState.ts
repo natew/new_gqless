@@ -153,47 +153,34 @@ export function createUseMetaState(client: ReturnType<typeof createClient>) {
       );
 
       const unsubscribeErrors = scheduler.errors.subscribeErrors((data) => {
-        if ('newError' in data) {
-          if (hasFilterSelections) {
-            const isIncluded = isAnySelectionIncluded(
-              selectionsToFilter,
-              data.selections
-            );
-
-            if (isIncluded) optsRef.current.onNewError?.(data.newError);
-            else return;
-          } else {
-            optsRef.current.onNewError?.(data.newError);
+        switch (data.type) {
+          case 'new_error': {
+            if (hasFilterSelections) {
+              if (isAnySelectionIncluded(selectionsToFilter, data.selections))
+                optsRef.current.onNewError?.(data.newError);
+              else return;
+            } else {
+              optsRef.current.onNewError?.(data.newError);
+            }
+            break;
           }
-        } else if ('selectionsCleaned' in data && hasFilterSelections) {
-          const isIncluded = isAnySelectionIncluded(
-            selectionsToFilter,
-            data.selectionsCleaned
-          );
-
-          if (!isIncluded) return;
-        } else if ('retryPromise' in data) {
-          if (hasFilterSelections) {
-            const isIncluded = isAnySelectionIncluded(
-              selectionsToFilter,
-              data.selections
-            );
-
-            if (isIncluded) {
-              setStateIfChanged(isMounted);
+          case 'retry': {
+            if (hasFilterSelections) {
+              if (isAnySelectionIncluded(selectionsToFilter, data.selections)) {
+                data.retryPromise.finally(() => {
+                  setTimeout(() => {
+                    setStateIfChanged(isMounted);
+                  }, 0);
+                });
+              }
+            } else {
               data.retryPromise.finally(() => {
                 setTimeout(() => {
                   setStateIfChanged(isMounted);
                 }, 0);
               });
             }
-          } else {
-            setStateIfChanged(isMounted);
-            data.retryPromise.finally(() => {
-              setTimeout(() => {
-                setStateIfChanged(isMounted);
-              }, 0);
-            });
+            break;
           }
         }
 

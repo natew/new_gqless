@@ -1,5 +1,6 @@
 import { createClient } from '@dish/gqless';
 import {
+  isAnySelectionIncluded,
   useForceUpdate,
   useIsomorphicLayoutEffect,
   useSelectionsState,
@@ -18,6 +19,7 @@ export function createUseSubscription<
     interceptorManager: { createInterceptor, removeInterceptor },
     subscriptionsClient,
     eventHandler,
+    scheduler,
   } = client;
   const clientSubscription: GeneratedSchema['subscription'] =
     client.subscription;
@@ -41,15 +43,30 @@ export function createUseSubscription<
     useIsomorphicLayoutEffect(() => {
       if (!subscriptionsClient) return;
 
+      let isMounted = true;
+
       const unsubscribeCache = eventHandler.onCacheChangeSubscribe(
         ({ selection }) => {
-          if (forceUpdate.wasCalled.current) return;
+          if (!isMounted || forceUpdate.wasCalled.current) return;
 
           if (hookSelections.has(selection)) forceUpdate();
         }
       );
 
+      const unsubErrors = scheduler.errors.subscribeErrors((data) => {
+        if (
+          isMounted &&
+          data.type === 'new_error' &&
+          !forceUpdate.wasCalled.current &&
+          isAnySelectionIncluded(data.selections, hookSelections)
+        ) {
+          forceUpdate();
+        }
+      });
+
       return () => {
+        isMounted = false;
+        unsubErrors();
         unsubscribeCache();
         subscriptionsClient.unsubscribe(hookSelections);
       };

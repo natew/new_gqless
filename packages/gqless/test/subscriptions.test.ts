@@ -31,18 +31,20 @@ test('subscriptions with scheduler', async () => {
   }
 });
 
-test.skip('subscriptions with resolved', async () => {
-  const { resolved, subscription, mutate } = await createTestClient(
-    undefined,
-    undefined,
-    {
-      subscriptions: true,
-    }
-  );
-
-  let data: typeof subscription.newNotification;
+test('subscriptions with resolved', async () => {
+  const {
+    resolved,
+    subscription,
+    mutate,
+    subscriptionsClient,
+    server,
+  } = await createTestClient(undefined, undefined, {
+    subscriptions: true,
+  });
 
   const unsubscribePromise = createDeferredPromise<() => Promise<void>>();
+
+  const dataPromise = createDeferredPromise<string>();
 
   try {
     await resolved(
@@ -55,32 +57,33 @@ test.skip('subscriptions with resolved', async () => {
 
           switch (event.type) {
             case 'data': {
-              data = event.data;
-              return;
+              if (event.data) dataPromise.resolve(event.data);
+              break;
             }
           }
         },
       }
     );
 
-    console.log('waiting for unsubscribe promise');
     await unsubscribePromise.promise;
-    console.log('resolved unsubscribe');
 
-    await mutate((mutation, { onComplete }) => {
-      onComplete((data) => {
-        console.log('notification sent!', data);
-      });
+    await mutate(
+      (mutation) => {
+        return mutation.sendNotification({
+          message: 'OK',
+        });
+      },
+      {
+        onComplete(data) {
+          expect(data).toBe(true);
+        },
+      }
+    );
 
-      return mutation.sendNotification({
-        message: 'OK',
-      });
-    });
-
-    await waitForExpect(() => {
-      expect(data).toBe('OK');
-    }, 100);
+    await dataPromise.promise.then((data) => expect(data).toBe('OK'));
   } finally {
     (await unsubscribePromise.promise)();
+    await subscriptionsClient!.close();
+    await server.close();
   }
-}, 10000);
+}, 5000);

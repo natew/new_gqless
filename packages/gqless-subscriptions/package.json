@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsdx build",
     "prepare": "tsdx build",
-    "start": "tsc-watch --noClear",
+    "start": "tsc-watch --noClear -P tsconfig.dev.json",
     "test": "tsdx test"
   },
   "dependencies": {

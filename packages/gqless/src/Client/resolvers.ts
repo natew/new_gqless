@@ -9,7 +9,11 @@ import { SchedulerPromiseValue } from '../Scheduler';
 import { Selection } from '../Selection/selection';
 import { separateSelectionTypes } from '../Selection/SelectionManager';
 import { createDeferredPromise, DeferredPromise, get } from '../Utils';
-import { InnerClientState, SubscriptionsClient } from './client';
+import {
+  InnerClientState,
+  SubscribeEvents,
+  SubscriptionsClient,
+} from './client';
 
 export interface ResolveOptions<TData> {
   /**
@@ -99,6 +103,8 @@ function filterSelectionsWithErrors(
   executionData: Record<string, unknown> | null | undefined,
   selections: Selection[]
 ) {
+  if (!executionData) return selections;
+
   const gqlErrorsPaths = graphQLErrors
     ?.map((err) =>
       err.path
@@ -112,31 +118,30 @@ function filterSelectionsWithErrors(
     > => {
       return !!possiblePath;
     });
-  const selectionsWithErrors =
-    !gqlErrorsPaths?.length || !executionData
-      ? selections
-      : selections.filter((selection) => {
-          const selectionPathNoIndex = selection.noIndexSelections
-            .slice(1)
-            .map((selection) => selection.alias || selection.key)
-            .join('.');
-          const selectionData = get(
-            executionData,
-            selectionPathNoIndex,
-            CacheNotFound
-          );
+  const selectionsWithErrors = !gqlErrorsPaths?.length
+    ? selections
+    : selections.filter((selection) => {
+        const selectionPathNoIndex = selection.noIndexSelections
+          .slice(1)
+          .map((selection) => selection.alias || selection.key)
+          .join('.');
+        const selectionData = get(
+          executionData,
+          selectionPathNoIndex,
+          CacheNotFound
+        );
 
-          switch (selectionData) {
-            case CacheNotFound: {
-              return true;
-            }
-            case null: {
-              return gqlErrorsPaths.includes(selectionPathNoIndex);
-            }
-            default:
-              return false;
+        switch (selectionData) {
+          case CacheNotFound: {
+            return true;
           }
-        });
+          case null: {
+            return gqlErrorsPaths.includes(selectionPathNoIndex);
+          }
+          default:
+            return false;
+        }
+      });
 
   return selectionsWithErrors;
 }
@@ -211,8 +216,6 @@ export function createResolvers(
 
       globalInterceptor.listening = prevGlobalInterceptorListening;
 
-      console.log('resolve selections!', interceptor.fetchSelections);
-
       await resolveSelections(
         interceptor.fetchSelections,
         tempCache || innerState.clientCache,
@@ -220,8 +223,6 @@ export function createResolvers(
           ignoreResolveCache: refetch || noCache,
           onSubscription: onSubscription
             ? (event) => {
-                console.log(221, event);
-
                 switch (event.type) {
                   case 'data':
                   case 'with-errors':
@@ -437,6 +438,33 @@ export function createResolvers(
     }
   }
 
+  function schedulerEvents({
+    selections,
+  }: {
+    selections: Selection[];
+  }): SubscribeEvents {
+    return {
+      onData(data) {
+        globalCache.mergeCache(data, 'subscription');
+        scheduler.errors.removeErrors(selections);
+        for (const selection of selections) {
+          eventHandler.sendCacheChange({
+            data,
+            selection,
+          });
+        }
+      },
+      onError({ data, error }) {
+        if (data) globalCache.mergeCache(data, 'subscription');
+
+        scheduler.errors.triggerError(
+          error,
+          filterSelectionsWithErrors(error.graphQLErrors, data, selections)
+        );
+      },
+    };
+  }
+
   async function buildAndSubscribeSelections<TData = unknown>(
     selections: Selection[] | undefined,
     cache: CacheInstance = innerState.clientCache,
@@ -455,62 +483,52 @@ export function createResolvers(
       innerState.normalizationHandler,
       true
     );
-    console.log('build and sub selections', query, variables, cacheKey);
 
     const { unsubscribe } = await subscriptions.subscribe({
       query,
       variables,
       selections,
       cacheKey,
-      onData(data) {
-        cache.mergeCache(data, 'subscription');
-        if (options.scheduler) {
-          innerState.scheduler.errors.removeErrors(selections);
-        }
-        for (const selection of selections) {
-          eventHandler.sendCacheChange({
-            data,
-            selection,
-          });
-        }
+      events: options.scheduler
+        ? schedulerEvents
+        : {
+            onData(data) {
+              cache.mergeCache(data, 'subscription');
 
-        options.onSubscription?.({
-          type: 'data',
-          unsubscribe,
-          data,
-        });
-      },
-      onError({ data, error }) {
-        if (options.scheduler) {
-          const selectionsWithErrors = filterSelectionsWithErrors(
-            error.graphQLErrors,
-            data,
-            selections
-          );
-          innerState.scheduler.errors.triggerError(error, selectionsWithErrors);
-        }
-        options.onSubscription?.({
-          type: 'with-errors',
-          unsubscribe,
-          data,
-          error,
-        });
-      },
-      onStart() {
-        options.onSubscription?.({
-          type: 'start',
-          unsubscribe,
-        });
-      },
-      onComplete() {
-        options.onSubscription?.({
-          type: 'complete',
-          unsubscribe,
-        });
-      },
+              options.onSubscription?.({
+                type: 'data',
+                unsubscribe,
+                data,
+              });
+            },
+            onError({ data, error }) {
+              if (data) cache.mergeCache(data, 'subscription');
+
+              options.onSubscription?.({
+                type: 'with-errors',
+                unsubscribe,
+                data,
+                error,
+              });
+            },
+            onStart: options.onSubscription
+              ? () => {
+                  options.onSubscription?.({
+                    type: 'start',
+                    unsubscribe,
+                  });
+                }
+              : undefined,
+            onComplete: options.onSubscription
+              ? () => {
+                  options.onSubscription?.({
+                    type: 'complete',
+                    unsubscribe,
+                  });
+                }
+              : undefined,
+          },
     });
-
-    console.log('unsubscribe', unsubscribe);
   }
 
   async function resolveSelections<

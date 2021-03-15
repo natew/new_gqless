@@ -12,20 +12,23 @@ export type SchedulerPromiseValue = {
   selections: Set<Selection>;
 };
 
-export type ErrorSubscriptionFn = (
-  data:
-    | {
-        newError: gqlessError;
-        selections: Selection[];
-      }
-    | {
-        selectionsCleaned: Selection[];
-      }
-    | {
-        retryPromise: Promise<SchedulerPromiseValue>;
-        selections: Set<Selection>;
-      }
-) => void;
+export type ErrorSubscriptionEvent =
+  | {
+      type: 'new_error';
+      newError: gqlessError;
+      selections: Selection[];
+    }
+  | {
+      type: 'errors_clean';
+      selectionsCleaned: Selection[];
+    }
+  | {
+      type: 'retry';
+      retryPromise: Promise<SchedulerPromiseValue>;
+      selections: Set<Selection>;
+    };
+
+export type ErrorSubscriptionFn = (event: ErrorSubscriptionEvent) => void;
 
 export type IsFetchingSubscriptionFn = (isFetching: boolean) => void;
 
@@ -101,7 +104,8 @@ export const createScheduler = (
       pendingSelectionsGroupsPromises.delete(selections);
     });
 
-    const data = {
+    const data: ErrorSubscriptionEvent = {
+      type: 'retry',
       retryPromise,
       selections,
     };
@@ -115,7 +119,8 @@ export const createScheduler = (
 
     for (const selection of selections) errorsMap.set(selection, newError);
 
-    const data = {
+    const data: ErrorSubscriptionEvent = {
+      type: 'new_error',
       newError,
       selections,
     };
@@ -132,7 +137,8 @@ export const createScheduler = (
       selectionsWithFinalErrors.delete(selection);
     }
 
-    const data = {
+    const data: ErrorSubscriptionEvent = {
+      type: 'errors_clean',
       selectionsCleaned,
     };
     errorsListeners.forEach((listener) => {

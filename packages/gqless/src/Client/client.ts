@@ -45,24 +45,36 @@ export interface InnerClientState {
   readonly normalizationHandler: NormalizationHandler;
 }
 
+export interface SubscribeEvents {
+  onData: (data: Record<string, unknown>) => void;
+  onError: (payload: {
+    error: gqlessError;
+    data: Record<string, unknown> | null;
+  }) => void;
+  onStart?: () => void;
+  onComplete?: () => void;
+}
+
 export interface SubscriptionsClient {
   subscribe(opts: {
     query: string;
     variables: Record<string, unknown> | undefined;
     selections: Selection[];
-    onData: (data: Record<string, unknown>) => void;
-    onError: (payload: {
-      error: gqlessError;
-      data: Record<string, unknown> | null;
-    }) => void;
-    onStart: () => void;
-    onComplete: () => void;
+    events:
+      | ((ctx: { selections: Selection[] }) => SubscribeEvents)
+      | SubscribeEvents;
     cacheKey?: string;
   }): Promise<{
     unsubscribe: () => Promise<void>;
   }>;
   unsubscribe(selections: Selection[] | Set<Selection>): Promise<void>;
   close(): Promise<void>;
+  setConnectionParams(
+    connectionParams:
+      | (() => Record<string, unknown> | Promise<Record<string, unknown>>)
+      | Record<string, unknown>,
+    restartClient?: boolean
+  ): void;
 }
 
 export interface ClientOptions<
@@ -190,49 +202,48 @@ export function createClient<
     refetch,
   });
 
-  function mutate<T = any>(
-    fn: (
-      mutation: GeneratedSchema['mutation'],
-      helpers: {
-        query: GeneratedSchema['query'];
-        setCache: typeof setCache;
-        assignSelections: typeof assignSelections;
-        onComplete: (callback: (data: T) => void) => void;
-        onError: (callback: (error: gqlessError) => void) => void;
-      }
-    ) => T
+  async function mutate<T = any>(
+    fn: (mutation: GeneratedSchema['mutation']) => T,
+    opts: {
+      onComplete?: (
+        data: T,
+        helpers: {
+          query: GeneratedSchema['query'];
+          setCache: typeof setCache;
+          assignSelections: typeof assignSelections;
+        }
+      ) => void;
+      onError?: (
+        error: gqlessError,
+        helpers: {
+          query: GeneratedSchema['query'];
+          setCache: typeof setCache;
+          assignSelections: typeof assignSelections;
+        }
+      ) => void;
+    } = {}
   ): Promise<T> {
-    const onCompleteFns: ((data: T) => void)[] = [];
-    const onErrorFns: ((error: gqlessError) => void)[] = [];
-
-    return resolved<T>(
-      () =>
-        fn(mutation, {
-          setCache,
-          assignSelections,
-          query,
-          onComplete(cb: any) {
-            onCompleteFns.push(cb);
-          },
-          onError(cb: any) {
-            onErrorFns.push(cb);
-          },
-        }),
-      {
+    try {
+      const data = await resolved<T>(() => fn(mutation), {
         refetch: true,
-      }
-    )
-      .then((data) => {
-        for (const fn of onCompleteFns) fn(data);
-
-        return data;
-      })
-      .catch((err) => {
-        const error = gqlessError.create(err);
-        for (const fn of onErrorFns) fn(error);
-
-        throw error;
       });
+      opts.onComplete?.(data, {
+        query,
+        setCache,
+        assignSelections,
+      });
+      return data;
+    } catch (err) {
+      const error = gqlessError.create(err, mutate);
+
+      opts.onError?.(error, {
+        query,
+        setCache,
+        assignSelections,
+      });
+
+      throw error;
+    }
   }
 
   const { buildSelection } = createSelectionBuilder(innerState);

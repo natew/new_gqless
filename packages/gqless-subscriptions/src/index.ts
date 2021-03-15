@@ -1,6 +1,15 @@
-import { gqlessError, Selection, SubscriptionsClient } from '@dish/gqless';
+import {
+  gqlessError,
+  Selection,
+  SubscribeEvents,
+  SubscriptionsClient,
+} from '@dish/gqless';
 
-import { Client, ClientOptions } from './subscription/client';
+import {
+  Client,
+  ClientOptions,
+  OperationCallback,
+} from './subscription/client';
 
 export interface SubscriptionsClientOptions extends ClientOptions {
   wsEndpoint: string | (() => string | Promise<string>);
@@ -30,31 +39,30 @@ export function createSubscriptionClient({
 
   const SubscriptionsSelections: Map<string, Set<Selection>> = new Map();
 
+  const eventsReference = new WeakMap<
+    ((ctx: { selections: Selection[] }) => SubscribeEvents) | SubscribeEvents,
+    OperationCallback
+  >();
+
   return {
-    async subscribe({
-      query,
-      variables,
-      onData,
-      onError,
-      onStart,
-      onComplete,
-      cacheKey,
-      selections,
-    }) {
+    async subscribe({ query, variables, events, cacheKey, selections }) {
       const wsClient = wsClientValue || (await wsClientPromise);
 
-      const operationId = await wsClient.createSubscription(
-        query,
-        variables,
-        ({ payload }) => {
+      let callback: OperationCallback | undefined;
+
+      if (!(callback = eventsReference.get(events))) {
+        const { onData, onError, onComplete, onStart } =
+          typeof events === 'function' ? events({ selections }) : events;
+
+        callback = function ({ payload }) {
           switch (payload) {
             case 'start':
-              onStart();
-              return;
+              onStart?.();
+              break;
             case 'complete':
               SubscriptionsSelections.delete(operationId);
-              onComplete();
-              return;
+              onComplete?.();
+              break;
             default:
               const { data, errors } = payload;
               if (errors?.length) {
@@ -66,16 +74,22 @@ export function createSubscriptionClient({
                 onData(data);
               }
           }
-        },
+        };
+        eventsReference.set(events, callback);
+      }
+
+      const operationId = await wsClient.createSubscription(
+        query,
+        variables,
+        callback,
         cacheKey
       );
-
-      console.log('subscription created', operationId);
 
       SubscriptionsSelections.set(operationId, new Set(selections));
 
       const unsubscribe = async () => {
         await wsClient.unsubscribe(operationId, true);
+        SubscriptionsSelections.delete(operationId);
       };
 
       return {
@@ -94,6 +108,7 @@ export function createSubscriptionClient({
         for (const selection of selections) {
           if (operationSelections.has(selection)) {
             promises.push(wsClient.unsubscribe(operationId, true));
+            SubscriptionsSelections.delete(operationId);
             continue checkOperations;
           }
         }
@@ -105,6 +120,23 @@ export function createSubscriptionClient({
       const wsClient = wsClientValue || (await wsClientPromise);
 
       wsClient.close();
+    },
+    setConnectionParams(connectionParams, restartClient) {
+      if (wsClientValue) {
+        wsClientValue.connectionInitPayload = connectionParams;
+        if (restartClient && wsClientValue.socket) {
+          wsClientValue.close(true);
+        }
+      } else {
+        wsClientPromise
+          .then((wsClient) => {
+            wsClient.connectionInitPayload = connectionParams;
+            if (restartClient && wsClient.socket) {
+              wsClient.close(true);
+            }
+          })
+          .catch(console.error);
+      }
     },
   };
 }

@@ -17,17 +17,25 @@ import {
   GRAPHQL_WS,
 } from './protocol';
 
-type OperationHandlerPayload = GQLResponse | 'start' | 'complete';
+export type OperationHandlerPayload = GQLResponse | 'start' | 'complete';
 
-type Operation = {
+export interface OperationCallbackArg {
+  operationId: string;
+  payload: OperationHandlerPayload;
+}
+
+export type OperationCallback = (arg: OperationCallbackArg) => void;
+
+export interface Operation {
   started: boolean;
   options: {
     query: string;
     variables?: Record<string, unknown>;
   };
-  handler: (data: OperationHandlerPayload) => Promise<void>;
+  callbacks: Set<OperationCallback>;
+  handler: (data: OperationHandlerPayload) => void;
   extensions?: { type: string; payload: unknown }[];
-};
+}
 
 export interface ClientOptions {
   /**
@@ -62,7 +70,6 @@ export interface ClientOptions {
   lazy?: boolean;
 }
 
-// This class is already being tested in https://github.com/mercurius-js/mercurius/blob/master/test/subscription-client.js
 export class Client {
   subscriptionQueryMap: Record<string, string>;
 
@@ -177,12 +184,8 @@ export class Client {
           const operation = this.operations.get(operationId);
 
           if (operation) {
-            const { options, handler, extensions } = operation;
-
             this.operations.set(operationId, {
-              options,
-              handler,
-              extensions,
+              ...operation,
               started: false,
             });
           }
@@ -298,7 +301,6 @@ export class Client {
 
     switch (data.type) {
       case GQL_CONNECTION_ACK:
-        console.log('connection made!');
         this.reconnecting = false;
         this.ready = true;
         this.reconnectAttempts = 0;
@@ -345,33 +347,31 @@ export class Client {
   }
 
   async startOperation(operationId: string) {
-    await this.connectedPromise.promise;
+    try {
+      await this.connectedPromise.promise;
 
-    const operation = this.operations.get(operationId);
-    if (!operation) throw Error('Operation not found, ' + operationId);
+      const operation = this.operations.get(operationId);
+      if (!operation) throw Error('Operation not found, ' + operationId);
 
-    const { started, options, handler, extensions } = operation;
+      const { started, options, extensions } = operation;
 
-    if (!started) {
-      if (!this.ready) return;
+      if (!started) {
+        if (!this.ready) return;
 
-      this.operations.set(operationId, {
-        started: true,
-        options,
-        handler,
-        extensions,
-      });
-      await this.sendMessage(operationId, GQL_START, options, extensions);
+        this.operations.set(operationId, {
+          ...operation,
+          started: true,
+        });
+        await this.sendMessage(operationId, GQL_START, options, extensions);
+      }
+    } finally {
     }
   }
 
   async createSubscription(
     query: string,
     variables: Record<string, unknown> | undefined,
-    publish: (args: {
-      topic: string;
-      payload: OperationHandlerPayload;
-    }) => void | Promise<void>,
+    publish: OperationCallback,
     subscriptionString?: string
   ) {
     if (!this.socket) this.connect();
@@ -384,7 +384,12 @@ export class Client {
     let operationId = this.subscriptionQueryMap[subscriptionString];
 
     try {
-      if (operationId && this.operations.get(operationId)) {
+      let existingOperation: Operation | undefined;
+      if (
+        operationId &&
+        (existingOperation = this.operations.get(operationId))
+      ) {
+        existingOperation.callbacks.add(publish);
         this.operationsCount[operationId] =
           this.operationsCount[operationId] + 1;
         return operationId;
@@ -392,15 +397,27 @@ export class Client {
 
       operationId = String(++this.operationId);
 
+      const callbacks = new Set([publish]);
+
+      function handler(payload: OperationHandlerPayload) {
+        const event: OperationCallbackArg = {
+          operationId,
+          payload,
+        };
+        for (const cb of callbacks) {
+          try {
+            cb(event);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }
+
       const operation: Operation = {
         started: false,
         options: { query, variables },
-        handler: async (data) => {
-          await publish({
-            topic: operationId,
-            payload: data,
-          });
-        },
+        handler,
+        callbacks,
       };
 
       this.operations.set(operationId, operation);
@@ -410,16 +427,16 @@ export class Client {
 
       this.subscriptionQueryMap[subscriptionString] = operationId;
 
-      console.log('waiting for startPromise');
-
       await startPromise;
 
       return operationId;
     } finally {
-      publish({
-        topic: operationId,
-        payload: 'start',
-      });
+      setTimeout(() => {
+        publish({
+          operationId,
+          payload: 'start',
+        });
+      }, 0);
     }
   }
 }
