@@ -84,7 +84,7 @@ export const gqlessConfigPromise: Promise<{
   filepath: string;
   config: DeepReadonly<GqlessConfig>;
 }> = cosmiconfig('gqless', {
-  searchPlaces: ['gqless.config.cjs', 'package.json'],
+  searchPlaces: ['gqless.config.cjs', 'gqless.config.js', 'package.json'],
 })
   .search()
   .then(async (config) => {

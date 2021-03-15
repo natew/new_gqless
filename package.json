@@ -11,7 +11,7 @@
     "dev:react:2": "pnpm -r --filter @dish/gqless-subscriptions start -- --onSuccess \"pnpm -r --filter @dish/gqless-react start:with:example\"",
     "dev:start": "pnpm start -r --no-bail --no-sort",
     "dev:test": "pnpm test:watch -r --no-bail --no-sort --stream",
-    "publish:all": "pnpm i && pnpm test && pnpm -r publish --access public",
+    "publish:all": "changeset version && pnpm i && pnpm test && pnpm -r publish --access public",
     "test": "jest --clearCache && pnpm test -r --no-sort --no-bail --stream",
     "dev:mercurius": "pnpm -r exec --filter @dish/gqless -- tsc -m commonjs && concurrently \"pnpm -r --filter mercurius-example test:watch\" \"pnpm -r --filter @dish/gqless start\""
   },

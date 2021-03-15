@@ -1,11 +1,12 @@
 {
-  "name": "gqless-react-example",
+  "name": "react-example",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "build-example": "next build",
     "dev": "kill-port 4141 && concurrently --raw \"pnpm dev:server\" \"wait-on -s 1 tcp:4141 && ts-node -T ./open-browser.ts\"",
-    "prepare": "next build",
-    "dev:server": "tsc-watch -P tsconfig.server.json --noClear --onSuccess \"node dist/server.js\""
+    "dev:server": "tsc-watch -P tsconfig.server.json --noClear --onSuccess \"node dist/server.js\"",
+    "prepare": "next build"
   },
   "dependencies": {
     "@dish/gqless": "workspace:^4.0.0",

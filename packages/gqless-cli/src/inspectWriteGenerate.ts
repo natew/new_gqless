@@ -53,7 +53,6 @@ export async function inspectWriteGenerate({
     schema = await (await import('./introspection')).getRemoteSchema(endpoint, {
       headers,
     });
-    genOptions.endpoint = endpoint;
   } else {
     if (existsSync(endpoint)) {
       const file = await promises.readFile(endpoint, {
