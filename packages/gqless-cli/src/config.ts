@@ -58,6 +58,7 @@ export const defaultConfig = {
   preImport: '',
   introspection: {
     endpoint: 'SPECIFY_ENDPOINT_OR_SCHEMA_FILE_PATH_HERE',
+    headers: {},
   } as IntrospectionOptions,
   destination: './src/generated/graphql.ts',
   subscriptions: false,
@@ -82,15 +83,17 @@ type DeepReadonlyObject<T> = {
 export const gqlessConfigPromise: Promise<{
   filepath: string;
   config: DeepReadonly<GqlessConfig>;
-}> = cosmiconfig('gqless', {})
+}> = cosmiconfig('gqless', {
+  searchPlaces: ['gqless.config.cjs', 'package.json'],
+})
   .search()
   .then(async (config) => {
     if (!config || config.isEmpty) {
       const filepath = config?.filepath || defaultFilePath;
 
-      const PROCESS_ENV = process.env['NODE_ENV'];
+      const NODE_ENV = process.env['NODE_ENV'];
 
-      if (PROCESS_ENV !== 'test' && PROCESS_ENV !== 'production') {
+      if (NODE_ENV !== 'test' && NODE_ENV !== 'production') {
         const { format } = (await import('./prettier')).formatPrettier({
           parser: 'typescript',
         });

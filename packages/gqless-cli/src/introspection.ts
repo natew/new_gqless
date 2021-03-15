@@ -25,7 +25,7 @@ export const getRemoteSchema = async (
   /**
    * Specify options for the introspection
    */
-  { headers = {} }: Pick<IntrospectionOptions, 'headers'> = {}
+  { headers }: Pick<IntrospectionOptions, 'headers'> = {}
 ) => {
   const executor: AsyncExecutor = async ({ document, variables }) => {
     headers ||= (await gqlessConfigPromise).config.introspection?.headers || {};
