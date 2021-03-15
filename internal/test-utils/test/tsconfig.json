@@ -1,7 +1,8 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "rootDir": "../"
   },
   "include": ["**/*.ts"]
 }
