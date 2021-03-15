@@ -30,7 +30,7 @@
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^5.0.0",
+    "@dish/gqless-cli": "workspace:^5.0.1",
     "@size-limit/preset-small-lib": "^4.10.1",
     "@types/concurrently": "^6.0.1",
     "@types/lodash": "^4.14.168",

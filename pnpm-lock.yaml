@@ -59,7 +59,7 @@ importers:
       typescript: 4.2.3
     specifiers:
       '@dish/gqless': workspace:^4.0.0
-      '@dish/gqless-cli': workspace:^5.0.0
+      '@dish/gqless-cli': workspace:^5.0.1
       '@graphql-typed-document-node/core': ^3.1.0
       '@size-limit/preset-small-lib': ^4.10.1
       '@types/lodash': ^4.14.168
@@ -122,10 +122,10 @@ importers:
       wait-on: 5.2.1
     specifiers:
       '@dish/gqless': workspace:^4.0.0
-      '@dish/gqless-cli': workspace:^5.0.0
-      '@dish/gqless-logger': workspace:^0.1.4
-      '@dish/gqless-react': workspace:^3.0.0
-      '@dish/gqless-subscriptions': workspace:^0.1.0
+      '@dish/gqless-cli': workspace:^5.0.1
+      '@dish/gqless-logger': workspace:^0.1.5
+      '@dish/gqless-react': workspace:^3.0.1
+      '@dish/gqless-subscriptions': workspace:^0.1.2
       '@types/faker': ^5.1.7
       '@types/lodash': ^4.14.168
       '@types/ms': ^0.7.31
@@ -290,7 +290,7 @@ importers:
       wait-on: 5.2.1
       ws: 7.4.4
     specifiers:
-      '@dish/gqless-cli': workspace:^5.0.0
+      '@dish/gqless-cli': workspace:^5.0.1
       '@size-limit/preset-small-lib': ^4.10.1
       '@types/concurrently': ^6.0.1
       '@types/lodash': ^4.14.168
@@ -358,7 +358,7 @@ importers:
       wait-on: 5.2.1
     specifiers:
       '@dish/gqless': workspace:^4.0.0
-      '@dish/gqless-cli': workspace:^5.0.0
+      '@dish/gqless-cli': workspace:^5.0.1
       '@graphql-codegen/core': ^1.17.9
       '@graphql-codegen/typescript': ^1.21.1
       '@graphql-tools/delegate': ^7.0.10
