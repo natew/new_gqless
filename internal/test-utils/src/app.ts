@@ -1,7 +1,6 @@
 import fastify, { FastifyInstance } from 'fastify';
 import mercurius, { MercuriusOptions } from 'mercurius';
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
-import * as randomstring from 'randomstring';
 
 export function createTestApp(
   options: MercuriusOptions,
@@ -42,29 +41,7 @@ export function createTestApp(
   return { server, client, isReady };
 }
 
-export { default as waitForExpect } from 'wait-for-expect';
-
 export * as mercurius from 'mercurius';
 export * as fastify from 'fastify';
 
-export function assertIsDefined<T = unknown>(
-  value: T,
-  message?: string
-): asserts value is NonNullable<T> {
-  if (value == null) {
-    const error = new Error(message || 'value is nullable');
-
-    Error.captureStackTrace(error, assertIsDefined);
-    throw error;
-  }
-}
-
-export function gql(chunks: TemplateStringsArray, ...variables: any[]): string {
-  return chunks.reduce(
-    (accumulator, chunk, index) =>
-      `${accumulator}${chunk}${index in variables ? variables[index] : ''}`,
-    ''
-  );
-}
-
-export { randomstring };
+export { gql } from 'mercurius-codegen';
