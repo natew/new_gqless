@@ -263,7 +263,7 @@ export const createTestClient = async (
     };
   }
 
-  let subscriptions: SubscriptionsClient | undefined;
+  let subscriptionsClient: SubscriptionsClient | undefined;
 
   if (config?.subscriptions) {
     let port: number;
@@ -275,7 +275,7 @@ export const createTestClient = async (
 
       await server.listen((port = await getPort()));
     }
-    subscriptions = config?.subscriptions
+    subscriptionsClient = config?.subscriptions
       ? createSubscriptionClient({
           wsEndpoint: `ws://127.0.0.1:${port}/graphql`,
         })
@@ -313,7 +313,7 @@ export const createTestClient = async (
       schema: deepAssign(generatedSchema, [addedToGeneratedSchema]) as Schema,
       scalarsEnumsHash,
       queryFetcher,
-      subscriptions,
+      subscriptionsClient,
       ...clientConfig,
     }),
     {

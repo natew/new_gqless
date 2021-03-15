@@ -6,6 +6,7 @@ exports[`basic functionality works: generate_client_code 1`] = `
  */
 
 import { createReactClient } from '@dish/gqless-react';
+import { createSubscriptionsClient } from '@dish/gqless-subscriptions';
 import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -38,11 +39,28 @@ const queryFetcher: QueryFetcher = async function (query, variables) {
   return json;
 };
 
+const subscriptionsClient =
+  typeof window !== 'undefined'
+    ? createSubscriptionsClient({
+        wsEndpoint: () => {
+          // Modify if needed
+          const url = new URL('/api/graphql', window.location.href);
+          url.protocol = url.protocol.replace('http', 'ws');
+          return url.href;
+        },
+      })
+    : undefined;
+
 export const client = createClient<
   GeneratedSchema,
   SchemaObjectTypesNames,
   SchemaObjectTypes
->({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+>({
+  schema: generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher,
+  subscriptionsClient,
+});
 
 export const {
   query,
@@ -236,7 +254,11 @@ export const client = createClient<
   GeneratedSchema,
   SchemaObjectTypesNames,
   SchemaObjectTypes
->({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+>({
+  schema: generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher,
+});
 
 export const {
   query,

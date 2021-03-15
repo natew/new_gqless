@@ -45,6 +45,7 @@ const gqlessCLIConfigRecord = Partial({
     headers: StringRecord,
   }),
   destination: String,
+  subscriptions: Boolean,
 });
 
 export const defaultConfig = {
@@ -59,6 +60,7 @@ export const defaultConfig = {
     endpoint: 'SPECIFY_ENDPOINT_OR_SCHEMA_FILE_PATH_HERE',
   } as IntrospectionOptions,
   destination: './src/generated/graphql.ts',
+  subscriptions: false,
 };
 
 const defaultFilePath = resolve(process.cwd(), 'gqless.config.cjs');

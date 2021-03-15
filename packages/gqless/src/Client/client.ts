@@ -93,7 +93,7 @@ export interface ClientOptions<
   normalization?:
     | NormalizationOptions<ObjectTypesNames, SchemaObjectTypes>
     | boolean;
-  subscriptions?: SubscriptionsClient;
+  subscriptionsClient?: SubscriptionsClient;
 }
 
 export function createClient<
@@ -115,7 +115,7 @@ export function createClient<
   catchSelectionsTimeMS = 10,
   retry,
   normalization = true,
-  subscriptions,
+  subscriptionsClient,
 }: ClientOptions<ObjectTypesNames, ObjectTypes>) {
   const interceptorManager = createInterceptorManager();
 
@@ -162,7 +162,7 @@ export function createClient<
     resolved,
     buildAndFetchSelections,
     resolveSelections,
-  } = createResolvers(innerState, catchSelectionsTimeMS, subscriptions);
+  } = createResolvers(innerState, catchSelectionsTimeMS, subscriptionsClient);
 
   async function resolveSchedulerSelections(selections: Set<Selection>) {
     const resolvingPromise = scheduler.resolving;
@@ -266,6 +266,6 @@ export function createClient<
     assignSelections,
     mutate,
     buildSelection,
-    subscriptionsClient: subscriptions,
+    subscriptionsClient,
   };
 }

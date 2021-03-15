@@ -109,7 +109,11 @@ export const client = createClient<
   GeneratedSchema,
   SchemaObjectTypesNames,
   SchemaObjectTypes
->({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+>({
+  schema: generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher,
+});
 
 export const {
   query,
@@ -165,7 +169,11 @@ export const client = createClient<
   GeneratedSchema,
   SchemaObjectTypesNames,
   SchemaObjectTypes
->({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+>({
+  schema: generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher,
+});
 
 export const {
   query,
@@ -289,7 +297,11 @@ export const client = createClient<
   GeneratedSchema,
   SchemaObjectTypesNames,
   SchemaObjectTypes
->({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+>({
+  schema: generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher,
+});
 
 export const {
   query,
@@ -483,7 +495,11 @@ export const client = createClient<
   GeneratedSchema,
   SchemaObjectTypesNames,
   SchemaObjectTypes
->({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+>({
+  schema: generatedSchema,
+  scalarsEnumsHash,
+  queryFetcher,
+});
 
 export const {
   query,

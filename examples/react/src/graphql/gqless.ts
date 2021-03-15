@@ -48,7 +48,7 @@ export const client = createClient<
   normalization: {
     keyFields: {},
   },
-  subscriptions:
+  subscriptionsClient:
     typeof window !== 'undefined'
       ? createSubscriptionClient({
           wsEndpoint: 'ws://localhost:4141/api/graphql',

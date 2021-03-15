@@ -37,6 +37,7 @@ test('basic functionality works', async () => {
         ${shouldBeIncluded}
         `,
     react: true,
+    subscriptions: true,
   });
 
   expect(schemaCode).toMatchSnapshot('generate_code');

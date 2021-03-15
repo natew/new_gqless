@@ -46,11 +46,23 @@ export interface GenerateOptions {
    * @default false
    */
   enumsAsStrings?: boolean;
+  /**
+   * Generate subscriptions client
+   * @default false
+   */
+  subscriptions?: boolean;
 }
 
 export async function generate(
   schema: GraphQLSchema,
-  { preImport, scalars, react, endpoint, enumsAsStrings }: GenerateOptions = {}
+  {
+    preImport,
+    scalars,
+    react,
+    endpoint,
+    enumsAsStrings,
+    subscriptions,
+  }: GenerateOptions = {}
 ): Promise<{
   clientCode: string;
   schemaCode: string;
@@ -63,6 +75,7 @@ export async function generate(
   endpoint ||= gqlessConfig.endpoint ?? '/graphql';
   react ??= gqlessConfig.react ?? false;
   preImport ??= gqlessConfig.preImport ?? '';
+  subscriptions ??= gqlessConfig.subscriptions ?? false;
 
   const { format } = formatPrettier({
     parser: 'typescript',
@@ -720,12 +733,39 @@ export async function generate(
  */
 
   ${react ? `import { createReactClient } from "@dish/gqless-react"` : ''}
+  ${
+    subscriptions
+      ? `import { createSubscriptionsClient } from "@dish/gqless-subscriptions"`
+      : ''
+  }
   import { createClient, QueryFetcher } from "@dish/gqless";
   import { GeneratedSchema, generatedSchema, scalarsEnumsHash, SchemaObjectTypes, SchemaObjectTypesNames } from "./schema.generated";
 
   ${queryFetcher}
 
-  export const client = createClient<GeneratedSchema, SchemaObjectTypesNames, SchemaObjectTypes>({ schema: generatedSchema, scalarsEnumsHash, queryFetcher });
+  ${
+    subscriptions
+      ? `
+  const subscriptionsClient = 
+  typeof window !== "undefined" ?
+  createSubscriptionsClient({
+    wsEndpoint: () => {
+      // Modify if needed
+      const url = new URL("${endpoint}", window.location.href);
+      url.protocol = url.protocol.replace('http', 'ws');
+      return url.href;
+    }
+  }) : undefined;
+  `
+      : ''
+  }
+
+  export const client = createClient<GeneratedSchema, SchemaObjectTypesNames, SchemaObjectTypes>({ 
+    schema: generatedSchema, 
+    scalarsEnumsHash, 
+    queryFetcher
+    ${subscriptions ? ', subscriptionsClient' : ''}
+  });
 
   export const { query, mutation, mutate, subscription, resolved, refetch } = client;
 
