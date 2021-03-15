@@ -17,7 +17,7 @@
     "prepare": "rimraf node_modules/.cache && tsdx build",
     "size": "size-limit",
     "start": "tsc-watch --noClear",
-    "start:with:example": "tsc-watch -m commonjs --noClear --onSuccess \"pnpm -r --filter gqless-react-example dev\"",
+    "start:with:example": "tsc-watch -m commonjs --noClear --onSuccess \"pnpm -r --filter react-example dev\"",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch"
   },

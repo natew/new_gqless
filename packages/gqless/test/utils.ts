@@ -2,7 +2,7 @@ import getPort from 'get-port';
 import { createTestApp, gql } from 'test-utils';
 
 import { generate } from '../../gqless-cli';
-import { createSubscriptionClient } from '../../gqless-subscriptions';
+import { createSubscriptionsClient } from '../../gqless-subscriptions';
 import {
   ClientOptions,
   createClient,
@@ -276,7 +276,7 @@ export const createTestClient = async (
       await server.listen((port = await getPort()));
     }
     subscriptionsClient = config?.subscriptions
-      ? createSubscriptionClient({
+      ? createSubscriptionsClient({
           wsEndpoint: `ws://127.0.0.1:${port}/graphql`,
         })
       : undefined;

@@ -4,16 +4,17 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm build -r --stream",
+    "ci:version": "changeset version && pnpm i --no-frozen-lockfile",
     "clean": "rimraf packages/*/dist packages/*/coverage packages/*/.nyc_output packages/*/*.tsbuildinfo",
     "dev": "pnpm clean && node dev.mjs",
+    "dev:mercurius": "pnpm -r exec --filter @dish/gqless -- tsc -m commonjs && concurrently \"pnpm -r --filter mercurius-example test:watch\" \"pnpm -r --filter @dish/gqless start\"",
     "dev:nodemon": "pnpm prepare -r --no-bail && pnpm test -r --no-bail --no-sort --stream",
-    "dev:react": "rimraf packages/gqless/dist packages/gqless-react/dist packages/gqless-subscriptions/dist examples/react/last-browser-open && pnpm -r --filter @dish/gqless start -- --onSuccess \"pnpm -w dev:react:2\"",
+    "dev:react": "rimraf packages/gqless/dist packages/gqless-react/dist packages/gqless-subscriptions/dist examples/react/last-browser-open examples/react/.next && pnpm -r --filter @dish/gqless start -- --onSuccess \"pnpm -w dev:react:2\"",
     "dev:react:2": "pnpm -r --filter @dish/gqless-subscriptions start -- --onSuccess \"pnpm -r --filter @dish/gqless-react start:with:example\"",
     "dev:start": "pnpm start -r --no-bail --no-sort",
     "dev:test": "pnpm test:watch -r --no-bail --no-sort --stream",
     "publish:all": "changeset version && pnpm i && pnpm test && pnpm -r publish --access public",
-    "test": "jest --clearCache && pnpm test -r --no-sort --no-bail --stream",
-    "dev:mercurius": "pnpm -r exec --filter @dish/gqless -- tsc -m commonjs && concurrently \"pnpm -r --filter mercurius-example test:watch\" \"pnpm -r --filter @dish/gqless start\""
+    "test": "jest --clearCache && pnpm test -r --no-sort --no-bail --stream"
   },
   "husky": {
     "hooks": {

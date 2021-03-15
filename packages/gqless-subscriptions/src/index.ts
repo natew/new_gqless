@@ -15,7 +15,7 @@ export interface SubscriptionsClientOptions extends ClientOptions {
   wsEndpoint: string | (() => string | Promise<string>);
 }
 
-export function createSubscriptionClient({
+export function createSubscriptionsClient({
   wsEndpoint,
   ...opts
 }: SubscriptionsClientOptions): SubscriptionsClient {

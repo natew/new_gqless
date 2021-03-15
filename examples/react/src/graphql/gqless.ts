@@ -1,5 +1,5 @@
 import { createClient, QueryFetcher } from '@dish/gqless';
-import { createSubscriptionClient } from '@dish/gqless-subscriptions';
+import { createSubscriptionsClient } from '@dish/gqless-subscriptions';
 
 import {
   GeneratedSchema,
@@ -50,7 +50,7 @@ export const client = createClient<
   },
   subscriptionsClient:
     typeof window !== 'undefined'
-      ? createSubscriptionClient({
+      ? createSubscriptionsClient({
           wsEndpoint: 'ws://localhost:4141/api/graphql',
         })
       : undefined,
