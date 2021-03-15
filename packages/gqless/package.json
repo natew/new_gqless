@@ -1,6 +1,6 @@
 {
   "name": "@dish/gqless",
-  "version": "3.0.13",
+  "version": "4.0.0",
   "description": "",
   "license": "MIT",
   "author": "PabloSz",
@@ -30,7 +30,7 @@
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
-    "@dish/gqless-cli": "workspace:^4.0.4",
+    "@dish/gqless-cli": "workspace:^5.0.0",
     "@size-limit/preset-small-lib": "^4.10.1",
     "@types/concurrently": "^6.0.1",
     "@types/lodash": "^4.14.168",
@@ -61,7 +61,7 @@
     "tsc-watch": "^4.2.9",
     "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
-    "tsup": "^4.7.0",
+    "tsup": "^4.7.1",
     "typescript": "^4.2.3",
     "wait-on": "^5.2.1",
     "ws": "^7.4.4"
