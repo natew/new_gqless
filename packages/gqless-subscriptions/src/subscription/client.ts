@@ -225,16 +225,17 @@ export class Client {
     count--;
 
     if (count === 0 || forceUnsubscribe) {
-      await this.sendMessage(operationId, GQL_STOP, null);
       this.operationsCount[operationId] = 0;
 
       this.operations.delete(operationId);
+
+      await this.sendMessage(operationId, GQL_STOP, null);
 
       if (this.lazy) {
         const self = this;
 
         setTimeout(() => {
-          if (self.operations.size === 0) {
+          if (self.operations.size === 0 && this.socket) {
             self.close();
           }
         }, 2000);
@@ -268,9 +269,8 @@ export class Client {
             extensions,
           }),
           (err) => {
-            if (err) {
-              return reject(err);
-            }
+            if (err) console.error(err);
+
             resolve();
           }
         );
