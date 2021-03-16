@@ -4,7 +4,11 @@ import { useOnFirstMount } from './common';
 
 import type { createClient, HydrateCacheOptions } from '@dish/gqless';
 
-export interface UseHydrateCacheOptions extends HydrateCacheOptions {
+export interface UseHydrateCacheOptions extends Partial<HydrateCacheOptions> {
+  /**
+   * Cache snapshot, returned from `prepareReactRender`
+   */
+  cacheSnapshot: string | undefined;
   /**
    * If it should refetch everything after the component is mounted
    *
@@ -24,7 +28,9 @@ export function createSSRHelpers(client: ReturnType<typeof createClient>) {
     shouldRefetch = true,
   }: UseHydrateCacheOptions) {
     useOnFirstMount(() => {
-      client.hydrateCache({ cacheSnapshot, shouldRefetch: false });
+      if (cacheSnapshot) {
+        client.hydrateCache({ cacheSnapshot, shouldRefetch: false });
+      }
     });
     useEffect(() => {
       if (shouldRefetch) {
