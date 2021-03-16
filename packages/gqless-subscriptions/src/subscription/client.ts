@@ -93,6 +93,7 @@ export class Client {
   lazy;
 
   connectedPromise: DeferredPromise<Error | void>;
+  socketReady: DeferredPromise<boolean> | undefined;
 
   constructor(
     uri: string,
@@ -132,9 +133,12 @@ export class Client {
   }
 
   connect() {
+    if (this.socket !== null) return;
+
     this.socket = new WebSocket(this.uri, [GRAPHQL_WS], {
       headers: this.headers,
     });
+    const readyPromise = (this.socketReady = createDeferredPromise());
 
     this.socket.onopen = async () => {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
@@ -144,9 +148,13 @@ export class Client {
               ? await this.connectionInitPayload()
               : this.connectionInitPayload;
           this.sendMessage(null, GQL_CONNECTION_INIT, payload);
+          readyPromise.resolve(true);
         } catch (err) {
           this.close(this.tryReconnect, false);
+          readyPromise.resolve(false);
         }
+      } else {
+        readyPromise.resolve(false);
       }
     };
 
@@ -154,6 +162,7 @@ export class Client {
       if (!this.closedByUser) {
         this.close(this.tryReconnect, false);
       }
+      readyPromise.resolve(false);
     };
 
     this.socket.onerror = () => {};
@@ -257,8 +266,14 @@ export class Client {
     payload: unknown = {},
     extensions?: unknown
   ) {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       try {
+        if (this.socketReady) {
+          const isOk = await this.socketReady.promise;
+
+          if (!isOk) return resolve();
+        }
+
         if (!this.socket) return resolve();
 
         this.socket.send(

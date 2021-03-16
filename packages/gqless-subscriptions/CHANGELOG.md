@@ -1,5 +1,11 @@
 # @dish/gqless-subscriptions
 
+## 0.1.6
+
+### Patch Changes
+
+- prevent "'WebSocket': Still in CONNECTING state"
+
 ## 0.1.5
 
 ### Patch Changes
