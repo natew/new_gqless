@@ -258,7 +258,7 @@ export class Client {
   ) {
     return new Promise<void>((resolve, reject) => {
       try {
-        if (!this.socket) return reject(Error('No socket available'));
+        if (!this.socket) return resolve();
 
         this.socket.send(
           JSON.stringify({

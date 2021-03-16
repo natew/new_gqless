@@ -1,5 +1,11 @@
 # @dish/gqless-subscriptions
 
+## 0.1.4
+
+### Patch Changes
+
+- don't reject socket message promise if disconnected
+
 ## 0.1.3
 
 ### Patch Changes
