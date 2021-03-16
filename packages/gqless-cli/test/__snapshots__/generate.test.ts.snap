@@ -80,6 +80,9 @@ export const {
   useMutation,
   useRefetch,
   useMetaState,
+  prepareReactRender,
+  useHydrateCache,
+  useSubscription,
 } = createReactClient<GeneratedSchema>(client, {
   defaults: {
     // Set this flag as \\"false\\" if your usage doesn't involve React Suspense

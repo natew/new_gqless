@@ -60,7 +60,7 @@ export const defaultConfig = {
     endpoint: 'SPECIFY_ENDPOINT_OR_SCHEMA_FILE_PATH_HERE',
     headers: {},
   } as IntrospectionOptions,
-  destination: './src/generated/graphql.ts',
+  destination: './src/gqless/index.ts',
   subscriptions: false,
 };
 

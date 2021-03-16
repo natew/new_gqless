@@ -779,7 +779,10 @@ export async function generate(
     usePolling,
     useMutation,
     useRefetch,
-    useMetaState    
+    useMetaState,
+    prepareReactRender,
+    useHydrateCache,
+    ${subscriptions ? 'useSubscription,' : ''}    
   } = createReactClient<GeneratedSchema>(client, {
     defaults: {
       // Set this flag as "false" if your usage doesn't involve React Suspense

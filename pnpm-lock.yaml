@@ -59,7 +59,7 @@ importers:
       typescript: 4.2.3
     specifiers:
       '@dish/gqless': workspace:^4.0.0
-      '@dish/gqless-cli': workspace:^5.0.1
+      '@dish/gqless-cli': workspace:^5.0.2
       '@graphql-typed-document-node/core': ^3.1.0
       '@size-limit/preset-small-lib': ^4.10.1
       '@types/lodash': ^4.14.168
@@ -122,7 +122,7 @@ importers:
       wait-on: 5.2.1
     specifiers:
       '@dish/gqless': workspace:^4.0.0
-      '@dish/gqless-cli': workspace:^5.0.1
+      '@dish/gqless-cli': workspace:^5.0.2
       '@dish/gqless-logger': workspace:^0.1.5
       '@dish/gqless-react': workspace:^3.0.3
       '@dish/gqless-subscriptions': workspace:^0.1.5

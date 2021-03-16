@@ -3,9 +3,10 @@ import { promises } from 'fs';
 import { buildSchema, GraphQLSchema } from 'graphql';
 import { resolve } from 'path';
 
-import { defaultConfig } from './config';
+import { defaultConfig, gqlessConfigPromise } from './config';
 
 import type { GenerateOptions } from './generate';
+
 export async function inspectWriteGenerate({
   endpoint,
   destination,
@@ -19,12 +20,12 @@ export async function inspectWriteGenerate({
    * @example 'http://localhost:3000/graphql'
    * @example './schema.gql'
    */
-  endpoint: string;
+  endpoint?: string;
   /**
    * File path destination
-   * @example './src/generated/graphql.ts'
+   * @example './src/gqless/index.ts'
    */
-  destination: string;
+  destination?: string;
   /**
    * Specify generate options
    */
@@ -37,7 +38,45 @@ export async function inspectWriteGenerate({
    * Specify headers for the introspection HTTP request
    */
   headers?: Record<string, string>;
-}) {
+} = {}) {
+  if (destination) {
+    defaultConfig.destination = destination;
+  }
+
+  if (endpoint) {
+    defaultConfig.introspection.endpoint = endpoint;
+  } else if (existsSync(resolve('./schema.gql'))) {
+    endpoint = './schema.gql';
+    defaultConfig.introspection.endpoint = endpoint;
+  } else {
+    const { config, filepath } = await gqlessConfigPromise;
+
+    const configIntrospectionEndpoint =
+      config.introspection && config.introspection.endpoint;
+
+    if (
+      configIntrospectionEndpoint &&
+      configIntrospectionEndpoint !== defaultConfig.introspection.endpoint
+    ) {
+      endpoint = configIntrospectionEndpoint;
+    } else {
+      console.error(
+        `\nPlease modify "${
+          filepath.endsWith('package.json') ? 'gqless' : 'config'
+        }.introspection.endpoint" in: "${filepath}".`
+      );
+      throw Error(
+        'ERROR: No introspection endpoint specified in configuration file.'
+      );
+    }
+  }
+
+  if (!destination) {
+    const configDestination = (await gqlessConfigPromise).config.destination;
+
+    destination = configDestination || './src/generated/graphql.ts';
+  }
+
   destination = resolve(destination);
 
   const genOptions = Object.assign({}, generateOptions);
