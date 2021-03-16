@@ -1,5 +1,11 @@
 # @dish/gqless-react
 
+## 3.0.3
+
+### Patch Changes
+
+- PropsWithServerCache ssr helper type
+
 ## 3.0.2
 
 ### Patch Changes

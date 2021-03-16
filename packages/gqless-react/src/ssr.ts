@@ -18,6 +18,18 @@ export interface UseHydrateCacheOptions extends Partial<HydrateCacheOptions> {
   shouldRefetch?: boolean;
 }
 
+/**
+ * Props with `cacheSnapshot` that would be returned from `prepareReactRender`
+ */
+export type PropsWithServerCache<
+  T extends Record<string | number | symbol, unknown> = {}
+> = {
+  /**
+   * Cache snapshot, returned from `prepareReactRender`
+   */
+  cacheSnapshot?: string;
+} & T;
+
 export function createSSRHelpers(client: ReturnType<typeof createClient>) {
   async function prepareReactRender(element: ReactNode) {
     const ssrPrepass = (await import('react-ssr-prepass')).default;
