@@ -71,12 +71,13 @@ module.exports = {
               to: 'introduction/getting-started',
             },
             {
-              label: 'FAQ',
-              to: 'faq',
+              label: 'React',
+              to: 'react/basic-usage',
+              position: 'right',
             },
             {
-              label: 'API Reference',
-              to: 'api',
+              label: 'FAQ',
+              to: 'faq',
             },
           ],
         },
