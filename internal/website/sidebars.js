@@ -3,30 +3,19 @@ module.exports = {
     Introduction: [
       'introduction/getting-started',
       'introduction/installation',
-      'introduction/motivation',
       'introduction/features',
+      'introduction/motivation',
     ],
-    'Fetching Data': [
-      'fetching-data/queries',
-      'fetching-data/local-state',
-      'fetching-data/fragments',
-    ],
-    FAQ: ['faq'],
     React: [
       'react/basic-usage',
-      'react/polling',
-      'react/variables',
-      'react/custom-queries',
-      'react/interfaces-unions',
+      'react/suspense',
+      'react/config',
+      'react/api-reference',
     ],
-    'API Reference': [
-      'api',
-      {
-        type: 'category',
-        label: '@gqless/logger',
-        items: ['api/logger/Logger'],
-      },
-    ],
+    Vanilla: ['vanilla/basic-usage', 'vanilla/api-reference'],
+    'Development Tools': ['development/logger'],
+    API: ['api/client-config', 'api/subscriptions'],
     CLI: ['cli/installation', 'cli/codegen'],
+    FAQ: ['faq'],
   },
 };

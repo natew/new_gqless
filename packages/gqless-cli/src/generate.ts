@@ -785,8 +785,9 @@ export async function generate(
     ${subscriptions ? 'useSubscription,' : ''}    
   } = createReactClient<GeneratedSchema>(client, {
     defaults: {
-      // Set this flag as "false" if your usage doesn't involve React Suspense
-      suspense: true,
+      // Set this flag as "true" if your usage involves React Suspense
+      // Keep in mind that you can overwrite it in a per-hook basiss
+      suspense: false,
 
       // Set this flag based on your needs
       staleWhileRevalidate: false

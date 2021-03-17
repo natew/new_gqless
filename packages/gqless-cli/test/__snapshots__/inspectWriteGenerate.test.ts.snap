@@ -73,6 +73,8 @@ exports[`CLI behavior final message: basic functionality with cli final messsage
  * GQLESS: You can safely modify this file and Query Fetcher based on your needs
  */
 
+import { createReactClient } from '@dish/gqless-react';
+
 import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -123,6 +125,28 @@ export const {
   resolved,
   refetch,
 } = client;
+
+export const {
+  graphql,
+  useQuery,
+  useTransactionQuery,
+  useLazyQuery,
+  usePolling,
+  useMutation,
+  useRefetch,
+  useMetaState,
+  prepareReactRender,
+  useHydrateCache,
+} = createReactClient<GeneratedSchema>(client, {
+  defaults: {
+    // Set this flag as \\"true\\" if your usage involves React Suspense
+    // Keep in mind that you can overwrite it in a per-hook basiss
+    suspense: false,
+
+    // Set this flag based on your needs
+    staleWhileRevalidate: false,
+  },
+});
 
 export * from './schema.generated';
 "
@@ -133,6 +157,8 @@ exports[`basic inspectWriteGenerate functionality: basic inspectWriteGenerate cl
  * GQLESS: You can safely modify this file and Query Fetcher based on your needs
  */
 
+import { createReactClient } from '@dish/gqless-react';
+
 import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -183,6 +209,28 @@ export const {
   resolved,
   refetch,
 } = client;
+
+export const {
+  graphql,
+  useQuery,
+  useTransactionQuery,
+  useLazyQuery,
+  usePolling,
+  useMutation,
+  useRefetch,
+  useMetaState,
+  prepareReactRender,
+  useHydrateCache,
+} = createReactClient<GeneratedSchema>(client, {
+  defaults: {
+    // Set this flag as \\"true\\" if your usage involves React Suspense
+    // Keep in mind that you can overwrite it in a per-hook basiss
+    suspense: false,
+
+    // Set this flag based on your needs
+    staleWhileRevalidate: false,
+  },
+});
 
 export * from './schema.generated';
 "
@@ -261,6 +309,8 @@ exports[`from file generate from graphql schema file: from file client 1`] = `
  * GQLESS: You can safely modify this file and Query Fetcher based on your needs
  */
 
+import { createReactClient } from '@dish/gqless-react';
+
 import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -311,6 +361,28 @@ export const {
   resolved,
   refetch,
 } = client;
+
+export const {
+  graphql,
+  useQuery,
+  useTransactionQuery,
+  useLazyQuery,
+  usePolling,
+  useMutation,
+  useRefetch,
+  useMetaState,
+  prepareReactRender,
+  useHydrateCache,
+} = createReactClient<GeneratedSchema>(client, {
+  defaults: {
+    // Set this flag as \\"true\\" if your usage involves React Suspense
+    // Keep in mind that you can overwrite it in a per-hook basiss
+    suspense: false,
+
+    // Set this flag based on your needs
+    staleWhileRevalidate: false,
+  },
+});
 
 export * from './schema.generated';
 "
@@ -459,6 +531,8 @@ exports[`specify generateOptions to inspectWriteGenerate: generateOptions client
  * GQLESS: You can safely modify this file and Query Fetcher based on your needs
  */
 
+import { createReactClient } from '@dish/gqless-react';
+
 import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -509,6 +583,28 @@ export const {
   resolved,
   refetch,
 } = client;
+
+export const {
+  graphql,
+  useQuery,
+  useTransactionQuery,
+  useLazyQuery,
+  usePolling,
+  useMutation,
+  useRefetch,
+  useMetaState,
+  prepareReactRender,
+  useHydrateCache,
+} = createReactClient<GeneratedSchema>(client, {
+  defaults: {
+    // Set this flag as \\"true\\" if your usage involves React Suspense
+    // Keep in mind that you can overwrite it in a per-hook basiss
+    suspense: false,
+
+    // Set this flag based on your needs
+    staleWhileRevalidate: false,
+  },
+});
 
 export * from './schema.generated';
 "

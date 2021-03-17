@@ -3,7 +3,6 @@ import 'regenerator-runtime/runtime';
 import { motion, useAnimation } from 'framer-motion';
 import * as React from 'react';
 
-import isInternalUrl from '@docusaurus/isInternalUrl';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styled from '@emotion/styled';
@@ -65,17 +64,22 @@ const Examples = styled(motion.div)`
   display: flex;
 `;
 
-const yourApp = `const App = () => (
-  <div>
-    {query.me.name}
-    {query.users({ limit: 10 }).map(user => (
-      <div key={user.id}>{user.name}</div>
-    ))}
-  </div>
-)`;
+const yourApp = `const App = () => {
+  const { me, users } = useQuery();
+  return (
+    <div>
+      Hello {me.name}!
+      {users({ limit: 10 }).map((user) => (
+        <User key={user.id} user={user} />
+      ))}
+    </div>
+  );
+};`;
 
-const generatedQuery = `query App {
-  me { name }
+const generatedQuery = `query {
+  me {
+    name
+  }
   users(limit: 10) {
     id
     name
@@ -202,7 +206,8 @@ export default () => {
                 title="Invisible data fetching"
                 imageUrl="img/graphql.svg"
               >
-                Queries are generated at runtime, by using JS getters.
+                Queries, Mutations and Subscriptions are generated at runtime,
+                by using JS getters.
               </Feature>
             </FeatureLink>
             <FeatureLink to="/introduction/features#typescript">
@@ -213,7 +218,8 @@ export default () => {
             </FeatureLink>
             <FeatureLink to="react/basic-usage">
               <Feature title="React.js" imageUrl="img/react.svg">
-                React Suspense, hooks, automatic component updates and more.
+                React Suspense supports, hooks, automatic component updates and
+                more.
               </Feature>
             </FeatureLink>
             <FeatureLink to="/introduction/features">
@@ -221,7 +227,8 @@ export default () => {
                 title="Production ready"
                 imageUrl="img/production_ready.png"
               >
-                Fully-featured with inbuilt cache, extensions and more.
+                Fully-featured with inbuilt normalized cache, server side
+                rendering, subscriptions and more.
               </Feature>
             </FeatureLink>
           </Features>

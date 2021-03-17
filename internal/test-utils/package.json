@@ -40,7 +40,7 @@
     "size-limit": "^4.10.1",
     "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
-    "tsup": "^4.7.1",
+    "tsup": "^4.8.4",
     "typescript": "^4.2.3"
   },
   "engines": {

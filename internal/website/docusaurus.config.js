@@ -4,10 +4,10 @@ module.exports = {
   url: 'https://gqless.dev',
   baseUrl: '/',
   favicon: '/graphql.ico',
-  organizationName: 'samdenty',
+  organizationName: 'gqless',
   projectName: 'gqless',
   themeConfig: {
-    // sidebarCollapsible: false,
+    sidebarCollapsible: true,
     prism: {
       theme: require('prism-react-renderer/themes/nightOwlLight'),
       darkTheme: require('prism-react-renderer/themes/shadesOfPurple'),
@@ -34,8 +34,8 @@ module.exports = {
           activeBasePath: 'introduction',
         },
         {
-          label: 'API',
-          to: 'api',
+          label: 'React',
+          to: 'react/basic-usage',
           position: 'right',
         },
         {
@@ -46,14 +46,14 @@ module.exports = {
 
         // { to: 'blog', label: 'Blog', position: 'left' },
         {
-          href: 'https://github.com/samdenty/gqless',
+          href: 'https://github.com/gqless/gqless',
           position: 'right',
           dangerouslySetInnerHTML: {
             __html: `
               <img
                 class="github-star"
                 alt="GitHub"
-                src="https://img.shields.io/github/stars/samdenty/gqless?style=social&label=Star"
+                src="https://img.shields.io/github/stars/gqless/gqless?style=social&label=Star"
               />
             `,
           },
@@ -98,7 +98,7 @@ module.exports = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/samdenty/gqless',
+              href: 'https://github.com/gqless/gqless',
             },
             {
               label: 'Open Collective',
@@ -107,11 +107,7 @@ module.exports = {
           ],
         },
       ],
-      // logo: {
-      //   alt: 'Facebook Open Source Logo',
-      //   src: 'https://docusaurus.io/img/oss_logo.png',
-      // },
-      copyright: `Copyright © ${new Date().getFullYear()} <a href="https://twitter.com/thesamdd" target="_blank">Sam Denty</a>`,
+      copyright: `Copyright © ${new Date().getFullYear()}`,
     },
   },
   presets: [
@@ -122,7 +118,7 @@ module.exports = {
           path: '../../docs',
           sidebarPath: require.resolve('./sidebars.js'),
           routeBasePath: '/',
-          editUrl: 'https://github.com/samdenty/gqless/edit/master/docs/',
+          editUrl: 'https://github.com/gqless/gqless/edit/master/docs/',
           remarkPlugins: [require('./src/plugins/remark-yarn2npm')],
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,

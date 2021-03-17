@@ -11,24 +11,30 @@ const npmToYarn = require('npm-to-yarn');
 const convertYarnToNpm = (yarnCode) => npmToYarn(yarnCode, 'npm');
 
 const transformNode = (node) => {
+  node.value = node.value.replace(/--dev/g, '-D');
   const yarnCode = node.value;
-  const npmCode = convertYarnToNpm(node.value);
+  const npmCode = convertYarnToNpm(node.value)
+    .replace(/--save-dev/g, '-D')
+    .replace(/--save/g, '')
+    .trim();
+  const pnpmCode = node.value.replace(/yarn/g, 'pnpm');
   return [
     {
       type: 'jsx',
       value:
-        `<Tabs defaultValue="yarn" ` +
+        `<Tabs defaultValue="npm" ` +
         `values={[
-    { label: 'Yarn', value: 'yarn', },
+    { label: 'pnpm', value: 'pnpm', },
     { label: 'npm', value: 'npm', },
+    { label: 'yarn', value: 'yarn', },
   ]}
 >
-<TabItem value="yarn">`,
+<TabItem value="pnpm">`,
     },
     {
       type: node.type,
       lang: node.lang,
-      value: yarnCode,
+      value: pnpmCode,
     },
     {
       type: 'jsx',
@@ -38,6 +44,15 @@ const transformNode = (node) => {
       type: node.type,
       lang: node.lang,
       value: npmCode,
+    },
+    {
+      type: 'jsx',
+      value: '</TabItem>\n<TabItem value="yarn">',
+    },
+    {
+      type: node.type,
+      lang: node.lang,
+      value: yarnCode,
     },
     {
       type: 'jsx',

@@ -85,8 +85,9 @@ export const {
   useSubscription,
 } = createReactClient<GeneratedSchema>(client, {
   defaults: {
-    // Set this flag as \\"false\\" if your usage doesn't involve React Suspense
-    suspense: true,
+    // Set this flag as \\"true\\" if your usage involves React Suspense
+    // Keep in mind that you can overwrite it in a per-hook basiss
+    suspense: false,
 
     // Set this flag based on your needs
     staleWhileRevalidate: false,
@@ -221,6 +222,8 @@ exports[`custom scalars works: generate_client_code 1`] = `
  * GQLESS: You can safely modify this file and Query Fetcher based on your needs
  */
 
+import { createReactClient } from '@dish/gqless-react';
+
 import { createClient, QueryFetcher } from '@dish/gqless';
 import {
   GeneratedSchema,
@@ -271,6 +274,28 @@ export const {
   resolved,
   refetch,
 } = client;
+
+export const {
+  graphql,
+  useQuery,
+  useTransactionQuery,
+  useLazyQuery,
+  usePolling,
+  useMutation,
+  useRefetch,
+  useMetaState,
+  prepareReactRender,
+  useHydrateCache,
+} = createReactClient<GeneratedSchema>(client, {
+  defaults: {
+    // Set this flag as \\"true\\" if your usage involves React Suspense
+    // Keep in mind that you can overwrite it in a per-hook basiss
+    suspense: false,
+
+    // Set this flag based on your needs
+    staleWhileRevalidate: false,
+  },
+});
 
 export * from './schema.generated';
 "

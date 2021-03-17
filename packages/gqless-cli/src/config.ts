@@ -51,7 +51,7 @@ const gqlessCLIConfigRecord = Partial({
 export const defaultConfig = {
   endpoint: '/api/graphql',
   enumsAsStrings: false,
-  react: false,
+  react: true,
   scalars: {
     DateTime: 'string',
   },
