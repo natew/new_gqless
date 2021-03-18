@@ -152,7 +152,7 @@ export default () => {
   }, []);
 
   return (
-    <Layout title={siteConfig.title} description={siteConfig.tagline}>
+    <Layout title="Home" description={siteConfig.tagline}>
       <Header className="hero">
         <Hero
           initial={initial}
@@ -177,6 +177,7 @@ export default () => {
               style={{
                 maxWidth: '80vw',
               }}
+              alt="gqless Logo"
             />
           </Overflow>
           <Overflow>
@@ -187,7 +188,7 @@ export default () => {
                 visible: { opacity: 1 },
               }}
             >
-              A GraphQL client, for rapid iteration.
+              A GraphQL client for rapid iterations.
             </motion.p>
           </Overflow>
           <Actions
@@ -198,7 +199,7 @@ export default () => {
           >
             <Action to="/introduction/getting-started">Get Started ›</Action>
             <Action
-              to="/introduction/getting-started"
+              to="/introduction/features"
               style={{ color: 'rgb(170, 170, 255)' }}
             >
               Explore features ›

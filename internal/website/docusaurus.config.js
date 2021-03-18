@@ -21,11 +21,11 @@ module.exports = {
       trackingID: 'UA-85426772-7',
     },
     navbar: {
-      title: 'gqless',
-      // logo: {
-      //   alt: 'gqless Logo',
-      //   src: 'img/logo.svg',
-      // },
+      title: null,
+      logo: {
+        alt: 'gqless Logo',
+        src: '/img/logo-436p.png',
+      },
       items: [
         {
           label: 'Getting Started',
