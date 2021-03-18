@@ -102,7 +102,21 @@ const Action = styled(Link)`
   margin: 0 0.7rem;
 `;
 
-const delay = (t) => new Promise((resolve) => setTimeout(resolve, t));
+const delay = (t: number) => new Promise((resolve) => setTimeout(resolve, t));
+
+function getPrefersReducedMotion() {
+  const QUERY = '(prefers-reduced-motion: no-preference)';
+  const mediaQueryList = window.matchMedia(QUERY);
+  const prefersReducedMotion = !mediaQueryList.matches;
+  return prefersReducedMotion;
+}
+
+const initial =
+  typeof window !== 'undefined'
+    ? getPrefersReducedMotion()
+      ? 'visible'
+      : 'hidden'
+    : 'visible';
 
 export default () => {
   const context = useDocusaurusContext();
@@ -117,17 +131,23 @@ export default () => {
 
   React.useEffect(() => {
     (async () => {
-      await delay(200);
+      if (getPrefersReducedMotion()) {
+        info.set('visible');
+        app.set('visible');
+        arrow.set('visible');
+        queries.set('visible');
+        features.set('visible');
+      } else {
+        await info.start('visible');
 
-      await info.start('visible');
+        delay(300).then(() => {
+          features.start('visible');
+        });
 
-      app.start('visible');
-      await delay(500);
-
-      arrow.start('visible');
-      await delay(1200);
-      await queries.start('visible');
-      await features.start('visible');
+        app.start('visible');
+        arrow.start('visible');
+        queries.start('visible');
+      }
     })();
   }, []);
 
@@ -135,7 +155,7 @@ export default () => {
     <Layout title={siteConfig.title} description={siteConfig.tagline}>
       <Header className="hero">
         <Hero
-          initial="hidden"
+          initial={initial}
           animate={info}
           variants={{
             visible: {
@@ -149,7 +169,7 @@ export default () => {
             <motion.img
               className="hero__title"
               variants={{
-                hidden: { translateY: '130%' },
+                hidden: { translateY: '140%' },
                 visible: { translateY: '0%' },
               }}
               src="/img/logo-436p.png"
@@ -186,11 +206,15 @@ export default () => {
           </Actions>
         </Hero>
         <Examples>
-          <Example title="Access GraphQL data" animate={app}>
+          <Example title="Access GraphQL data" animate={app} initial={initial}>
             <CodeBlock className="language-jsx">{yourApp}</CodeBlock>
           </Example>
           <ResultArrow animate={arrow} />
-          <Example title="Fetched automagically" animate={queries}>
+          <Example
+            title="Fetched automagically"
+            animate={queries}
+            initial={initial}
+          >
             <CodeBlock className="language-graphql">{generatedQuery}</CodeBlock>
           </Example>
         </Examples>
@@ -198,7 +222,7 @@ export default () => {
       <main>
         <Glare>
           <Features
-            initial="hidden"
+            initial={initial}
             animate={features}
             variants={{
               visible: {

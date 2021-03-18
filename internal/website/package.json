@@ -4,6 +4,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "serve": "serve build",
     "start": "docusaurus start --host 0.0.0.0",
     "build": "docusaurus build"
   },

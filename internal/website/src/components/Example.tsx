@@ -32,12 +32,14 @@ export const Example = ({
   title,
   children,
   animate = 'visible',
+  initial = 'hidden',
 }: {
   title: string;
   children: React.ReactNode;
   animate: AnimationProps['animate'];
+  initial?: 'hidden' | 'visible';
 }) => (
-  <StyledExample initial="hidden" animate={animate}>
+  <StyledExample initial={initial} animate={animate}>
     <Title
       variants={{
         hidden: {
