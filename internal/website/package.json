@@ -1,12 +1,13 @@
 {
-  "license": "MIT",
   "name": "website",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
   "scripts": {
+    "build": "docusaurus build",
+    "postinstall": "npm install --package-lock-only",
     "serve": "serve build",
-    "start": "docusaurus start --host 0.0.0.0",
-    "build": "docusaurus build"
+    "start": "docusaurus start --host 0.0.0.0"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.72",
