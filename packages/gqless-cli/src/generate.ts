@@ -414,7 +414,13 @@ export async function generate(
     parseObjectType(subscriptionType, 'subscription');
   }
 
-  const unionsMapObj = Object.fromEntries(unionsMap);
+  const unionsMapObj = Array.from(unionsMap.entries()).reduce(
+    (acum, [key, value]) => {
+      acum[key] = value;
+      return acum;
+    },
+    {} as Record<string, string[]>
+  );
   if (unionsMap.size) {
     generatedSchema[SchemaUnionsKey] = unionsMapObj;
   }

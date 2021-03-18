@@ -4,6 +4,7 @@ import { terser } from 'rollup-plugin-terser';
 import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
 import cleanup from 'rollup-plugin-cleanup';
+import { getBabelOutputPlugin } from '@rollup/plugin-babel';
 
 function outputReplace(
   /**
@@ -18,6 +19,18 @@ function outputReplace(
 
   return rest;
 }
+
+const babelPlugin = getBabelOutputPlugin({
+  babelrc: false,
+  plugins: [
+    '@babel/plugin-proposal-optional-chaining',
+    '@babel/plugin-proposal-nullish-coalescing-operator',
+  ],
+  //@ts-expect-error
+  assumptions: {
+    noDocumentAll: true,
+  },
+});
 
 export function getOutputOptions(
   /**
@@ -35,6 +48,7 @@ export function getOutputOptions(
       sourcemap: true,
       preferConst: true,
       exports: 'named',
+      plugins: [babelPlugin],
     },
     {
       file: `dist/${moduleName}.cjs.production.min.js`,
@@ -48,6 +62,7 @@ export function getOutputOptions(
             'process.env.NODE_ENV': '"production"',
           },
         }),
+        babelPlugin,
         terser(),
       ],
     },
@@ -62,6 +77,7 @@ export function getOutputOptions(
             'lodash/': 'lodash-es/',
           },
         }),
+        babelPlugin,
       ],
       exports: 'named',
     },
@@ -107,6 +123,7 @@ export function getInputOptions() {
         declaration: true,
         outDir: 'dist',
         noEmitOnError: true,
+        target: 'es2020',
       }),
       cleanup({
         comments: 'none',
