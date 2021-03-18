@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "docusaurus build",
-    "postinstall": "npm install --package-lock-only",
+    "postinstall": "npm install --package-lock-only --ignore-scripts",
     "serve": "serve build",
     "start": "docusaurus start --host 0.0.0.0"
   },
