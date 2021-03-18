@@ -547,3 +547,7 @@ describe('data normalization', () => {
     });
   });
 });
+
+process.on('SIGTERM', () => {
+  console.log('CACHE TEST EXIT');
+});

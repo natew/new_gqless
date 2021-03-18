@@ -155,9 +155,14 @@ describe('error handling', () => {
   test('resolved single throws', async () => {
     const { query, resolved } = await createTestClient();
 
-    await resolved(() => {
-      query.throw;
-    })
+    await resolved(
+      () => {
+        query.throw;
+      },
+      {
+        retry: false,
+      }
+    )
       .then(() => {
         throw Error("Shouldn't reach here");
       })
@@ -179,10 +184,15 @@ describe('error handling', () => {
     const prevProcessEnv = process.env.NODE_ENV;
 
     try {
-      await resolved(() => {
-        query.throw;
-        query.throw2;
-      })
+      await resolved(
+        () => {
+          query.throw;
+          query.throw2;
+        },
+        {
+          retry: false,
+        }
+      )
         .then(() => {
           throw Error("Shouldn't reach here");
         })
@@ -219,6 +229,7 @@ describe('error handling', () => {
         },
         {
           noCache: true,
+          retry: false,
         }
       )
         .then(() => {
@@ -250,7 +261,9 @@ describe('error handling', () => {
   });
 
   test('scheduler logs to console', async () => {
-    const { query } = await createTestClient();
+    const { query } = await createTestClient(undefined, undefined, undefined, {
+      retry: false,
+    });
 
     const logErrorSpy = jest
       .spyOn(global.console, 'error')
@@ -360,4 +373,8 @@ describe('buildAndFetchSelections', () => {
       },
     });
   });
+});
+
+process.on('beforeExit', () => {
+  console.log('CLIENT TEST EXIT');
 });

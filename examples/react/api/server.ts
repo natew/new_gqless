@@ -1,8 +1,7 @@
 import Fastify from 'fastify';
 import ms from 'ms';
 import FastifyNext from 'fastify-nextjs';
-import { register } from './src/api/graphql';
-import { kill } from 'cross-port-killer';
+import { register } from './graphql';
 
 const app = Fastify({
   logger: true,
@@ -10,6 +9,8 @@ const app = Fastify({
 });
 
 register(app).catch(console.error);
+
+console.log('> React example API server started.');
 
 app
   .register(FastifyNext, {
@@ -19,10 +20,6 @@ app
     app.next('/*');
   });
 
-(async () => {
-  await kill(4141);
-
-  app.listen(4141, (err) => {
-    if (err) throw err;
-  });
-})();
+app.listen(4141, (err) => {
+  if (err) throw err;
+});

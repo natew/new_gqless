@@ -2,4 +2,4 @@
 
 const crossEnv = require('cross-env');
 
-crossEnv('tsdx test'.split(' '));
+crossEnv('jest'.split(' '));

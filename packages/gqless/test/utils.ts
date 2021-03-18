@@ -278,6 +278,7 @@ export const createTestClient = async (
     subscriptionsClient = config?.subscriptions
       ? createSubscriptionsClient({
           wsEndpoint: `ws://127.0.0.1:${port}/graphql`,
+          reconnect: false,
         })
       : undefined;
   }

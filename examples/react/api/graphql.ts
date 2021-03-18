@@ -4,13 +4,12 @@ import { defaults, keyBy } from 'lodash';
 import mercurius, { IResolvers, MercuriusLoaders } from 'mercurius';
 import { codegenMercurius, gql } from 'mercurius-codegen';
 import { JsonDB } from 'node-json-db';
-import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
 
 import { writeGenerate } from '@dish/gqless-cli';
 
-import type { Dog, Human } from '../graphql/mercurius';
+import type { Dog, Human } from '../src/graphql/mercurius';
 
-const db = new JsonDB(new Config('db.json', true, true, '/'));
+const db = new JsonDB('db.json', true, true, '/');
 
 seed(2021);
 

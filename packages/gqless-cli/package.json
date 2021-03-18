@@ -15,14 +15,13 @@
   ],
   "scripts": {
     "analyze": "size-limit --why",
-    "build": "tsdx build",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "build": "build gqless-cli",
+    "prepare": "build gqless-cli",
     "size": "size-limit",
-    "start": "tsdx watch --verbose --noClean",
-    "test": "tsdx test",
-    "test:watch": "tsdx test --watch",
-    "test:watch-coverage": "rimraf coverage && mkdirp coverage/lcov-report && concurrently --raw \"tsdx test --watchAll\" \"serve -l 8787 coverage/lcov-report\" \"wait-on tcp:8787 coverage/lcov-report/index.html && open-cli http://localhost:8787\""
+    "start": "watch gqless-cli",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:watch-coverage": "rimraf coverage && mkdirp coverage/lcov-report && concurrently --raw \"jest --watchAll\" \"serve -l 8787 coverage/lcov-report\" \"wait-on tcp:8787 coverage/lcov-report/index.html && open-cli http://localhost:8787\""
   },
   "dependencies": {
     "@graphql-codegen/core": "^1.17.9",
@@ -39,6 +38,7 @@
     "runtypes": "^5.0.2"
   },
   "devDependencies": {
+    "build-utils": "workspace:*",
     "@dish/gqless": "workspace:^4.0.0",
     "@size-limit/preset-small-lib": "^4.10.1",
     "@types/mkdirp": "^1.0.1",
@@ -48,7 +48,6 @@
     "size-limit": "^4.10.1",
     "test-utils": "workspace:^0.1.0",
     "tmp-promise": "^3.0.2",
-    "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
     "typescript": "^4.2.3",
     "wait-on": "^5.2.1"

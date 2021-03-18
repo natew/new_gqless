@@ -60,6 +60,11 @@ export interface ResolveOptions<TData> {
           error?: undefined;
         }
   ) => void;
+
+  /**
+   * Retry strategy
+   */
+  retry?: RetryOptions;
 }
 
 export type RetryOptions =
@@ -169,6 +174,7 @@ export function createResolvers(
       onCacheData,
       onSelection,
       onSubscription,
+      retry,
     }: ResolveOptions<T> = {}
   ): Promise<T> {
     const prevFoundValidCache = innerState.foundValidCache;
@@ -252,6 +258,7 @@ export function createResolvers(
                 }
               }
             : undefined,
+          retry,
         }
       );
 

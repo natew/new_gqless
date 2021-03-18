@@ -28,6 +28,7 @@
     "jest": "^26.6.3",
     "nodemon": "^2.0.7",
     "rollup": "^2.41.4",
+    "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-optimize-lodash-imports": "^1.0.2",
     "shelljs": "^0.8.4",
     "ts-node": "^9.1.1"
@@ -40,7 +41,6 @@
     "concurrently": "^6.0.0",
     "fkill": "^7.1.0",
     "husky": "^4.3.8",
-    "kill-port": "^1.6.1",
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0",
     "rimraf": "^3.0.2",

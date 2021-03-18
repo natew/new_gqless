@@ -1,4 +1,3 @@
-import { cosmiconfig } from 'cosmiconfig';
 import { promises } from 'fs';
 import { resolve } from 'path';
 import { Boolean, Partial, Static, String, Unknown } from 'runtypes';
@@ -80,42 +79,64 @@ type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
+const defaultGqlessConfig = {
+  filepath: defaultFilePath,
+  config: defaultConfig,
+};
+
 export const gqlessConfigPromise: Promise<{
   filepath: string;
   config: DeepReadonly<GqlessConfig>;
-}> = cosmiconfig('gqless', {
-  searchPlaces: ['gqless.config.cjs', 'gqless.config.js', 'package.json'],
-})
-  .search()
-  .then(async (config) => {
-    if (!config || config.isEmpty) {
-      const filepath = config?.filepath || defaultFilePath;
+}> = new Promise(async (resolve) => {
+  if (process.env.NODE_ENV === 'test') {
+    setTimeout(() => {
+      resolve(defaultGqlessConfig);
+    }, 10);
+  } else {
+    /* istanbul ignore next */
+    import('cosmiconfig')
+      .then(({ cosmiconfig }) => {
+        cosmiconfig('gqless', {
+          searchPlaces: [
+            'gqless.config.cjs',
+            'gqless.config.js',
+            'package.json',
+          ],
+        })
+          .search()
+          .then(async (config) => {
+            if (!config || config.isEmpty) {
+              const filepath = config?.filepath || defaultFilePath;
 
-      const NODE_ENV = process.env['NODE_ENV'];
+              const NODE_ENV = process.env['NODE_ENV'];
 
-      if (NODE_ENV !== 'test' && NODE_ENV !== 'production') {
-        const { format } = (await import('./prettier')).formatPrettier({
-          parser: 'typescript',
-        });
-        await promises.writeFile(
-          defaultFilePath,
-          await format(`
-          /**
-           * @type {import("@dish/gqless-cli").GqlessConfig}
-           */
-          const config = ${JSON.stringify(defaultConfig)};
-          
-          module.exports = config;`)
-        );
-      }
-      return {
-        filepath,
-        config: defaultConfig,
-      };
-    }
-    return {
-      config: gqlessCLIConfigRecord.check(config.config),
-      filepath: config.filepath,
-    };
-  })
-  .catch(() => ({ config: defaultConfig, filepath: defaultFilePath }));
+              if (NODE_ENV !== 'test' && NODE_ENV !== 'production') {
+                const { format } = (await import('./prettier')).formatPrettier({
+                  parser: 'typescript',
+                });
+                await promises.writeFile(
+                  defaultFilePath,
+                  await format(`
+      /**
+       * @type {import("@dish/gqless-cli").GqlessConfig}
+       */
+      const config = ${JSON.stringify(defaultConfig)};
+      
+      module.exports = config;`)
+                );
+              }
+              return resolve({
+                filepath,
+                config: defaultConfig,
+              });
+            }
+            resolve({
+              config: gqlessCLIConfigRecord.check(config.config),
+              filepath: config.filepath,
+            });
+          })
+          .catch(() => defaultGqlessConfig);
+      })
+      .catch(() => defaultGqlessConfig);
+  }
+});
