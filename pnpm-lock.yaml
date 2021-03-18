@@ -258,8 +258,10 @@ importers:
       '@types/react': 17.0.3
       '@types/react-helmet': 6.1.0
       '@types/react-router-dom': 5.1.7
+      file-loader: 6.2.0
       framer-motion: 3.10.5_react-dom@17.0.1+react@17.0.1
       npm-to-yarn: 1.0.1
+      prism-react-renderer: 1.2.0_react@17.0.1
       react: 17.0.1
       react-dom: 17.0.1_react@17.0.1
       react-use: 17.2.1_react-dom@17.0.1+react@17.0.1
@@ -267,7 +269,7 @@ importers:
       rimraf: 3.0.2
       serve: 11.3.2
       typescript: 4.2.3
-      url-loader: 4.1.1
+      url-loader: 4.1.1_file-loader@6.2.0
     devDependencies:
       '@types/mdx-js__react': 1.5.3
       '@types/react-dom': 17.0.2
@@ -285,8 +287,10 @@ importers:
       '@types/react-dom': ^17.0.2
       '@types/react-helmet': ^6.1.0
       '@types/react-router-dom': ^5.1.7
+      file-loader: ^6.2.0
       framer-motion: ^3.10.5
       npm-to-yarn: ^1.0.1
+      prism-react-renderer: ^1.2.0
       react: ^17.0.1
       react-dom: ^17.0.1
       react-use: ^17.2.1
@@ -7490,6 +7494,17 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==
+  /file-loader/6.2.0:
+    dependencies:
+      loader-utils: 2.0.0
+      schema-utils: 3.0.0
+    dev: false
+    engines:
+      node: '>= 10.13.0'
+    peerDependencies:
+      webpack: ^4.0.0 || ^5.0.0
+    resolution:
+      integrity: sha512-qo3glqyTa61Ytg4u73GultjHGjdRyig3tG6lPtyX/jOEJvHif9uB0/OCI2Kif6ctF3caQTW2G5gym21oAsI4pw==
   /file-loader/6.2.0_webpack@4.46.0:
     dependencies:
       loader-utils: 2.0.0
@@ -16261,8 +16276,9 @@ packages:
     deprecated: 'Please see https://github.com/lydell/urix#deprecated'
     resolution:
       integrity: sha1-2pN/emLiH+wf0Y1Js1wpNQZ6bHI=
-  /url-loader/4.1.1:
+  /url-loader/4.1.1_file-loader@6.2.0:
     dependencies:
+      file-loader: 6.2.0
       loader-utils: 2.0.0
       mime-types: 2.1.29
       schema-utils: 3.0.0
