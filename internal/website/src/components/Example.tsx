@@ -8,6 +8,8 @@ const easeInOutCubic = [0.645, 0.045, 0.355, 1];
 const StyledExample = styled(motion.div)`
   overflow: hidden;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   flex-direction: column;
 
   .prism-code {

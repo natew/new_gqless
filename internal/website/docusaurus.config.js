@@ -3,7 +3,7 @@ module.exports = {
   tagline: `A GraphQL client without queries`,
   url: 'https://gqless.dev',
   baseUrl: '/',
-  favicon: '/graphql.ico',
+  favicon: '/favicon.ico',
   organizationName: 'gqless',
   projectName: 'gqless',
   themeConfig: {

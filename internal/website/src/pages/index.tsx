@@ -2,7 +2,6 @@ import 'regenerator-runtime/runtime';
 
 import { motion, useAnimation } from 'framer-motion';
 import * as React from 'react';
-
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styled from '@emotion/styled';
@@ -62,6 +61,11 @@ const Hero = styled(motion.div)`
 
 const Examples = styled(motion.div)`
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  .prism-code {
+    max-width: 90vw;
+  }
 `;
 
 const yourApp = `const App = () => {
@@ -142,15 +146,18 @@ export default () => {
           }}
         >
           <Overflow>
-            <motion.h1
+            <motion.img
               className="hero__title"
               variants={{
                 hidden: { translateY: '130%' },
                 visible: { translateY: '0%' },
               }}
-            >
-              {siteConfig.title}
-            </motion.h1>
+              src="/img/logo-436p.png"
+              width="350rem"
+              style={{
+                maxWidth: '80vw',
+              }}
+            />
           </Overflow>
           <Overflow>
             <motion.p
@@ -206,8 +213,8 @@ export default () => {
                 title="Invisible data fetching"
                 imageUrl="img/graphql.svg"
               >
-                Queries, Mutations and Subscriptions are generated at runtime,
-                by using JS getters.
+                Queries, Mutations and Subscriptions are generated at runtime
+                using ES6 Proxies.
               </Feature>
             </FeatureLink>
             <FeatureLink to="/introduction/features#typescript">
