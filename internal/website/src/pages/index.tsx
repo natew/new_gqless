@@ -11,7 +11,7 @@ import Layout from '@theme/Layout';
 import { Arrow, Example, Feature, Overflow } from '../components';
 
 const Glare = styled.div`
-  background: radial-gradient(rgba(69, 72, 75, 0.15), rgba(69, 72, 75, 0.25));
+  background: transparent;
 `;
 
 const Features = styled(motion.section)`
@@ -41,16 +41,20 @@ const FeatureLink = styled(Link)`
 const Header = styled(motion.div)`
   color: #fff;
   flex-direction: column;
-  background: linear-gradient(rgb(0, 5, 40), rgb(28, 42, 139));
+  background: linear-gradient(transparent, rgba(242, 138, 218, 0.15));
 
   .hero__title {
-    background: linear-gradient(rgb(255, 87, 241), rgb(75, 0, 255));
+    background: linear-gradient(rgb(242, 138, 218), rgb(75, 0, 255));
     text-transform: uppercase;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: rgba(0, 0, 0, 0);
     font-weight: 600;
     font-size: 64px;
+  }
+
+  .hero__subtitle {
+    color: #000;
   }
 `;
 
@@ -172,7 +176,7 @@ export default () => {
                 hidden: { translateY: '140%' },
                 visible: { translateY: '0%' },
               }}
-              src="/img/logo-436p.png"
+              src="/img/logo.svg"
               width="350rem"
               style={{
                 maxWidth: '80vw',
@@ -188,7 +192,7 @@ export default () => {
                 visible: { opacity: 1 },
               }}
             >
-              A GraphQL client for rapid iterations.
+              A modern GraphQL client for rapid iteration.
             </motion.p>
           </Overflow>
           <Actions

@@ -24,7 +24,7 @@ module.exports = {
       title: null,
       logo: {
         alt: 'gqless Logo',
-        src: '/img/logo-436p.png',
+        src: '/img/logo-sm.svg',
       },
       items: [
         {
