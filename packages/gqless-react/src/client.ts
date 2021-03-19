@@ -3,6 +3,7 @@ import { createClient, RetryOptions } from '@dish/gqless';
 import { FetchPolicy } from './common';
 import { createGraphqlHOC } from './hoc';
 import { createUseMutation } from './mutation/useMutation';
+import { createPrepareQuery } from './query/preparedQuery';
 import { createUseLazyQuery } from './query/useLazyQuery';
 import { createUseMetaState } from './query/useMetaState';
 import { createUsePolling } from './query/usePolling';
@@ -22,7 +23,7 @@ export interface ReactClientDefaults {
    *
    * > _You can override it on a per-function basis_
    *
-   * @default true
+   * @default false
    */
   suspense?: boolean;
   /**
@@ -55,6 +56,16 @@ export interface ReactClientDefaults {
    * @default false
    */
   mutationSuspense?: boolean;
+  /**
+   * Enable/Disable by default 'React Suspense' behavior for preloadQuery hooks
+   *
+   * > _Valid only for __preloadQuery___ hooks
+   *
+   * > _You can override it on a per-hook basis_
+   *
+   * __The _default value_ is obtained from the "`defaults.suspense`" value__
+   */
+  preloadSuspense?: boolean;
 
   /**
    * Define default 'fetchPolicy' hooks behaviour
@@ -115,19 +126,29 @@ export function createReactClient<
   client: ReturnType<typeof createClient>,
   optsCreate: CreateReactClientOptions = {}
 ) {
+  const { suspense = false } = (optsCreate.defaults ||= {});
+
+  const {
+    transactionFetchPolicy = 'cache-first',
+    lazyFetchPolicy = 'network-only',
+    staleWhileRevalidate = false,
+    retry = true,
+    lazyQuerySuspense = false,
+    transactionQuerySuspense = suspense,
+    mutationSuspense = false,
+    preloadSuspense = suspense,
+  } = optsCreate.defaults;
+
   const defaults: ReactClientOptionsWithDefaults['defaults'] = {
-    transactionFetchPolicy:
-      optsCreate.defaults?.transactionFetchPolicy ?? 'cache-first',
-    lazyFetchPolicy: optsCreate.defaults?.lazyFetchPolicy ?? 'network-only',
-    staleWhileRevalidate: optsCreate.defaults?.staleWhileRevalidate ?? false,
-    suspense: optsCreate.defaults?.suspense ?? true,
-    retry: optsCreate.defaults?.retry ?? true,
-    lazyQuerySuspense: optsCreate.defaults?.lazyQuerySuspense ?? false,
-    transactionQuerySuspense:
-      optsCreate.defaults?.transactionQuerySuspense ??
-      optsCreate.defaults?.suspense ??
-      true,
-    mutationSuspense: optsCreate.defaults?.mutationSuspense ?? false,
+    transactionFetchPolicy,
+    lazyFetchPolicy,
+    staleWhileRevalidate,
+    suspense,
+    retry,
+    lazyQuerySuspense,
+    transactionQuerySuspense,
+    mutationSuspense,
+    preloadSuspense,
   };
 
   const opts: ReactClientOptionsWithDefaults = Object.assign({}, optsCreate, {
@@ -165,5 +186,6 @@ export function createReactClient<
     useHydrateCache,
     useMetaState: createUseMetaState(client),
     useSubscription: createUseSubscription<GeneratedSchema>(client, opts),
+    prepareQuery: createPrepareQuery<GeneratedSchema>(client, opts),
   };
 }

@@ -11,6 +11,7 @@ import {
 } from '../Cache';
 import { gqlessError } from '../Error';
 import { EventHandler } from '../Events';
+import { createPrefetch } from '../Helpers/prefetch';
 import { createRefetch } from '../Helpers/refetch';
 import { createSSRHelpers } from '../Helpers/ssr';
 import { createInterceptorManager, InterceptorManager } from '../Interceptor';
@@ -248,6 +249,8 @@ export function createClient<
 
   const { buildSelection } = createSelectionBuilder(innerState);
 
+  const prefetch = createPrefetch<GeneratedSchema>(query, innerState);
+
   return {
     query,
     mutation,
@@ -267,5 +270,6 @@ export function createClient<
     mutate,
     buildSelection,
     subscriptionsClient,
+    prefetch,
   };
 }
